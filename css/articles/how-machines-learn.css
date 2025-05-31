@@ -10,9 +10,13 @@
 }
 
 .image-container {
-    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: Calibri;
+}
+
+.image {
+    align-self: center;
+    justify-self: center;
+    z-index: -1;
 }

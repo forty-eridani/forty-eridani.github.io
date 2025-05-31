@@ -2,6 +2,8 @@ body {
     margin: 0%;
     background-color: rgb(223, 233, 237);
     font-family: Calibri;
+    display: flex;
+    flex-direction: column;
 }
 
 :is(h1, h2, h3, h4, h5, h6) {
