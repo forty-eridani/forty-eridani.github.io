@@ -1,0 +1,18 @@
+.section {
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    width: 50%;
+}
+
+.section-header {
+    margin-top: 1rem;
+}
+
+.image-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Calibri;
+}

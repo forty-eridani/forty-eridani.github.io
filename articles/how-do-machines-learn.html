@@ -6,6 +6,15 @@
     <title>Home</title>
      <link rel="icon" type="image/x-icon" href="/favicon.ico">
      <link rel="stylesheet" href="/css/common.css">
+     <link rel="stylesheet" href="/css/articles/how-machines-learn.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
 </head>
 <body>
     <div class="navbar">
@@ -17,5 +26,57 @@
             <a href="/contact.html" class="navigation">Contact</a>
         </div>
     </div>
+
+    <div class="page-title">
+        <h1 class="">How Do Machines Learn?</h1>
+        <hr class="line">
+    </div>
+
+    <div class="section">
+    </div>
+
+    <div class="page-content">
+        <h2 class="section-header">Introduction</h2>
+        <p class="paragraph">
+            In this era, the use of machine learning seems to be extremely commonplace. Everything from targeted advertisements to stock market predictions to speech recognition all typically use
+            some form of machine learning, often in the form of nerual networks. Despite their prevelance, most of those who are subject to such algorithms lack the fundemental knowledge of how they
+            work. In this (rather long) article, we will go beyond a typical explanation of a neural network and will instead dive deep into the math and computer science that underlies their function.
+            By the end of this article, we will have developed a fully functional program (written in python) that can identiify digits from the MNIST database. The MNIST database (short for Modified 
+            National Institute of Technology) is a collection of handwritten digits with labels commonly used to train systems just like the one we will create. Our goal will to create a program that 
+            can accurately identify a large majority of these digits without any special python libraries (besides numpy, no way in hell am I writing vector and matrix operations when numpy exists).
+        </p>
+        <br>
+        <p class="paragraph">
+            This article is not for the faint of heart. Some amount of programming knowledge will be necessary to not only follow but understand the program that we will write. I highly encourage anybody
+            reading to re-read any section they don't understand as well as looking into other resources if there are any parts I did not articulate well. If you find that I could have explained something
+            better or made some sort of error or have some other suggestion, please feel free to reach out as I would be happy to edit this resource. The math for this may become somewhat complex. While
+            we will be touching on a slight amount of multi-variable calculus, I will do my best to explain the concepts as intuitvely as possible and avoid a lot of the notation that a lot of people 
+            get trapped in while learning this topic, at least until we have covered enough where the notation can be understood with the intuition I have provided. If at any point the math feels like
+            too much, I highly recommend checking out out 3Blue1Brown's calculus or linear algebra courses. They have incredible animations paired with great explanations on the math topics we will cover. 
+            3Blue1Brown also has a course on neural networks, so that may also be a useful resource if you ever feel stuck. I gained much of my knowledge on the topic from 3Blue1Brown as well as Michael 
+            Nielson's book <a href="https://neuralnetworksanddeeplearning.com/" class="hyperlink">Neural Networks and Deep Learning</a>. Anywho, enough of the blabbering, let's get into the fun stuff!
+        </p>
+        <br>
+        <h2 class="section-header">Perceptrons and Decision Boundaries</h2>
+        <p class="paragraph">
+            The perceptron is the the simplest neural network that is out there and works in a similar way to how you probably weigh your own decisions. Let us imagine that you are deciding whether to learn the
+            piccolo. We can represent the decision-making process by quantifying the factors that go into that decision. For now, let's consider just two factors that may influence your decision (this will be 
+            easier to visually represent later): the amount of hours per week you would put into the instrument, and how much you enjoy the piccolo.<sup><a href="#fn1" id="tfn1" class="footnote-navigation">1</a></sup>
+            We can represent these factors as the "activation" of two input neurons, and they both lead into another neuron known as the output neuron. The output nueron will sum all of the input activations 
+            and apply a threshold that represents whether you are actually willing to learn how to play the piccolo with the given parameters (by parameters I mean the inputs).
+        </p>
+        <div class="image-container">
+            <object data="/media/images/simple-perceptron.svg" type="" width="400" height="400"></object>
+        </div>
+
+        <div class="footnotes">
+            <sup id="fn1">
+                1. Most introductions to perceptrons contain contain only binary input neurons (as in they are either on or off) and then apply the weights. I am taking a slightly different approach to help motivate
+                a more geometric interpretation of how neural networks truly function since it will soon become much more complex.
+            <a href="#tfn1" title="Return to text" class="footnote-navigation">↩</a></sup>
+        </div>
+    </div>
+
+    <div class="bottom"></div>
 </body>
 </html>
