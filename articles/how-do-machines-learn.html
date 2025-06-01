@@ -54,12 +54,12 @@
         their function. By the end of this article, we will have developed a
         fully functional program (written in python) that can identify digits
         from the MNIST database. The MNIST database (short for Modified National
-        Institute of Technology) is a collection of handwritten digits with
-        labels commonly used to train systems just like the one we will create.
-        Our goal will to create a program that can accurately identify a large
-        majority of these digits without any special python libraries (besides
-        numpy, no way in hell am I writing vector and matrix operations when
-        numpy exists).
+        Institute of Standards and Technology) is a collection of handwritten
+        digits with labels commonly used to train systems just like the one we
+        will create. Our goal will to create a program that can accurately
+        identify a large majority of these digits without any special python
+        libraries (besides numpy, no way in hell am I writing vector and matrix
+        operations when numpy exists).
       </p>
       <br />
       <p class="paragraph">
@@ -386,7 +386,201 @@
         2\vec{v} $$ and if we were to expand that out a bit, it would look like
         $$ \vec{u} = 2\begin{bmatrix} 1\\ 2\\ \end{bmatrix} $$ Now all we do is
         scale each component by the scalar $$ \vec{u} = \begin{bmatrix} 2 \cdot
-        1\\ 2 \cdot 2\\ \end{bmatrix} $$
+        1\\ 2 \cdot 2\\ \end{bmatrix} $$ And there we go, now we have our scaled
+        vector. If we were to plot both \( \vec{u} \) and \( \vec{v} \), it
+        would look something like
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/scaled-vector.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        With that out of the way, we can now get on to my two favorite vectors,
+        \( \hat{\imath} \) and \( \hat{\jmath} \). On paper, these two vectors
+        are very simple $$ \hat{\imath} = \begin{bmatrix} 1\\ 0\\ \end{bmatrix},
+        \hspace{15px} \hat{\jmath} = \begin{bmatrix} 0\\ 1\\ \end{bmatrix} $$
+        but don't let their simplicity fool you, they have a very special
+        property: they act as the set of basis vectors that all 2d vectors can
+        be implicitly described as.
+      </p>
+      <br />
+
+      <p class="paragraph">
+        To understand what I mean, let's take a closer look at those two
+        vectors. Notice that \( \hat{\imath} \) only has non-zero component in
+        the x direction? This means if we treated the first component of \(
+        \vec{v} \) as a scalar to \( \hat{\imath} \), we would get a vector that
+        represents only the x-direction magnitude of \( \vec{v} \) since the
+        other component of the vector is 0. The same logic applies to \(
+        \hat{\jmath} \) where if you treat the y component of \( \vec{v} \) as a
+        scalar to \( \hat{\jmath} \), you will get a vector representing only
+        the y-direction magnitude of \( \vec{v} \). We could write this a little
+        more formally and say $$ \vec{v}_x \hat{\imath} = \begin{bmatrix}
+        \vec{v}_x\\ 0 \end{bmatrix}, \hspace{15px} \vec{v}_y \hat{\jmath} =
+        \begin{bmatrix} 0\\ \vec{v}_y \end{bmatrix}$$ To unpack this a little
+        more, note that \( \vec{v}_x \) represents the x component of \( \vec{v}
+        \) and \( \vec{v}_y \) represents the y component of \( \vec{v} \).
+        These are just numbers, and in the first part of the expression they act
+        as scalars and in the second part they act as the element of the vector.
+        They are just numbers so you can do to they whatever you can do to a
+        number. Now as an exercise to the reader, I encourage you to draw out
+        the vectors \( \hat{\imath} \) and \( \hat{\jmath} \) as well as their
+        scaled versions lined out in the previous expression as even though this
+        is a fairly simple concept, I think this could really help build some
+        intuition.
+      </p>
+
+      <p class="paragraph">
+        Now let us take these scaled vectors and simply add them. Since both
+        have elements that are "complementary" (as each of their non-zero
+        element lines up with the other vector's zero component), by adding the
+        vectors we simply get our original vector \( \vec{v} \). If we were to
+        write out our whole expression and expand \( \hat{\imath} \) and \(
+        \hat{\jmath} \) to see what I mean, it would look something like $$
+        \vec{v}_x \begin{bmatrix} 1\\ 0 \end{bmatrix} + \vec{v}_y
+        \begin{bmatrix} 0\\ 1 \end{bmatrix} = \begin{bmatrix} \vec{v}_x\\
+        \vec{v}_y \end{bmatrix} = \vec{v}$$
+      </p>
+
+      <p class="paragraph">
+        Now you are probably wondering, "Why should I care about this? All you
+        did was get the sum of vectors that represent each component of the
+        original vector which is just the original vector!" And yes, this
+        example didn't show much, but we did something very powerful, something
+        called a linear combination. In principle, a linear combination is
+        fairly simple. In the case of vectors, all you do is get the sum of some
+        scaled vectors. Earlier when I said that all vectors can be implicitly
+        described using the unit vectors, what I mean was that any vector can be
+        described as a linear combination of those unit vectors. If a set of
+        vectors is able to describe any other vector in your current vector
+        space, it is a valid basis vector. The reason we use \( \hat{\imath} \)
+        and \( \hat{\jmath} \) as our basis vectors is that it's quite simple to
+        construct your linear combinations because as each unit vector points a
+        single unit in a single direction, and because it is just a single unit,
+        each component of your vector can be used directly as the scalar for the
+        corresponding unit vector. This doesn't mean that we can't use other
+        vectors as our basis vectors however. To prove this, let's use the
+        vectors \( \vec{v} \) and \( \vec{u} \) as our basis vectors where $$
+        \vec{v} = \begin{bmatrix} 1\\ 2 \end{bmatrix}, \hspace{15px} \vec{u} =
+        \begin{bmatrix} -1\\ 1 \end{bmatrix} $$ Let's also say that we want a
+        linear combination of the vectors to form vector \( \vec{w} \) where $$
+        \vec{w} = \begin{bmatrix} 4\\ 1 \end{bmatrix} $$ If we solve a basic
+        system, we find that $$ \frac{5}{3} \vec{v} - \frac{7}{3} \vec{u} =
+        \vec{w} $$ Which looks like
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/linear-combination.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        These basis vectors must satisfy an important condition: they must be
+        linearly independent. This means that one vector cannot be described as
+        the linear combination of the other vectors in the set. In our case, \(
+        \vec{v} \) cannot be described as a linear combination of \( \vec{u} \)
+        (you can have a linear combination of just one vector), and \( \vec{u}
+        \) cannot be described as a linear combination of \( \vec{v} \). If a
+        set of vectors lie upon a line, each of them are able to express the
+        other if scaled, and this means they are linearly dependent. One example
+        of two linearly dependent vectors could be $$ \vec{u} = \begin{bmatrix}
+        1\\ 1 \end{bmatrix}, \hspace{15px} \vec{v} = \begin{bmatrix} -1\\ -1
+        \end{bmatrix} $$ If we draw these out, we find they lie upon the same
+        line and could be written as scaled version of each other.
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/linearly-dependent.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Now think about how we could transform the space vectors are described
+        in by changing our basis vectors. We wouldn't change the scalars applied
+        to the basis vectors (since those scalars are the components of the
+        vector we want to transform), but just the basis vectors themselves.
+        This has the effect of performing some operation to the space, and
+        subsequently transforming the vectors within that space.
+      </p>
+
+      <br />
+
+      <p class="paragraph">
+        Think about ways we could do this. What if we wrote some array of
+        typical vectors, but each vector in the array represents the new basis
+        vector that would transform the space. This would act like where the new
+        \( \hat{\imath} \) and \( \hat{\jmath} \) would land, and our vector can
+        perform a linear combination with each of its components of the vector
+        array against the transformed basis vector in the array that corresponds
+        to that component, just as we would do with the typical \( \hat{\imath}
+        \) and \( \hat{\jmath} \). If we wanted to see what the transformation
+        does to a given vector, let's define a vector \( \vec{v} \) where $$
+        \vec{v} = \begin{bmatrix} 1\\ 2 \end{bmatrix} $$ and describe the array
+        of new basis vectors as $$ \begin{bmatrix} 1 & 2\\ 3 & 4 \end{bmatrix}
+        $$ where each column represents where we want that column index's basis
+        vector to land. Now we can perform a linear combination of these
+        elements, this would be written as $$ \begin{bmatrix} 1 & 2\\ 3 & 4
+        \end{bmatrix} \vec{v} = \begin{bmatrix} 1 & 2\\ 3 & 4 \end{bmatrix}
+        \begin{bmatrix} 1\\ 2 \end{bmatrix} $$ and now we can perform the linear
+        combination $$ 1\begin{bmatrix} 1\\ 3 \end{bmatrix} + 2\begin{bmatrix}
+        2\\ 4 \end{bmatrix} = \begin{bmatrix} 5\\ 11 \end{bmatrix} $$
+      </p>
+
+      <br />
+
+      <p class="paragraph">
+        The eagle-eyed among you may have noticed that we just invented
+        matrices! Matrices are the language in which we describe transformations
+        of space. In fact, if we want a matrix that simply describes the linear
+        combination of \( \hat{\imath} \) and \( \hat{\jmath} \), we can write
+        the matrix as so $$ \begin{bmatrix} 1 & 0\\ 0 & 1\end{bmatrix} $$ This
+        is known as the identity matrix, and is the almost implicit
+        transformation that vectors undergo to be described in space.
+      </p>
+
+      <br />
+
+      <p class="paragraph">
+        To put this all a little more succinctly, each component of a vector
+        represents a scalar to the unit vector. The linear combination of all of
+        the units vectors and the components of the vector describe the vector,
+        and if we get the linear combination of the components of the vector and
+        a different set of vectors (rather than the unit vectors), the new
+        resulting will be the original vector as though it's basis vectors were
+        different. This can sometimes be a little difficult to fully wrap one's
+        head around, so I strongly recommend checking out other resources like
+        <a
+          href="https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+          class="hyperlink"
+          >3Blue1Brown's course on linear algebra</a
+        >
+        to help fully understand this process.
+      </p>
+
+      <p class="paragraph">
+        Now remember how I said this was somehow relevant to neural networks? I
+        know that was a while ago (I think the explanation was worth it
+        however), but we must not forget that this process is essentially what
+        neural networks undergo when classifying data. Each layer of neurons
+        represents some transformation to the input space. For example, in our
+        little perceptron, our function to determine whether we should play the
+        piccolo was like a 1x2 matrix. Now when matrices are not square, that
+        means they are doing one of two things: either describing the input
+        vector in a higher dimension or describing the input vector in a lower
+        dimension. In our case, we took two dimensions of input (practice time
+        and enjoyment) and transformed it into a single dimensions output that
+        we ended up applying a threshold two.
       </p>
 
       <br />
