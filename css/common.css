@@ -59,6 +59,7 @@ sup {
 
 .line {
     width: 50%;
+    margin-top: 20px;
 }
 
 .bottom {
@@ -118,7 +119,7 @@ sup {
 
 .footnote-navigation {
     color: black;
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .footnote-navigation:hover {

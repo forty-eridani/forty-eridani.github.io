@@ -183,11 +183,11 @@
         consider: bias. Bias is essentially the offset we apply to the sum of
         the activations before they reach the output. According to the graph we
         have just created, even if we like the piccolo just a tiny amount (to
-        put this another way, \( x = \epsilon \) where \( \epsilon > 0 \)), we
-        are willing to learn it with some minimal amount of practice. Now maybe
-        that is you, but to learn the piccolo there is an upfront cost which
-        most wouldn't be willing to pay if they only liked the instrument a
-        small amount. To represent this numerically, we use the aforementioned
+        put this another way, \( x = \epsilon \) for some small \( \epsilon > 0
+        \)), we are willing to learn it with some minimal amount of practice.
+        Now maybe that is you, but to learn the piccolo there is an upfront cost
+        which most wouldn't be willing to pay if they only liked the instrument
+        a small amount. To represent this numerically, we use the aforementioned
         bias. In this case, the negative bias will simply act as the minimum
         enjoyment it will take to make the decision to get an instrument with
         some small amount of practice.<sup
@@ -234,13 +234,13 @@
         Now that we grasp the intuition, let's put our activation in proper
         mathematical terms. If we are just keeping with our example of a simple
         perceptron, we could simply sum over all of the inputs and add the bias.
-        In math-speak, this would be \( a = \sum_{i=1}^n (w^i \cdot x^i) + b \)
-        where \( a \) is the activation of the output neuron, \( n \) is the
-        amount of input neurons, \( w^i \) is the weight at index \( i \), and
-        \( x^i \) is the input activation at neuron index \( i \). If you are
-        not too comfortable with summation notation, I would recommend
-        familiarizing yourself with it as we will be using it a lot throughout
-        this article.
+        In math-speak, this would be \( a = \sum_{i=1}^n (w^i \cdot x^i) + b > t
+        \) where \( a \) is the activation of the output neuron, \( n \) is the
+        amount of input neurons, \( w^i \) is the weight at index \( i \), \(
+        x^i \) is the input activation at neuron index \( i \), and \( t\) is
+        our threshold. If you are not too comfortable with summation notation, I
+        would recommend familiarizing yourself with it as we will be using it a
+        lot throughout this article.
       </p>
 
       <br />
@@ -254,7 +254,7 @@
           geometric interpretation of how neural networks truly function since
           it will soon become much more complex.
           <a href="#tfn1" title="Return to text" class="footnote-navigation"
-            >↩</a
+            >Return to text</a
           ></sup
         >
         <sup id="fn2">
@@ -265,7 +265,7 @@
           activations of other kinds of parameters beyond perfect piccolo
           predictions.
           <a href="#tfn2" title="Return to text" class="footnote-navigation"
-            >↩</a
+            >Return to text</a
           ></sup
         >
         <sup id="fn3">
@@ -273,10 +273,123 @@
           since at x = -bias the practice time will be zero as the terms cancel
           out, but bear with me.
           <a href="#tfn3" title="Return to text" class="footnote-navigation"
-            >↩</a
+            >Return to text</a
           ></sup
         >
       </div>
+
+      <br />
+
+      <h2>Hidden layers and Feed-Forward</h2>
+
+      <br />
+
+      <p class="paragraph">
+        Our perceptron from the previous chapter is extremely simple without any
+        significantly large operations performed to the inputs. Most useful
+        neural networks require hidden layers. A hidden layer can be thought of
+        in many ways, but to stick to our geometric view let's imagine them as
+        matrix transformations. Because we have not yet learned of
+        non-polynomial activation functions, hidden layers will not serve any
+        meaningful purpose for us since all of the linear transformations in a
+        hidden layer could all be represented by a single matrix, or series of
+        weights, between the input and output neurons. Don't worry if this
+        doesn't quite make sense yet, for now let's just learn about the basics
+        of linear algebra.
+      </p>
+      <br />
+      <p class="paragraph">
+        For our purposes, only two aspects of linear algebra will really matter
+        to us: vectors and matrices. A vector, in principle, is a very simple
+        entity; all it does is denote a direction in space and a magnitude. In
+        the coordinate system we are using these are not explicitly denoted by
+        the vector itself, though both the magnitude and direction can be
+        calculated with a trivial amount of effort. Here is an example of a very
+        simple vector: $$ \vec{v} = \begin{bmatrix} 1\\ 2\\ \end{bmatrix} $$
+        This vector has an x component of 1 and a y component of 2. Typically,
+        vectors are centered at the origin, so in this case we can think of the
+        vector with its base at \( (0, 0) \) and tip at \( (1, 2) \).
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/simple-vector.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Now vectors can have any number of components, but the most we can
+        visualize is 3. What make vectors interesting is that we can represent
+        our inputs as vectors. While this explanation isn't completely
+        necessary, it gives us a more geometric interpretation of how inputs can
+        be transformed by the weights and biases. For our purposes, all a neural
+        network does is transform some input vector into a space that can be
+        easily classified. In our case, the perceptron was just an algorithm
+        which took a 2 dimensional input vector and transformed it to a single
+        dimensional output vector (which is just a vector lying on a number
+        line) and applied a threshold to its own activation to determine whether
+        it should activate. In linear algebra, we have a really useful tool to
+        describe these transformations: matrices.
+      </p>
+
+      <br />
+
+      <p class="paragraph">
+        Before we get on to how matrices work, we must first understand how
+        vectors are, in a way, implicitly expressed. And before we understand
+        that, we must first understand scalars and vector addition. Vector
+        addition is very simple in principle: you simply add each component of
+        each vector. This has the effect of first walking along the first vector
+        from the origin and then, from the tip of that initial vector, walking
+        along the second vector. This is what 3Blue1Brown calls "tip to tail."
+        To show this, let us first define two vectors: $$ \vec{v} =
+        \begin{bmatrix} 1\\ 2\\ \end{bmatrix}, \hspace{10px} \vec{u} =
+        \begin{bmatrix} -5\\ 1\\ \end{bmatrix} $$ Add then the operation: $$
+        \vec{v} + \vec{u} = \vec{w} $$ And to visualize this operation:
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/vector-addition.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        As I stated earlier, we are simply adding each component of the vector.
+        Vector addition is just a way to record the effect of multiple vectors.
+        Just as you would expect from simple single-number addition, vector
+        addition is commutative meaning that the order in which the vectors are
+        added together does not matter.
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/images/commutative-vector-addition.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Similar to vector addition, scalars work in a way you would probably
+        expect. Scalars, as the name implies, simply scale the vector. This
+        means that the vector will retain the same direction (which is slope in
+        this coordinate system), but the magnitude will change. For example, a
+        scalar operation on vector \( \vec{v} \) would look like $$ \vec{u} =
+        2\vec{v} $$ and if we were to expand that out a bit, it would look like
+        $$ \vec{u} = 2\begin{bmatrix} 1\\ 2\\ \end{bmatrix} $$ Now all we do is
+        scale each component by the scalar $$ \vec{u} = \begin{bmatrix} 2 \cdot
+        1\\ 2 \cdot 2\\ \end{bmatrix} $$
+      </p>
+
+      <br />
     </div>
     <div class="bottom"></div>
   </body>
