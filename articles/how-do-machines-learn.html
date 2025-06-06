@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
 
@@ -61,7 +61,7 @@
         libraries (besides numpy, no way in hell am I writing vector and matrix
         operations when numpy exists).
       </p>
-      <br />
+
       <p class="paragraph">
         This article is not for the faint of heart. Some amount of programming
         knowledge will be necessary to not only follow but understand the
@@ -102,10 +102,11 @@
         >
         We can represent these factors as the "activation" of two input neurons,
         and they both lead into another neuron known as the output neuron. The
-        output nueron will sum all of the input activations and apply a
+        output neuron will sum all of the input activations and apply a
         threshold that represents whether you are actually willing to learn how
         to play the piccolo with the given parameters.
       </p>
+
       <div class="image-container">
         <object
           data="/media/images/simple-perceptron.svg"
@@ -114,7 +115,7 @@
           height="250px"
         ></object>
       </div>
-      <br />
+
       <p class="paragraph">
         For now, let's just arbitrarily consider the threshold as zero. We can
         represent possible activations for our inputs on a coordinate plane, and
@@ -228,8 +229,6 @@
         math for higher dimensions all works out the same.
       </p>
 
-      <br />
-
       <p class="paragraph">
         Now that we grasp the intuition, let's put our activation in proper
         mathematical terms. If we are just keeping with our example of a simple
@@ -297,7 +296,6 @@
         doesn't quite make sense yet, for now let's just learn about the basics
         of linear algebra.
       </p>
-      <br />
       <p class="paragraph">
         For our purposes, only two aspects of linear algebra will really matter
         to us: vectors and matrices. A vector, in principle, is a very simple
@@ -333,8 +331,6 @@
         it should activate. In linear algebra, we have a really useful tool to
         describe these transformations: matrices.
       </p>
-
-      <br />
 
       <p class="paragraph">
         Before we get on to how matrices work, we must first understand how
@@ -408,7 +404,6 @@
         property: they act as the set of basis vectors that all 2d vectors can
         be implicitly described as.
       </p>
-      <br />
 
       <p class="paragraph">
         To understand what I mean, let's take a closer look at those two
@@ -514,8 +509,6 @@
         subsequently transforming the vectors within that space.
       </p>
 
-      <br />
-
       <p class="paragraph">
         Think about ways we could do this. What if we wrote some array of
         typical vectors, but each vector in the array represents the new basis
@@ -549,23 +542,23 @@
         transformation that vectors undergo to be described in space.
       </p>
 
-      <br />
-
       <p class="paragraph">
         To put this all a little more succinctly, each component of a vector
-        represents a scalar to the unit vector. The linear combination of all of
-        the units vectors and the components of the vector describe the vector,
-        and if we get the linear combination of the components of the vector and
-        a different set of vectors (rather than the unit vectors), the new
-        resulting will be the original vector as though it's basis vectors were
-        different. This can sometimes be a little difficult to fully wrap one's
-        head around, so I strongly recommend checking out other resources like
+        represents a scalar to the corresponding unit vector. The linear
+        combination of all of the units vectors and the components of the vector
+        describe the vector, and if we get the linear combination of the
+        components of the vector and a different set of vectors (rather than the
+        unit vectors), the new resulting will be the original vector as though
+        it's basis vectors were different. This can sometimes be a little
+        difficult to fully wrap one's head around, so I strongly recommend
+        checking out other resources like
         <a
           href="https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
           class="hyperlink"
           >3Blue1Brown's course on linear algebra</a
         >
-        to help fully understand this process.
+        to help fully understand this process as the purpose of this article is
+        not to teach linear algebra.
       </p>
 
       <p class="paragraph">
@@ -573,14 +566,120 @@
         know that was a while ago (I think the explanation was worth it
         however), but we must not forget that this process is essentially what
         neural networks undergo when classifying data. Each layer of neurons
-        represents some transformation to the input space. For example, in our
-        little perceptron, our function to determine whether we should play the
-        piccolo was like a 1x2 matrix. Now when matrices are not square, that
-        means they are doing one of two things: either describing the input
-        vector in a higher dimension or describing the input vector in a lower
-        dimension. In our case, we took two dimensions of input (practice time
-        and enjoyment) and transformed it into a single dimensions output that
-        we ended up applying a threshold two.
+        represents some transformation to the input space, and we most often use
+        matrices as the language to describe that transformation. For example,
+        in our little perceptron, our function to determine whether we should
+        play the piccolo was like a 1x2 matrix. Now when matrices are not
+        square, that means they are doing one of two things: either describing
+        the input vector in a higher dimension or describing the input vector in
+        a lower dimension. In our case, we took two dimensions of input
+        (practice time and enjoyment) and transformed it into a single
+        dimensions output that we ended up applying a threshold two. If we
+        thought about this a bit more generally, we could say that the
+        corresponding output vector will contain the same amount of rows as the
+        matrix (since the linear combination involves addition), and the columns
+        represent the elements of the vector you are applying the combination to
+        (since each column represents a vector to be scaled by the corresponding
+        component in the vector you are multiplying the matrix to). For our
+        piccolo example, the entire process can be visually (each of the black
+        vectors represent example inputs)
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/video/perceptron-transformation.gif"
+          type=""
+          width="360px"
+          height="280px"
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        As you can see (and as I said earlier), this matrix transformed the
+        input into a single dimensional output. The expression \( x - y > 0 \)
+        that we use to determine the relationship between enjoyment and practice
+        time can be modeled as the matrix \( \begin{bmatrix} 1 & -1\end{bmatrix}
+        \) (bias is not included since in linear algebra the origin must remain
+        static throughout the transformation). Each column of this matrix
+        represents the relationship that input has to the output. Think of each
+        column as the set of weights that applies to a single input for all
+        neurons in a layer. This is essentially how much the activation of a
+        single input neuron should affect all output neurons. Now each row is
+        the weights that apply to all input for a single neuron. This is how
+        much all inputs should determine a single output neuron. This means our
+        output is represented as a vector where each component of that vector
+        represents the activation of a neuron in that layer. I encourage you to
+        take a minute and apply this logic to the matrix we used for the piccolo
+        example and apply this principle in general.
+      </p>
+
+      <p class="paragraph">
+        This is essentially the process of each layer of a neural network. Each
+        layer (besides the input layer, of course) will take the output of the
+        preceding layer of neurons and transform it in some way, and then send
+        it on as the input to the next layer of neurons for further processing.
+        This process of repeating transforming the data is known as
+        Feed-Forward. Here is an example of a neural network with two hidden
+        layers with four neurons each
+      </p>
+
+      <div class="image-container">
+        <object
+          data="/media/images/neural-network-vector-graphic.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Now isn't this beautiful? We are now able to describe a method in which
+        input space can be molded in order to effectively classify data. There
+        is one problem with this approach however, our operations can only mold
+        the space in a linear manner. There is no way we could, for example,
+        classify points on whether they are inside or outside of a circle and we
+        have no guarantees that a model architecture like this could engage in
+        more complex and abstract classification like in the case of the MNIST
+        dataset. This forces us to find a way to transform and warp space in a
+        manner that can represent any decision boundary shape. To find out how
+        we can do that, we must look at the reason why neural networks are so
+        powerful in the first place, called
+      </p>
+
+      <br />
+
+      <h2>The Universal Approximation Theorem</h2>
+
+      <p class="paragraph">
+        The universal approximation theorem is the reason why neural networks
+        are so powerful. To put it simply, the universal approximation theorem
+        states any neural network with a non-linear activation function can
+        approximate any continuous function with an arbitrary amount of error.
+        To put it a touch more mathematically, let's say we have a non-linear
+        function \( f(x) \) and we would like to approximated that function with
+        a neural network. Let's call this approximated function \( \hat{f}(x)
+        \). The theorem states that for any \( \epsilon > 0 \), there exists a
+        set of weights, biases, and layer size in a neural network with a single
+        hidden layer where \( |f(x) - \hat{f}(x)| < \epsilon \). As you could
+        imagine, this is an extremely powerful piece of mathematics. To use our
+        future MNIST interpreter as an example, we could imagine some continuous
+        function that takes in the pixel values as a vector an can perfectly
+        classify it every time. Whether this function actually exists is
+        irrelevant, what matters is that we can create some neural network that
+        can approximate it to an error close to that of individual humans.
+      </p>
+
+      <p class="paragraph">
+        Now there are some caveats to this theorem. Just because there
+        <em>exists</em> a set of parameters that can approximate the function
+        doesn't mean that we have a way to figure out what those parameters are.
+        In later sections of this article we will go over how we can find a set
+        of parameters that can find a local minimum, but that will almost
+        certainly not be the best set of parameters for our network.
       </p>
 
       <br />

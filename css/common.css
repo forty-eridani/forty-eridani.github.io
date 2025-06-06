@@ -13,6 +13,7 @@ body {
 p {
     font-family: 'Merriweather';
     line-height: 45px;
+    z-index: -1;
 }
 
 sup {
@@ -51,6 +52,7 @@ sup {
     text-decoration: none;
     color: white;
     font-size: 20px;
+    font-family: 'Lato';
 }
 
 .navigation:hover {
