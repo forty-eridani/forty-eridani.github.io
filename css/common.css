@@ -13,7 +13,7 @@ body {
 p {
     font-family: 'Merriweather';
     line-height: 45px;
-    z-index: -1;
+    z-index: 0;
 }
 
 sup {
@@ -30,6 +30,7 @@ sup {
     flex-direction: row;
     justify-content: center;
     position: fixed;
+    z-index: 1;
 }
 
 .nav-container-right {

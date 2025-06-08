@@ -674,12 +674,323 @@
       </p>
 
       <p class="paragraph">
-        Now there are some caveats to this theorem. Just because there
+        There are some caveats to this theorem. Just because there
         <em>exists</em> a set of parameters that can approximate the function
         doesn't mean that we have a way to figure out what those parameters are.
         In later sections of this article we will go over how we can find a set
         of parameters that can find a local minimum, but that will almost
-        certainly not be the best set of parameters for our network.
+        certainly not be the best set of parameters for our network as that is
+        much more difficult to find.
+      </p>
+
+      <p class="paragraph">
+        What exactly do I mean when I say activation function? An activation
+        function, in principle, is quite simple. All an activation does is apply
+        some function to the weighted sum with bias and use that as it's
+        activation. Remember how we described how the output of one layer from a
+        neural network can be described as a vector? Now take that vector and
+        apply a non-linear function to each component. The result is your new
+        activation that will either serve as the output or be sent along to the
+        next layer for further processing. One very common non-linear activation
+        function is the sigmoid function (written as \( \sigma(x) \)) which
+        gives an output very close to zero for extremely negative inputs, and
+        gives an output very close to one very positive inputs. The function
+        itself is \( \sigma(x) = \frac{1}{1 + e^{-x}} \) and I encourage you to
+        take a moment to understand why this function approaches zero and one.
+      </p>
+
+      <p class="paragraph">
+        The curious among you may ask why the universal approximation theorem is
+        correct. While I am not going to present any sort of formal proof, I
+        will present a visual one to help motivate the geometric interpretation
+        of the network as I have done so far in this article. Let us attempt to
+        approximate the function \( f(x) = -\frac{1}{4}x^2 + 4 \). As you could
+        probably tell, this function cannot be accurately approximated with
+        linear transformations, and must be done with a different kind of
+        activation. Here is \( f(x) \)
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/images/function-to-be-approximated.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        To start, let's us imagine the architecture of our neural network. As we
+        are only approximating a function with one input and one output, we only
+        need one input neuron and one output neuron, but we will have a large
+        hidden layer betwixt them. For now let us just use four neurons in our
+        hidden layer. This looks something like
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/images/approximation-neural-network.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        For now, we will not use any realistic activation functions. For the
+        hidden layers we will use a threshold activation where each "weight"
+        will be the location of the threshold. Here, we are essentially defining
+        a piecewise function. This will make the entire process easier to
+        visualize. If you think this is cheating, well you are kind of right.
+        Actual neural networks do not engage in such behavior and this would be
+        an odd architecture to train with and would have limited accuracy. The
+        reason this is a valid proof is that you can approximate step functions
+        with sigmoid activations by using a large weight for the input
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/video/sigmoid-approximation.gif"
+          type=""
+          width="256"
+          height="256"
+        ></object>
+      </div>
+
+      <br />
+
+      <p>
+        To adjust the position of this approximated step function, we simply
+        adjust the bias
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/video/bias-step-transformation.gif"
+          type=""
+          width="256"
+          height="256"
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Sometimes it is a helpful reminder that the step point goes backwards as
+        the bias increases since the sigmoid is calculating at a point farther
+        forward than the current \( x \) since \( x \) is being calculated at a
+        farther point determined by the value of the bias. This means to
+        calculate the point isn't as simple as taking the bias directly. Another
+        factor which makes calculating the point of the step slightly more
+        complicated is that as the weight increases, the bias must also increase
+        for that same point to evaluate to zero. In other words, the stepping
+        point is where \( wx + b = 0 \). If we use some basic algebra, we find
+        that the point that evaluates to zero is \( x = \frac{-b}{w} \). One way
+        to think about this is that the negative bias tells you how much you
+        must offset a raw \( x \) that has no weight to push it to zero, but you
+        must divide that by the weight as the weight tells you how much a single
+        unit of raw x impacts the function as a whole. We won't actually use the
+        sigmoid step function here, but I hope I have justified why I can use a
+        step function in this section and retain its validity for a sigmoid
+        function. If you want to learn more about this, I recommend you check
+        out Chapter 4 of Neural Networks and Deep Learning
+        <a
+          href="http://neuralnetworksanddeeplearning.com/chap4.html"
+          class="hyperlink"
+          >here</a
+        >.
+      </p>
+
+      <p class="paragraph">
+        Finally, we can begin deciding our weights and biases to approximate our
+        function. There is no definitive process we are going to use to
+        determine these parameters, and these will certainly not be the best
+        parameters we could use, but it will prove the point. It's worth noting
+        that the only weights will be the ones from the hidden layer to the
+        output layer as we are just using piecewise step functions for our
+        hidden layer activations, and our neural network will only be
+        calculating \( f(x) \) within the range \( [-4, 4] \).
+      </p>
+
+      <p class="paragraph">
+        To start, let's use the first hidden neuron to encode the first part of
+        the curve. We will set the bias to -2 since that is where we can
+        effectively capture that part of the curve starts
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/first-neuron-effect.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p>
+        And how we can scale it by two with the weight going from the first
+        neuron to the output neuron. Let's set that weight to 2
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/images/hidden-output-weighted.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p>
+        Now we can set the second hidden neuron to the opposite in order to
+        encode the fall of the curve
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/second-neuron-effect.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p>
+        And apply the weight between this layer and the output like we did with
+        the first neuron
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/images/weighted-second-neuron.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p>
+        Now let's see the cumulative effect of both neurons as the output layer
+        sees them
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/images/first-two-neuron-cumulative-effect.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        This is alright, but there are a few issues. First of all, all points
+        are guaranteed to be greater than or equal to two since when if our \( x
+        \) is at a point where one is zero, it marks the activation point of
+        another. If we for some reason wanted to go beyond the range of \( [-4,
+        4] \), our network would give us 2 which is less than ideal. To
+        compensate for this, we can apply a bias of -2 to the output which would
+        give us zero for inputs beyond our range
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/output-neuron-bias.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Now this is alright, but we still have two neurons to play with! Let's
+        use them to encode the top edge of our polynomial. Let's use the third
+        neuron to encode the rising edge and add it to our output (our weight to
+        the output will also be 2 like the last two neurons)
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/third-neuron-effect.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Now as you can see that neuron offset the left size, so we need to use
+        the last neuron to encode the falling top edge and push the other edges
+        down
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/fourth-neuron-effect.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Look at that! We just made a basic neural network that can approximate
+        our function \( f(x) = -\frac{1}{4}x^2 + 4 \). I could have probably
+        done a better job with positioning some of the step functions, but you
+        still get the idea. If we had more neurons in our hidden layer, you
+        could imagine that those step functions would become a better and better
+        approximation to the true function. Now with sigmoids, often you are
+        better able to match some of that function curvature with the curvature
+        of the sigmoid. An proper neural network that trains itself can actually
+        approximate the line really well. To help explain what I mean, here an
+        actual neural network training to fit itself to \( f(x) \) with the same
+        amount of neurons and same activation functions I used earlier
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/video/fit-to-line.gif"
+          type=""
+          width="256"
+          height="256"
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        I hope now we can see why a non-linear activation function is so
+        important to approximating functions like these. If we used a linear
+        function, the sum of the function will just give us a line since the sum
+        of the line is proportional to the distance from the intersection. When
+        we use non-linear activations, we are able to form them into step-like
+        functions and fit them to extremely complex decision boundaries. While I
+        have only mentioned the sigmoid activation, there are a lot more. Some
+        popular ones include tanh and ReLU, but for our purposes, sigmoid is
+        will work just fine.
+      </p>
+
+      <p class="paragraph">
+        Now with this explanation, you may be wondering why I bothered
+        explaining so much linear algebra. The truth is there are many ways to
+        interpret how neural networks work, and we will explore lots of
+        different interpretations as they all have their uses. As I said
+        earlier, we use matrix operations to transform the data into ways the
+        activation functions can manipulate effectively since we can't really
+        change the activation function on the fly, but we can change the
+        weights. I also just wanted an excuse to talk about linear algebra since
+        I think it is really cool and few other seem to think so.
       </p>
 
       <br />
