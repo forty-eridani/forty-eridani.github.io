@@ -655,22 +655,21 @@
       <h2>The Universal Approximation Theorem</h2>
 
       <p class="paragraph">
-        The universal approximation theorem is the reason why neural networks
-        are so powerful. To put it simply, the universal approximation theorem
-        states any neural network with a non-linear activation function can
-        approximate any continuous function with an arbitrary amount of error.
-        To put it a touch more mathematically, let's say we have a non-linear
-        function \( f(x) \) and we would like to approximated that function with
-        a neural network. Let's call this approximated function \( \hat{f}(x)
-        \). The theorem states that for any \( \epsilon > 0 \), there exists a
-        set of weights, biases, and layer size in a neural network with a single
-        hidden layer where \( |f(x) - \hat{f}(x)| < \epsilon \). As you could
-        imagine, this is an extremely powerful piece of mathematics. To use our
-        future MNIST interpreter as an example, we could imagine some continuous
-        function that takes in the pixel values as a vector an can perfectly
-        classify it every time. Whether this function actually exists is
-        irrelevant, what matters is that we can create some neural network that
-        can approximate it to an error close to that of individual humans.
+        To put it simply, the universal approximation theorem states any neural
+        network with a non-linear activation function can approximate any
+        continuous function with an arbitrary amount of error. To put it a touch
+        more mathematically, let's say we have a non-linear function \( f(x) \)
+        and we would like to approximated that function with a neural network.
+        Let's call this approximated function \( \hat{f}(x) \). The theorem
+        states that for any \( \epsilon > 0 \), there exists a set of weights,
+        biases, and layer size in a neural network with a single hidden layer
+        where \( |f(x) - \hat{f}(x)| < \epsilon \). As you could imagine, this
+        is an extremely powerful piece of mathematics. To use our future MNIST
+        interpreter as an example, we could imagine some continuous function
+        that takes in the pixel values as a vector an can perfectly classify it
+        every time. Whether this function actually exists is irrelevant, what
+        matters is that we can create some neural network that can approximate
+        it to an error close to that of individual humans.
       </p>
 
       <p class="paragraph">
@@ -786,22 +785,20 @@
       <p class="paragraph">
         Sometimes it is a helpful reminder that the step point goes backwards as
         the bias increases since the sigmoid is calculating at a point farther
-        forward than the current \( x \) since \( x \) is being calculated at a
-        farther point determined by the value of the bias. This means to
-        calculate the point isn't as simple as taking the bias directly. Another
-        factor which makes calculating the point of the step slightly more
-        complicated is that as the weight increases, the bias must also increase
-        for that same point to evaluate to zero. In other words, the stepping
-        point is where \( wx + b = 0 \). If we use some basic algebra, we find
-        that the point that evaluates to zero is \( x = \frac{-b}{w} \). One way
-        to think about this is that the negative bias tells you how much you
-        must offset a raw \( x \) that has no weight to push it to zero, but you
-        must divide that by the weight as the weight tells you how much a single
-        unit of raw x impacts the function as a whole. We won't actually use the
-        sigmoid step function here, but I hope I have justified why I can use a
-        step function in this section and retain its validity for a sigmoid
-        function. If you want to learn more about this, I recommend you check
-        out Chapter 4 of Neural Networks and Deep Learning
+        forward than the current \( x \). Also, to calculate the point isn't as
+        simple as taking the bias directly since as the weight increases, the
+        bias must also increase for that same point to evaluate to zero. In
+        other words, we want some \( x \) where \( wx + b = 0 \). As \( w \)
+        increases, we must reduce the bias to keep the expression equal to zero.
+        If we use some basic algebra, we find that the point that evaluates to
+        zero is \( x = \frac{-b}{w} \). One way to think about this is that the
+        negative bias tells you how much you must offset a raw \( x \) with no
+        weight to push the expression to zero, and the weight tells you how much
+        a single unit of raw x impacts the function as a whole. We won't
+        actually use the sigmoid step function here, but I hope I have justified
+        why I can use a step function and retain the validity of my proof for a
+        sigmoid function. If you want to learn more about this, I recommend you
+        check out Chapter 4 of Neural Networks and Deep Learning
         <a
           href="http://neuralnetworksanddeeplearning.com/chap4.html"
           class="hyperlink"
@@ -950,10 +947,9 @@
         could imagine that those step functions would become a better and better
         approximation to the true function. Now with sigmoids, often you are
         better able to match some of that function curvature with the curvature
-        of the sigmoid. An proper neural network that trains itself can actually
-        approximate the line really well. To help explain what I mean, here an
-        actual neural network training to fit itself to \( f(x) \) with the same
-        amount of neurons and same activation functions I used earlier
+        of the sigmoid. To see what I mean, here a network training to fit
+        itself to \( f(x) \) with the same amount of neurons and same activation
+        functions I used earlier
       </p>
 
       <br />
@@ -972,25 +968,379 @@
       <p class="paragraph">
         I hope now we can see why a non-linear activation function is so
         important to approximating functions like these. If we used a linear
-        function, the sum of the function will just give us a line since the sum
-        of the line is proportional to the distance from the intersection. When
-        we use non-linear activations, we are able to form them into step-like
-        functions and fit them to extremely complex decision boundaries. While I
-        have only mentioned the sigmoid activation, there are a lot more. Some
-        popular ones include tanh and ReLU, but for our purposes, sigmoid is
-        will work just fine.
+        function, the sum of the function will just give us a line since any
+        point on the sum of two lines is proportional to the distance from the
+        intersection of the lines. When we use non-linear activations, we are
+        able to form them into step-like functions and fit them to extremely
+        complex decision boundaries. As we add more and more neurons, it is
+        almost like we are increasing the "resolution" of the decision boundary.
+        While I have only mentioned the sigmoid activation, there are a lot
+        more. Some popular ones include tanh and ReLU, but for our purposes,
+        sigmoid is will work just fine.
       </p>
 
       <p class="paragraph">
         Now with this explanation, you may be wondering why I bothered
         explaining so much linear algebra. The truth is there are many ways to
         interpret how neural networks work, and we will explore lots of
-        different interpretations as they all have their uses. As I said
-        earlier, we use matrix operations to transform the data into ways the
-        activation functions can manipulate effectively since we can't really
-        change the activation function on the fly, but we can change the
-        weights. I also just wanted an excuse to talk about linear algebra since
-        I think it is really cool and few other seem to think so.
+        different interpretations as they all have their uses. For example, we
+        use matrix operations to transform the data into ways the activation
+        functions can manipulate effectively since we can't really change the
+        activation function on the fly, but we can change the weights. You can
+        also think of neurons as identifying features within a given input. To
+        use an MNIST classifier for example, one neuron in the last hidden layer
+        may be able to identify a straight line on the right side of the image.
+        You could imagine neurons on the output layer which correspond to digits
+        with a line on the right (like 9 or 7) having strong weights to that
+        neuron that can identify the line. However, it's essentially impossible
+        to know exactly how given network works exactly since there are just too
+        many parameters (the neural network we will create to identify MNIST
+        digits will have over 10,000).
+      </p>
+
+      <p class="paragraph">
+        Before we cover the mechanics of how exactly a neural network learns, we
+        should probably clear up the difference between approximating functions
+        like \( f(x) \) and the task of classification. If you are already
+        familiar with how a neural network does this, feel free to skip this
+        next section, but for the rest of you, this is an important section (if
+        a little dull) about how we interpret what a neural network is thinking.
+      </p>
+
+      <br />
+
+      <h2>Regression vs One-Hot Encoding</h2>
+
+      <br />
+
+      <p class="paragraph">
+        For those of you who were asleep during introduction to statistics,
+        regression is the method of figuring out a continuous function which can
+        map the relationship of an independent variable (in our case \( x \)) to
+        a dependent variable (in our case \( y \)) by using several data points.
+        Typically, the continuous function is linear since most data
+        statisticians use varies directly (as one increases, the other increases
+        proportionally to the size of the first increase), so the relationship
+        can be mapped as a line. In our little line example, we did something
+        quite different. To train the model, I sampled a finite amount of points
+        from the polynomial \( -\frac{1}{4}x^2 + 4 \) and trained it based off
+        of the input (\( x \)) and expected outputs (\( y \)) that were sampled.
+        Typically, neural networks that participate in such regression only
+        adjusts the coefficients of a polynomial to fit a curve to data (so the
+        network tries to find the best \( a \), \( b \), and \( c \) in \(
+        ax^2+bx+c \) that can best map the data), but we just used the network's
+        output directly approximate our function. This isn't really used much in
+        the real world, but it does better help demonstrate how the network
+        itself can approximate a function.
+      </p>
+
+      <p class="paragraph">
+        In contrast to regression, one-hot encoding is how we typically encode
+        the result of a classification. Let's say we wanted to classify MNIST
+        digits. In base 10, there are only 10 digits (0-9), so our neural
+        network would have ten outputs as each output neuron corresponds to a
+        digit. After the process of feed forward, the output neuron with the
+        highest output is considered the networks "result." If the first output
+        neuron has the highest activation, the network thinks the input is a
+        zero. Likewise, if the last output neuron has the highest activation,
+        the networks thinks the input is a nine. This is called one-hot encoding
+        since the output the network predicted is the "hottest" neuron. Most
+        modern neural networks use an activation function on the output layer
+        called softmax which makes the output of the network a vector of
+        probabilities. This is commonly used in larger image-recognition
+        networks where you will see the outputs as something like the network is
+        90% sure the image is a dog. We will not bother with softmax as the math
+        gets a little wild and sigmoid activations on the output layer will be
+        plenty accurate even if the output isn't a nice probability.
+      </p>
+
+      <br />
+
+      <h2>Cost Functions and Gradient Descent</h2>
+
+      <br />
+
+      <p class="paragraph">
+        In order for us to train a neural network, we must have some way to
+        quantify how wrong it is, and just as important, we need some way to
+        tell the network how to adjust itself in order to be less wrong. To
+        quantify how wrong the network is, we use cost functions. There exist
+        many cost functions out there. For softmax outputs, you would typically
+        use something called cross-entropy loss for the output layer. Here, we
+        are going to use a fairly simple cost function known as Mean Squared
+        Error (MSE for short). In principle, MSE is very simple. First, we
+        calculate the error which is \( y - \hat{y} \) where \( y \) is our
+        label, or expected output, of the network for a given neuron, and \(
+        \hat{y} \) is the value our neural network spit out. Typically, \( y \)
+        and \( \hat{y} \) are the one-hot-encoded vectors for the label and
+        network output. After we find the error, we square it. This prevents
+        errors from canceling out when used across the dataset and is extremely
+        easy to differentiate (we will get into why that's important later). For
+        example, let's say our network output is just a bunch of random noise as
+        our model isn't trained yet, and the label is 4. Let us keep the labels
+        \( y \) and \( \hat{y} \) $$ y = \begin{bmatrix} 0.00\\ 0.00\\ 0.00\\
+        0.00\\ 1.00\\ 0.00\\ 0.00\\ 0.00\\ 0.00\\ 0.00\\ \end{bmatrix},
+        \hspace{15px} \hat{y} = \begin{bmatrix} 0.95\\ 0.58\\ 0.85\\ 0.91\\
+        0.90\\ 0.30\\ 0.36\\ 0.88\\ 0.06\\ 0.32\\ \end{bmatrix} $$ And now we
+        can square the difference $$ (y - \hat{y})^2 = \begin{bmatrix} 0.90\\
+        0.34\\ 0.72\\ 0.83\\ 0.10\\ 0.09\\ 0.13\\ 0.77\\ 0.00\\ 0.10\\
+        \end{bmatrix} $$
+      </p>
+
+      <p class="paragraph">
+        Now that's the squared error, but where does the mean come in? Well the
+        cost function calculated for every example across the dataset, and the
+        loss is simply the mean of the error for each output neuron (aka
+        component of each loss vector) across the dataset. We can write this out
+        more mathematically as $$ \frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y_i})^2
+        $$ where \( n \) is the size of the dataset, \( y_i \) is the label, and
+        \( \hat{y_i} \) is the output from the network. Multiplying by \(
+        \frac{1}{n} \) is the same as dividing the result of the sum by \( n \)
+        so it all still means taking the average. This means the loss function
+        isn't a function across a single training example, but of the entire
+        training dataset. If you want to compte the loss of the network as a
+        single number, you can just sum each component in the loss vector. It is
+        this final value that training attempts to minimize.
+      </p>
+
+      <p class="paragraph">
+        Now this is where we get to training. The idea of training is often
+        treated in a nebulous manner, but in principle is is quite simple: make
+        the loss function as small as possible. The math of how we can
+        accomplish this task get fairly complicated (and we will get into that
+        later), but for now let's dive into a high level conceptual explanation.
+      </p>
+
+      <p class="paragraph">
+        Imagine we have a function \( C(x) \) that uses all of the parameters
+        (weights and biases) and spits out the total cost of the network as a
+        single value over the entire dataset. This may be a bit strange to think
+        about since the parameters of the network are stored separately in
+        matrices and vectors, but we don't have to implement this function
+        exactly. Just think of this function as performing feed-forward with the
+        parameters you gave it and calculates the loss. This function \( C(x) \)
+        is the function we would like to minimize as the lower it is, the better
+        we can identify our training data.
+      </p>
+      <p class="paragraph">
+        To help visualize, let's imagine a network with a single parameter
+        (let's call it \( x \)) and the loss function is \( C(x) = x^2 \).
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/images/single-parameter-loss-fn.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Now let choose a parameter randomly, say \( x = -1.83 \) and plot its
+        loss.
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/parameter-on-curve.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Now our goal here is to get that parameter to a point where the cost is
+        the lowest. In this case it is pretty easy to tell by looking at the
+        graph, but put yourself in the point's shoes; you only know that
+        function that you are plotted on and your current position. Those of you
+        who know some calculus may know we can take the derivative and find \( x
+        \) where \( C'(x) = 0 \). For reasons we will cover in the next section,
+        it is not feasible to solve for the entire derivative the functions, but
+        we can do something similar, we can get the slope.
+      </p>
+      <p class="paragraph">
+        What I mean is that if we know the cost function, we know how to solve
+        for the slope of the point we are at. If it doesn't make sense that we
+        can calculate the slope of a curve at a point, don't worry I will show
+        why we can do this in the next section. The slope at point -1.83 is
+        -3.66. That means the <em>rise</em> of the function in the y direction
+        is -3.66 times the step you <em>run</em> in the x direction at point \(
+        x = -1.83 \). We can graph this as a line segment \( A \) that shows the
+        slope at point \( x \) along the cost function.
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/slope-at-parameter.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        If you look as this slope, you will notice that it can approximate the
+        function to a reasonable degree of accuracy as long as you remain close
+        to \( x \). For example, if we add 0.1 to our parameter (\( x \)), our
+        slope approximation will tell us that \( \Delta{C} \approx -0.366
+        \)<sup>1</sup>, while the true change in the function is -0.376. As you
+        get farther and farther away from \( x = -1.83 \) on the linear
+        approximation, the difference between the real function (\( x^2 \)) and
+        the linear approximation increases exponentially
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/images/aproxximation-difference.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        You can see that our approximation is most accurate at the point on the
+        curve (since, well, that's where the slope intersects), but as you go
+        outward, the difference becomes great. Now back to our loss function,
+        the goal here is to reach the bottom of that parabola since it is at
+        that point where loss is the least, and we do that by adjusting our
+        parameter \( x \). Armed with the knowledge of the slope at \( x \), we
+        are able to adjust \( x \) in such a way that, if we keep our adjustment
+        small, we know it approximates the change to the cost function. We can
+        write this as \( \Delta{C} \approx 2x\Delta{x} \) for the cost function
+        \( C(x) = x^2 \). Since we now know the approximation, we can form a \(
+        \Delta{x} \) such that the change in the cost function \( C \) is
+        negative. This is exactly what we are looking for. Just knowing the
+        slope at point \( x \) we can adjust \( x \) in such a way that will
+        <em>probably</em> lower the cost function.
+      </p>
+
+      <p class="paragraph">
+        We can say we would like \( \Delta{C} \) to be negative. To form this
+        mathematical idea a bit more, we can say that, ideally, we want \( C(x +
+        \Delta{x}) < C(x) \). Think about how we can traverse this slope. Slope
+        essentially tells us if we change an input variable, how much will the
+        resulting function change in terms of the change in the input. Think of
+        \( C(x) \) at \( x = -1.83 \); a nudge at point \( x \) (let's call it
+        \( \Delta{x} \)) will change the function by <em>approximately</em> \( 2
+        \times -1.83 \times \Delta{x} \). An interesting property of this is
+        that if you move in the direction of the slope, the function will
+        increase, at least for that point. This means that if you took a small
+        positive number and multiplied it by the slope, the number will not only
+        give you the approximate change in the function, but also a distance you
+        can increment the initial \( x \) by in order to raise the result of the
+        function, at least if it is small enough. This also means that if you
+        negate that initial slope coefficient, the approximate change in the
+        function will be negative. You can think of this as the coefficient you
+        apply to the slope tells you the "direction" and magnitude (a cost
+        function only gives one value, so the direction is just a scalar) you
+        want the cost function to move in. This is exactly what we want! With
+        only the knowledge of the slope of a point on the cost function, we are
+        able to determine how to change the input \( x \) if we want to find an
+        \( x \) that lowers the result of the function. This coefficient is
+        known as \( \eta \hspace{5px} \) (the greek letter eta) and is referred
+        to as the learning rate since it determines how quickly the network will
+        traverse the "parameter space" in order to find a set of parameters that
+        can most accurately approximate the desired function. This process is
+        known as gradient descent, and it is an extremely powerful tool to find
+        good solutions to problems, but it has its drawbacks.
+      </p>
+      <p class="paragraph">
+        One major problem with gradient descent is that it is only able to find
+        local minimums. To help explain what I mean, let's say our cost function
+        is \( C(x) = \frac{1}{4}(x + 1)(x - 1)(x + 2)(x - 2) \) and we started
+        with the parameter \( x = -1 \)
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/local-minimum.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        If we followed the slope, we would end up at a point where the cost for
+        that parameter is lower than the surroundings called the local minimum
+        (in this case where \( x = -1.57 \)), but still much higher then the
+        smallest minimum, called the global minimum (in this case where \( x =
+        2.25 \)). Now you calculus students may think that we could compute the
+        third order derivative and solve for global minimum, and you could do
+        that on this simple cost function with only one parameter, but when we
+        have thousands (or sometimes billions in the largest models) of
+        parameters, this becomes way too computationally complex to calculate.
+        There are a lot of techniques to mitigate this issue, and some of the
+        most famous papers on machine learning are aimed at solving this exact
+        problem, but in our case the local minimum will give us a small enough
+        loss to accurately classify our data most of the time.
+      </p>
+
+      <p class="paragraph">
+        So far, we have only examined how to perform gradient descent with a
+        single parameter, but in real models there are far more than only two
+        parameters. Once we go beyond 2 parameters, the process becomes
+        impossible to visualize on a graph. Luckily, all of the math from two
+        parameters carries over to 2 million, so if you understand this, the
+        reasoning is the same in any network.
+      </p>
+
+      <p class="paragraph">
+        First, let us define our cost function. In this case we will be taking
+        in two parameters, x and y, and our cost will be represented on the z
+        axis. We can write this function as \( C(x, y) \). You may notice that
+        we can't really find the slope at a given point since now the function
+        can change at a different rate for each variable. This forces us to use
+        something called a partial derivative. A partial derivative tells us how
+        much the function will change just for a change in a single variable,
+        holding the other constant. If you do this for each variable, you can
+        create a gradient vector which tells you the direction in the input
+        space that will most quickly increase the function. This is kind of like
+        a multi-dimensions "slope" in a sense.
+      </p>
+      <p class="paragraph">
+        I did just ramble about a lot of theory, so let's get into some concrete
+        examples. For our purposes, can define our cost function as \( C(x, y) =
+        xy \) since this is really easy to reason about. First, let's calculate
+        see how much \( C \) changes with respect to \( x \). Let us imagine we
+        are holding \( y \) constant and just changing \( x \). If we nudge \( x
+        \) a tiny amount (let's call that nudge \( \Delta{x} \)), \( \Delta{C} =
+        y \times \Delta{x} \). The same idea applies to the \( y \). If we hold
+        \( x \) constant and just nudge \( y \), \( \Delta{C} = x\Delta{y} \).
+        To really understand this idea, let's use finite values for \( \Delta{x}
+        \) and \( \Delta{y} \), say \( 0.1 \), and let's say we are sampling at
+        point \( (3, 4) \). If we nudge \( x \) by \( \Delta{x} \), we are
+        essentially figuring out \( \Delta{C} = C(x, y) - C(x + \Delta{x}, y)
+        \). If we expand the function, we get \( \Delta{C} = (3 + 0.1) \cdot 4 -
+        3 \cdot 4\) and we find \( \Delta{C} = 0.4 \). If we generalize for our
+        function, we can say \( \Delta{C} = (x + \Delta{x}) \cdot y - x \cdot y
+        \). Knowing y is in both terms, we can say \( \Delta{C} = y(x +
+        \Delta{x} - x) \). Both \(x\)'s cancel out, so we now know that, with
+        respect to a small nudge to \( x \), \( \Delta{C} = y\Delta{x} \). This
+        is exactly where we landed before! Putting this in fraction form will
+        yield us the ratio from a tiny nudge \( \Delta{x} \) to \( \Delta{C} \)
+        which we can then multiply to an arbitrary \( \Delta{x} \) to find \(
+        \Delta{C} \). If we wanted to write the ratio of a change in each
+        parameter to a change in the overall function, you may expect we write
+        something like \( \frac{\Delta{C}}{\Delta{x}}, \hspace{7px}
+        \frac{\Delta{C}}{\Delta{y}} \) or, if you are familiar with single
+        variable calculus, something like \( \frac{dC}{dx}, \hspace{7px}
+        \frac{dC}{dy} \), but no, mathematicians have to feel smart and special
+        so we use this unique symbol \( \partial \) to indicate a derivative
+        (the slope of a function at a point for a single parameter) is being
+        taken on a multi variable function with respect to a single variable.
+        This means we would write out how each parameter changes a function as
+        \( \frac{\partial C}{\partial x}, \hspace{7px} \frac{\partial
+        C}{\partial y} \) where each term is essentially the ratio between a
+        tiny nudge to the denominator to the change in the resulting function.
+      </p>
+      <p class="paragraph">
+        To see how this looks visually, let's take a look at the graph for \(
+        C(x, y) = xy \)
       </p>
 
       <br />
