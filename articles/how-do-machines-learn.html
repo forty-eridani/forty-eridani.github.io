@@ -1336,11 +1336,347 @@
         This means we would write out how each parameter changes a function as
         \( \frac{\partial C}{\partial x}, \hspace{7px} \frac{\partial
         C}{\partial y} \) where each term is essentially the ratio between a
-        tiny nudge to the denominator to the change in the resulting function.
+        tiny nudge to a parameter to the change in the resulting function.
       </p>
       <p class="paragraph">
         To see how this looks visually, let's take a look at the graph for \(
-        C(x, y) = xy \)
+        C(x, y) = xy \) at \( x = 3 \)
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/video/3d-sample.gif"
+          type=""
+          width="256"
+          height="256"
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">Which on a 2d graph, the intersection looks like</p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/graph-slice.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        This here only models the graph of \( y \)'s effect on \( C \) at \( x =
+        3 \). If we were to change \( x \), \( y \)'s effect on \( C \) would
+        change
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/video/y-effect.gif"
+          width="256"
+          height="256"
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        As you can see, the amount a parameter influence the function is
+        determined by the values of all the other parameters. In the case of \(
+        C \), we can assemble the influences of each parameter into the gradient
+        vector. A gradient vector is denoted by the symbol \( \nabla \) (don't
+        get it confused with \( \Delta \)). If we want to denote the full
+        gradient vector for \( C \), we can write $$ \nabla{C} = \begin{bmatrix}
+        y\\ x \end{bmatrix} $$ This tells us that the ratio between a nudge in
+        \( x \) and the result of the function is \( y \), and the ratio from a
+        nudge in \( y \) to the function is \( C \) is \( x \). Like in this
+        example, in many functions each component of the gradient vector is
+        dependant on some other parameter in some way. I understand I sound like
+        a broken record, but I hope you don't only internalize the syntax and
+        nomenclature, but fully understand why the partial derivative is what it
+        is. Now that we have this out of the way, we can tackle the elephant in
+        the room
+      </p>
+
+      <br />
+
+      <h2>Calculus</h2>
+
+      <br />
+
+      <p class="paragraph">
+        As I mentioned in the introduction, this article involves a lot of
+        calculus. In fact, in the last chapter we covered some calculus with
+        linear functions, but rarely are the derivatives so simple. If you are
+        already comfortable with calculus, feel free to skip this section, but
+        for the rest of you, let's look at what a derivative really means.
+      </p>
+
+      <p class="paragraph">
+        A derivative simply asks, "Given a function \( f(x) \), what function
+        can tell us what the slope is for \( f(x) \) at every \( x \)?" You may
+        be asking, "What exactly does it mean to get the slope of a line at a
+        single point? Doesn't slope require some finite change in \( x \) to
+        find the resulting change in \( y \)?" And you would be kind of correct,
+        but in the magical world of mathematics, we can imagine a change in \( x
+        \) as so tiny that it can be measured at a single point. These values
+        are often called infinitesimals since the change is infinitely small,
+        but I like to think of them trying to see what smaller and smaller
+        finite values of change are trying to approach. To grasp this, I think
+        it helps to look at the definition of a derivative: $$ \lim_{dx \to 0}
+        \frac{f(x + dx) - f(x)}{dx} $$
+      </p>
+
+      <p class="paragraph">
+        Let's unpack this a little bit. \( dx \) is that tiny change, an we are
+        asking here what is the ratio for a tiny change \( dx \) to the change
+        of the resulting function. You may be confused by the \( dx \to 0 \),
+        and why we wouldn't use \( dx = 0 \), but if we make \( dx = 0 \), the
+        result of the expression would be undefined since \( 0 \) would be in
+        the denominator. \( dx \to 0 \) is an odd mathematical tool basically
+        asking, "If we make \( dx \) smaller and smaller, what does the change
+        seem to get closer and closer to?" To put it without the mathematical
+        notation, we are asking what is the change in the function if add a
+        small \( dx \), and what does that value approach as \( dx \) approaches
+        \( 0 \) in terms of \( dx \). If this doesn't make sense, I highly
+        recommend checking out 3Blue1Brown's
+        <a
+          class="hyperlink"
+          href="https://www.youtube.com/watch?v=WUvTyaaNkzM&list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr"
+          >Essence of Calculus course</a
+        >
+        which covers this idea in much more depth than I do.
+      </p>
+
+      <p class="paragraph">
+        To circle back, the derivative gives us the slope for every point on a
+        function. The derivative tells us on any point of the function, if I
+        nudged the \( x \) coordinate smaller and smaller amounts, how much will
+        the function change in terms of the initial nudge, and this idea is
+        slope! To help motivate a geometric interpretation of what I mean, let's
+        look at the graph \( f(x) = x^2 \)
+        <sup id="tscfn1"
+          ><a href="#scfn1" class="footnote-navigation">1</a></sup
+        >
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/x-squared.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Sometimes graphs can be unhelpful at demonstrating what happens if we
+        nudge the parameter, so let's instead model the graph as a square where
+        the side lengths are parameter \( x \) and the area is \( f(x) \)
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/square-area.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Now if we nudge that \( x \) by some finite \( dx \), our new area will
+        look something like
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/square-area-nudge.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Now if we wanted to see how much it changed the function, we can add up
+        the new side areas along with the little guy in the corner. The bottom
+        side would have area of \( x \cdot dx \), the left side would also have
+        an area of \( x \cdot dx \), and finally the square in the corner will
+        have area \( dx \cdot dx \). So \( df \), or the change in the function
+        caused by nudge \( dx \) to parameter \( x \), will be \( 2xdx + dx^2
+        \). If we wanted to have this as slope, we know the run is \( dx \), so
+        the full expression is\( \hspace{7px} \frac{2xdx + dx^2}{dx} \). But now
+        let's think about this as \( dx \) approaches \( 0 \). The \( 2xdx \)
+        term will keep it's ratio of \( 2xdx \), but the \( dx^2 \) term will
+        approach zero much faster than \( dx \) and thus become negligible.
+        Because of this, we can drop the \( dx^2 \) term out of the derivative
+        and just keep the \( 2xdx \)<sup id="tscfn2"
+          ><a href="#scfn2" class="footnote-navigation">2</a></sup
+        >
+        . Now if we divide out the denominator, we get the simplified derivative
+        of \( x^2 \) as \( f'(x) = 2x \) (that \('\) symbol is said as "prime",
+        and typically in calculus means we are referring to the derivative of a
+        function). So to recap, as the nudge \( dx \) to our \( x \) parameter
+        becomes smaller and smaller, the change to the function approaches \(
+        2xdx \). This is what it means to be a derivative, and is an extremely
+        important idea in the world of mathematics.
+      </p>
+
+      <p class="paragraph">
+        While it may be trivial to calculate the derivative on a simple function
+        like \( x^2 \), things start getting much more complicated once we start
+        composing functions. To first understand this more abstractly, let's say
+        we have two functions, \( f(x) \) and \( g(x) \), and we would like to
+        find \( h'(x) \) where \( h(x) = f(g(x)) \). Now let us think about that
+        out function. We cannot simply nest the derivatives since we still need
+        to calculate \( f'(x) \) at \( x \) in this case is \( g(x) \). If we
+        calculated \( f'(g'(x)) \), we would be calculating the derivative at
+        the wrong spot! This means we still have to keep \( g(x) \) inside of \(
+        f'(x) \). If we construct this expression we have made so far, we get \(
+        f'(g(x)) \), but now what do we do about the derivative for \( g(x) \)?
+        Well this is where we have to get creative. If we write out the
+        expression as a "full" derivative, we get \( \frac{f'(g(x))dx}{dx} \).
+        Let's take a second to understand what this means and why it is
+        incorrect. Here we are saying if we nudge the function \( dx \) amount,
+        the change to the function will be derivative of \( f(x) \), but instead
+        of being calculated as the change at \( x \), it will be calculated at
+        \( g(x) \). This only serves as a strange parameter shift before we
+        calculate \( f'(x) \), but we are still fundamentally finding the
+        derivative of only \( f(x) \), not \( h'(x) \) which is what we are
+        trying to do. This is where \( g'(x) \) comes in. Now this is the fun
+        part, we have to put \( f'(g(x)) \) in terms of \( g'(x) \) since the
+        nudge that occurs to the input isn't just a nudge to \( x \), rather
+        it's \( g(x) \)'s <em>reaction</em> to \( dx \). This means the
+        resulting expression turns out to be \( f'(g(x))g'(x) \). To write this
+        a bit more symbolically, \( dh = f'(g(x))dg, \hspace{7px} dg = g'(x)dx
+        \), so \( dh = f'(g(x))g'(x) \). This is known as the chain rule, and is
+        essential to how neural networks record each parameter's effect on the
+        loss function.
+      </p>
+
+      <p class="paragraph">
+        To help really understand this, let's look at a really simple example.
+        Let's say \( f(x) = (2x)^2 \). Solving for the derivative of each
+        example is trivial. We already know that the derivative of \( x^2 \) is
+        \( 2x \), and it is fairly simple to reason that the derivative of \( 2x
+        \) is \( 2 \) (think how for any nudge \( dx \), the resulting change to
+        the function is \( 2dx \) since the function is simply \( 2x \)). If we
+        only calculate the derivative of the outer expression at the inner
+        function, we are still only recording the derivative of \( x^2 \), just
+        at a different \( x \) value. If we think about this with the definition
+        of a derivative (which is often useful when trying to reason about a
+        derivative you are unsure how to solve), we only solve for $$ \lim_{x
+        \to 0} \frac{(2x + dx)^2 - (2x)^2}{dx} $$ If you notice, we are doing
+        nothing to see \( 2x \)'s reaction to \( dx \) since we are applying \(
+        dx \) after \( 2x \). What we really want is $$ \lim_{x \to 0}
+        \frac{(2(x + dx))^2 - (2x)^2}{dx} $$ Here, we are applying \( dx \) to
+        the \( x \) directly instead of chucking it on the result of \( 2x \).
+        This is what we need to solve for a derivative; we don't want to see
+        what happens to the outer function at a transformed \( x \) input
+        parameter, rather we want to see what happens to the nested function at
+        the parameter directly.
+      </p>
+
+      <p class="paragraph">
+        The chain rule is put in multiplication form looks like $$ \frac{df}{dg}
+        \cdot \frac{dg}{dx} $$ Often, you will hear that the chain rule "cancels
+        out" the intermediate terms to find the effect of a parameter nested
+        deep in functions to the outer function. While this fractional process
+        resembles that of algebraically cancelling terms in fractions, I find
+        that phrasing misleading. I prefer to think of this multiplication as
+        recording how much each nested parameter influences it's own function. A
+        kind of transformation applied to the parameter according to the
+        function it finds itself within before it further transformed by outer
+        functions. Remember, a derivative gives you a set of slopes you can use
+        to approximate a function at any point, so these parts of the "chain" in
+        the derivative serves to form the slope at a each point according to
+        each nested function. I encourage you to stop and think about what this
+        means as this is an extremely important insight not only to the notation
+        we will use to show the chain rule later in the article, but also a
+        fundamental aspect of calculus.
+      </p>
+
+      <p class="paragraph">
+        Fundamentally, this is how back propagation works. We adjust every
+        single parameter according to its effect on the final loss function. And
+        to approximate how much of an effect each parameter has, we calculate
+        the "slope" (in multi-dimensional parameter space it is called the
+        gradient vector) on the point of the parameters in the loss function,
+        and move along that slope a distance according to \( \eta \) (our
+        learning rate). We must make sure \( \eta \) is small since if it is too
+        large, our approximation could be so far off where the loss function
+        actually increases. With all of this boring math out of the way, we can
+        now actually write some code.
+      </p>
+
+      <br />
+      <div class="footnotes">
+        <hr class="line" />
+        <sup id="scfn1">
+          1. If you are wondering, yes I did steal this explanation from
+          3Blue1Brown, but it is also my favorite explanation so cry about it
+          <a href="#tscfn1" title="Return to text" class="footnote-navigation"
+            >Return to text</a
+          ></sup
+        >
+        <sup id="scfn2">
+          2. This may seem like an odd move, since the \( dx^2 \) contributes to
+          a change in \( f \), but as you get into calculus, things become a lot
+          more about approximation than discrete, finite steps, and you don't
+          actually use a finite \( dx \) term in the expression, rather you take
+          the limit as the nudge approaches \( 0 \), so the \( dx^2 \) term
+          becomes negligible and is ignored (since it decreases much faster than
+          the rest of the expression). The derivative here just tells us that if
+          we kept choosing a smaller and smaller \( dx \), \( df \) will
+          approach \( 2x \) times the nudge \( dx \). This still feels weird
+          even to me, but welcome to calculus
+          <a href="#tscfn2" title="Return to text" class="footnote-navigation"
+            >Return to text</a
+          ></sup
+        >
+      </div>
+
+      <br />
+
+      <h2>Backpropagation</h2>
+
+      <br />
+
+      <p class="paragraph">
+        Backpropagation is the method used by neural networks to update their
+        weights. In the last couple sections, we have talked at length about the
+        mathematics of how network descend the loss function, but little have we
+        talked about those mechanics. To start, let's clear up what the gradient
+        vector actually is in the context of neural networks.
+      </p>
+      <p class="paragraph">
+        People often view the network in very different ways depending on the
+        mathematical context of a specific aspect of the network, especially
+        when it comes to gradient vectors. When viewing the network as a whole,
+        all of the weights and biases (aka the parameters) of the network can be
+        viewed as a single vector. Now this vector could have thousands or
+        millions or billions of components, but when we think about the state of
+        the network in terms of its parameters, we are able to draw a parameter
+        space in which there exists a cost surface we can traverse. This isn't
+        to be confused with how applying the weights works however. In an
+        earlier section, I mentioned how weights are applied to activation
+        functions as matrices where each row represents the weights to be
+        applied to every input neuron, and every column represents the weights
+        across each output neuron respond to a single input neuron. Using
+        matrices allows for a useful way to encode the weights which allows
+        computers to apply the operations very quickly as there are many
+        optimizations for such operations.
+      </p>
+
+      <p class="paragraph">
+        Now that we have cleared up some misconceptions, let's get on to
+        imagining an extremely simple neural network. A tool commonly used in
+        problem solving is to find the simplest example of the problem of which
+        a general solution to the problem can be reasoned about. To start, let's
+        just have an extremely simple network with 3 neurons, no non-linear
+        activation functions
       </p>
 
       <br />
