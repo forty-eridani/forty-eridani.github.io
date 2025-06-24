@@ -15,6 +15,18 @@
       rel="stylesheet"
     />
 
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-light.min.css"
+    />
+    <script type="module">
+      import hljs from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js";
+      import py from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/python.min.js";
+
+      hljs.registerLanguage("python", py);
+      hljs.highlightAll();
+    </script>
+
     <script
       type="text/javascript"
       id="MathJax-script"
@@ -1676,10 +1688,102 @@
         problem solving is to find the simplest example of the problem of which
         a general solution to the problem can be reasoned about. To start, let's
         just have an extremely simple network with 3 neurons, no non-linear
-        activation functions
+        activation functions, and no biases. This means we will have two
+        weights, and let's name them \( w_1 \) and \( w_2 \)
       </p>
 
+      <div class="image-container">
+        <object data="/media/images/simple-network.svg" type=""></object>
+      </div>
+
+      <p class="paragraph">
+        Before we begin diving into the semantics and visualization of the
+        network, let's also begin writing some code. Here, we will use type
+        hinting since I am used to static languages and it makes our LSP server
+        much smarter. To start, let's create a simple neuron class
+        <sup><a href="#sbpfn2" class="footnote-navigation">2</a></sup>
+      </p>
+
+      <pre><code class="language-python">
+        class Neuron:
+          # If this is an input neuron, there are no input neurons 
+          def __init__(self, weight: float = 0.0, prev_neuron: Neuron = None, 
+                       is_input: bool = False):
+            if is_input:
+              self.is_input = True
+              self.activation = 0.0
+            else:
+              self.weight = weight
+              self.prev = prev_neuron
+
+          def set_activation(self, activation: float):
+            if not self.is_input:
+              raise Exception("Cannot set input on a non-input neuron.")
+
+            self.activation = activation
+
+          def activate(self) -> float:
+            if self.is_input:
+              return self.activation
+
+            # To get the previous neuron's activation, we simple call 
+            # the activation function on the previous neuron
+            return self.prev.activate() * self.weight
+      </code></pre>
+
+      <p class="paragraph">
+        Let's use an extremely simple function for the network to approximate.
+        Let's just say that we would like our network to essentially serve as an
+        identity for the network. What I mean is we would like the input and
+        output to match. If our input is 0.7, we would like our output to be
+        0.7. Of course now, we could just set the weights to 1 and be on our
+        merry way, but let's instead initialize the weights randomly
+        <sup
+          ><a class="footnote-navigation" href="#sbpfn1" id="tsbpfn1">1</a></sup
+        >
+        to create our own small neural network. Let's just create instances of
+        the network with weights \( w_1 = 0.4 \) and \( w_2 = 0.8 \).
+      </p>
+
+      <pre><code class="language-python">
+        input_neuron = Neuron(is_input=True)
+
+        # Remember hidden layers from the earlier section? Well we only have 
+        # one neuron here, but it acts as a single neuron hidden layer
+        hidden_neuron = Neuron(0.4, input_neuron)
+
+        output_neuron = Neuron(0.7, hidden_neuron)
+      </code></pre>
+
       <br />
+
+      <div class="footnotes">
+        <hr class="line" />
+        <sup id="sbpfn1">
+          1. Well in real networks, the weight initialization isn't completely
+          random. To reduce exploding and vanishing gradients inside of weights,
+          there exist a few methods to initialize the weights to mitigate the
+          problems. If you want to learn more, you should check out
+          <a
+            class="hyperlink"
+            href="https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf"
+            >this paper</a
+          >.
+          <a href="#tsbpfn1" title="Return to text" class="footnote-navigation"
+            >Return to text</a
+          ></sup
+        >
+        <sup id="sbpfn2">
+          2. If you are not familiar with python, there are about a million
+          tutorials on the internet teaching it. Here, the most complex
+          python-specific code we will write will involve classes and
+          constructors, so one only has to learn to that point to understand the
+          code in this article
+          <a href="#tsbpfn2" title="Return to text" class="footnote-navigation"
+            >Return to text</a
+          ></sup
+        >
+      </div>
     </div>
     <div class="bottom"></div>
   </body>
