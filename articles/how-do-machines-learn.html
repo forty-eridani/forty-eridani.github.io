@@ -1707,7 +1707,7 @@
       <pre><code class="language-python">
         class Neuron:
           # If this is an input neuron, there are no input neurons 
-          def __init__(self, weight: float = 0.0, prev_neuron: Neuron = None, 
+          def __init__(self, weight: float = 0.0, prev_neuron = None, 
                        is_input: bool = False):
             if is_input:
               self.is_input = True
@@ -1732,17 +1732,18 @@
       </code></pre>
 
       <p class="paragraph">
-        Let's use an extremely simple function for the network to approximate.
-        Let's just say that we would like our network to essentially serve as an
-        identity for the network. What I mean is we would like the input and
-        output to match. If our input is 0.7, we would like our output to be
-        0.7. Of course now, we could just set the weights to 1 and be on our
-        merry way, but let's instead initialize the weights randomly
+        For a simple example, we want our network to approximate a very simple
+        function. For now, let's use the function \( f(x) = x \). This function
+        is so simple that it is trivial to determine ourselves what the correct
+        weights would be, but to demonstrate the point of this article, let's
+        let the computer learn for itself. Just like in real neural networks
+        classifier, we will use random weights
         <sup
           ><a class="footnote-navigation" href="#sbpfn1" id="tsbpfn1">1</a></sup
         >
-        to create our own small neural network. Let's just create instances of
-        the network with weights \( w_1 = 0.4 \) and \( w_2 = 0.8 \).
+        start, and allow the computer to learn the correct weights. Let's just
+        create instances of the network with weights \( w_1 = 0.4 \) and \( w_2
+        = 0.7 \).
       </p>
 
       <pre><code class="language-python">
@@ -1755,7 +1756,225 @@
         output_neuron = Neuron(0.7, hidden_neuron)
       </code></pre>
 
+      <p class="paragraph">
+        Now we can get a really good understanding why each weight's effect on
+        the output is dictated by the layers in front of it. If the output's
+        weight shifts from 0.5 to 0.1, the hidden layer's weight must increase
+        5x to keep the same influence on the output as it had before. This is
+        yet another way we can think about neural networks that implies a
+        biological resemblance (they are called neurons after all). If we have
+        classes where certain neurons will fire strong only for that class, well
+        we want those to have large weights on the output corresponding to that
+        class. Similarly, if some neurons fire when the input is not some class,
+        we want the weights from those neurons to the output to be negative.
+        This is often how the logic behind neural networks is first introduced,
+        and while I think it is helpful to develop that understanding of a
+        network, I think think it is much more helpful to understand the core
+        mathematics behind why a neural network works so well as I have done
+        earlier. This is a bit harder to represent in such a simple neural
+        network, but I think you get the picture.
+      </p>
+
+      <p class="paragraph">
+        Now that we have the network, we can move on to training. To start,
+        let's generate a bunch of training examples. Remember, we want this to
+        be an identity network, therefore we can just generate a bunch of random
+        numbers with our input being the same as our output
+      </p>
+
+      <pre><code class="language-python">
+        import random # You probably want to stick this at the top of the file
+
+        # ...
+
+        # Our amount of training examples
+        training_count = 100
+
+        training_data = []
+
+        for _ in range(100):
+          # Let's keep our intended range of values to be [0, 1)
+          rand_num = random.random()
+
+          example = (rand_num, rand_num)
+          training_data.append(example)
+      </code></pre>
+
+      <p class="paragraph">
+        Now for the fun part, telling our network it's wrong. Like described
+        earlier, we will be using Mean Squared Error which, for those of you who
+        forgot, takes the form of $$ \frac{1}{n}\sum^{n}_{i = 1}(y_i -
+        \hat{y}_i)^2 $$ where \( \hat{y}_i \) is our prediction, and \( y_i \)
+        is the true value. This is a fairly trivial function
+      </p>
+
+      <pre><code class="language-python">
+        def mean_squared_error(expected: list[float], observed: list[float]) -> float:
+
+          # If the length of the lists don't match, we can't
+          # compute the difference between all examples
+          assert len(expected) == len(observed)
+
+          n = len(expected)
+          sum = 0.0
+          for single_expected, single_observed in zip(expected, observed):
+            sum += (single_expected - single_observed) ** 2
+
+          mean = sum / n
+          return mean
+      </code></pre>
+
+      <p class="paragraph">
+        Here is where we can finally implement backpropagation. Let's first
+        think of the loss at a single training example, say \( (0.2, 0.2) \),
+        but, with the weights we lined out earlier, the output our network gives
+        is \( p = 0.2 \cdot 0.4 \cdot 0.7 = 0.056 \). Our network is fairly
+        wrong. The cost for this would be \( C = (0.2 - 0.056)^2 = 0.021 \).
+        It's fairly small, but that's only because we are only dealing with
+        small numbers. In order to figure out how we can lower this loss, we
+        first must compute the last activation's effect on the loss for that
+        example. This means we are going to hold the true output, \( y \),
+        constant, and see how much \( \hat{y} \) impacts the loss function. To
+        make things a little easier, let's swap \( y_i \) and \( \hat{y} \) in
+        the loss function but keep the operator order. The difference is squared
+        so it actually doesn't change the result of the loss function nor the
+        derivative<sup id="tsbpfn3"
+          ><a href="sbpfn3" class="footnote-navigation">3</a></sup
+        >. Our new expression becomes \( (\hat{y} - y)^2 \). Similar to our \(
+        x^2 \) example from earlier, we can write this as a square where each
+        side length is \( \hat{y} - y \)
+      </p>
+
       <br />
+
+      <div class="image-container">
+        <object data="/media/images/mse-square.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        And, like last time, if we nudge \( \hat{y} \), we will get new side
+        rectangles with size \( \hat{y} - y \) and \( d\hat{y} \).
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/mse-dy-square.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        If we do the math, we find the corner of dimensions \( d\hat{y} \times
+        d\hat{y} \) vanishes much quicker than the rest of the expression, so we
+        can kick it out and we are left with the derivative being \( 2 \cdot
+        (\hat{y} - y) \). Let's take a quick moment to understand what this
+        means. If we nudge the activation of the output by some tiny amount,
+        let's call it \( d\hat{y} \), the approximate change to the function, \(
+        \Delta{C} \), will be \( 2 \cdot (\hat{y} - y) \cdot d\hat{y} \). Once
+        again, this is a very trivial function to make in code
+        <sup
+          ><a href="#sbpfn4" id="tsbpfn4" class="footnote-navigation">5</a></sup
+        >
+      </p>
+
+      <pre><code class="language-python">
+        # The explicit mention of prime just indicates this function calculates a derivative
+        def squared_error_prime(expected: float, observed: float):
+          return 2.0 * (observed - expected)
+      </code></pre>
+
+      <p class="paragraph">
+        Now that we know how much the output neuron's activation influences the
+        cost, we can calculate how much each other parameter influences that
+        activation and so on. This is the chain rule in action. We can now find
+        how much the hidden's neuron activation influences the output neuron's
+        activation, and then now that we know how much the output neuron's
+        activation influences the loss, we can easily determine how much the
+        hidden neuron's activation influences the loss function (given we keep
+        the other parameters the same). This system of propagating influence
+        allows us to build the gradient vector across the entire network. In
+        order to represent the gradient vector, here we will just use a list
+        where the first element is the partial derivative to the loss function
+        with respect to \( w_1 \), and the second element is the partial
+        derivative of the loss function with respect to \( w_2 \). If we use the
+        fancy mathematical notation with an actual vector it looks something
+        like $$ \nabla{C} = \begin{bmatrix} \frac{\partial{C}}{\partial{w_1}}\\
+        \frac{\partial{C}}{\partial{w_2}} \end{bmatrix} $$ but we won't bother
+        representing faithfully according to the mathematic notation, just a
+        list. There is one more thing we must keep in mind however: we need to
+        adjust the parameters according to <em>all</em> the training examples.
+        If we adjust the network after just a single training example, the
+        network will keep attempting to correctly identify each one individually
+        and will then generalize poorly to other training examples. Because of
+        this, we must take the derivative of the mean part of mean squared
+        error.
+      </p>
+
+      <p class="paragraph">
+        Calculating the average of a derivative is pretty simple since it
+        involves dividing by a constant. When we divide a function by some
+        constant, the derivative is also divided by that constant. To understand
+        why this is, imagine a simple function \( f(x) = x \). If we nudge this
+        function by some \( dx \), the change of the function will be the same
+        as the nudge. In other words, \( dx \) = \( df \). But what happens if
+        we divide this function by 10? Well, the function becomes \( f(x) =
+        \frac{x}{10} \). Now nudging the function only changes the function by a
+        tenth of that nudge. This is because when we divide the function by a
+        constant, the slope of that function is also divided by that constant.
+        This means in order to get the derivative according to the
+        <em>mean</em> of the squared loss across the entire training set, we
+        must find the sum of all the gradients and divide them, essentially
+        performing the same operations as we would on the loss function since,
+        after all, that is what we are trying to find the gradient of. In other
+        words, by summing and find the average of all the gradient vectors, we
+        are asking, "Given a slight nudge to a parameter, on average, how much
+        will the loss change for each training example?" This is why averaging
+        the loss is so important. By doing so, we get a holistic view of how
+        each parameter influences the accuracy of our model over each one of our
+        training examples, and our learning rate, \( \eta \), tells us of what
+        magnitude do we want to change the loss function.
+        <sup
+          ><a href="#sbpfn5" id="tsbpfn5" class="footnote-navigation">5</a></sup
+        >
+        If this idea feels a little strange, I recommend checking out chapter
+        one of
+        <a
+          href="http://neuralnetworksanddeeplearning.com/chap1.html"
+          class="hyperlink"
+          >Neural Networks and Deep Learning</a
+        >. This is a much more dense but covers the topic in much more
+        mathematical precision which may be helpful to you.
+      </p>
+
+      <p class="paragraph">
+        Now that we know how to calculate the effect an activation has on the
+        loss, we can also calculate how much the weight influences the loss. To
+        do this, we can first see how much the weight influences the neurons
+        activation. This goes back to our old function \( C(x, y) = xy \) since
+        we are weighing the activation of the previous neuron. Remember, the
+        expression for a neuron's activation looks like \( w_n \cdot a_{n - 1}
+        \), so if we nudge the weight just a little bit, the current neurons
+        activation will change proportional to the weight. We can write this
+        more mathematically as $$ \frac{\partial{a_n}}{\partial{w_n}} = a_{n -
+        1} $$ We can do something similar to the previous neuron's activation
+        influence on the loss. If we nudge the neurons previous activation, the
+        loss will change according to the weight. This should make intuitive
+        sense since the amount the previous neuron has influence over the
+        current neuron is determined by the weight; that's the point of weights!
+        We can also write this nice and mathematically as $$
+        \frac{\partial{a_n}}{\partial{a_{n-1}}} = w_n $$ Now, we can start
+        chaining these in order to propagate the effects of each weight and
+        bias. The reason the chain rule can apply is because the output of the
+        network can be thought of as a bunch of nested functions. In our case,
+        it looks something like \( O(x) = f_1(f_2(x)) \) where \( O \) is
+        referring to the output of the network, \( x \) as the input to the
+        network, and \( f_n \) just refers to the function each neuron applies
+        to the previous neuron. In our case this function simply scales the
+        previous activation by a weight.
+      </p>
 
       <div class="footnotes">
         <hr class="line" />
@@ -1783,6 +2002,49 @@
             >Return to text</a
           ></sup
         >
+        <sup id="sbpfn3">
+          3. This might seem weird, but we can prove the derivative is the same
+          fairly easily. If we keep the original \( (y - \hat{y})^2 \) form and
+          the the same square analogy, the area of the square will decrease
+          given a positive \( d\hat{y} \). This means the change in the function
+          (change in the area of the square) would approach \( -2 \cdot (y -
+          \hat{y}) \). Notice if we distribute the \( -1 \) to the inner
+          expression, we get \( 2 \cdot -(y - \hat{y}) \) which we can
+          incorperate the negative into the term as \( 2 \cdot (-y + \hat{y}) \)
+          which is just a different order of the derivative we got which is \( 2
+          \cdot (\hat{y} - y) \).
+          <a href="#tsbpfn3" title="Return to text" class="footnote-navigation"
+            >Return to text</a
+          ></sup
+        >
+        <sup id="sbpfn4">
+          4. I have been using a lot of notation here pretty loosely. The
+          derivative we are calculating isn't technically of mean squared error,
+          just of squared error. This is also why there is no subscript \( i \)
+          attached to \( \hat{y} \) or \( y \) in the expressions I have
+          presented. This is because I am showing the loss over a single example
+          instead of the entire dataset which also means this isn't technically
+          the derivative of mean squared error, just squared error. I will show
+          how to take it across the dataset later, so don't you worry.
+          <a href="#tsbpfn4" title="Return to text" class="footnote-navigation"
+            >Return to text</a
+          >
+        </sup>
+
+        <sup id="sbpfn5">
+          5. Well \( \eta \) doesn't really tell us the exact magnitude we want
+          to make the change in, rather it gives essentially a scalar to the
+          magnitude of the current slope our parameters are on in parameter
+          space. You could get the length one vector out of it or something in
+          order to change the cost function by the roughly the same amount on
+          each step, but it helps to keep the step size proportional to the
+          magnitude of the gradient vector in order for the network to "slow
+          down" when we approach the bottom of a local minimum in order not to
+          overshoot it.
+          <a href="#tsbpfn5" title="Return to text" class="footnote-navigation"
+            >Return to text</a
+          >
+        </sup>
       </div>
     </div>
     <div class="bottom"></div>
