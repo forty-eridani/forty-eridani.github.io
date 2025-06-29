@@ -1706,29 +1706,23 @@
 
       <pre><code class="language-python">
         class Neuron:
-          # If this is an input neuron, there are no input neurons 
+          # If this is an input neuron, there are no input neurons to that
           def __init__(self, weight: float = 0.0, prev_neuron = None, 
                        is_input: bool = False):
             if is_input:
               self.is_input = True
-              self.activation = 0.0
-            else:
-              self.weight = weight
-              self.prev = prev_neuron
 
-          def set_activation(self, activation: float):
-            if not self.is_input:
-              raise Exception("Cannot set input on a non-input neuron.")
+            self.weight = weight
+            self.prev = prev_neuron
 
-            self.activation = activation
-
-          def activate(self) -> float:
+          def activate(self, x: float) -> float:
             if self.is_input:
-              return self.activation
+              # Input neuron only returns the input, otherwise a fairly useless instance
+              return x
 
             # To get the previous neuron's activation, we simple call 
             # the activation function on the previous neuron
-            return self.prev.activate() * self.weight
+            return self.prev.activate(x) * self.weight
       </code></pre>
 
       <p class="paragraph">
@@ -1973,8 +1967,44 @@
         referring to the output of the network, \( x \) as the input to the
         network, and \( f_n \) just refers to the function each neuron applies
         to the previous neuron. In our case this function simply scales the
-        previous activation by a weight.
+        previous activation by a weight, but in the near future we will be using
+        non-linear activations which will make things more complicated.
       </p>
+
+      <p class="paragraph">
+        Now we can finally write some code. Let's start with calculating the
+        gradient in the network.
+      </p>
+
+      <pre><code class="language-python">
+        def Network:
+
+          # The other parts of the class ...
+
+          # x is our input and y is the expected output, neuron_index is the index counting backwards
+          def calculate_gradient(self, gradient: list[float], x: float, y: float, 
+                                neuron_index: int = 0, current_influence: float = 0.0) -> None:
+
+            # Base case of this recursion; we don't want to perform any logic if this is an input
+            if neuron_index == len(gradient):
+              return
+
+            # This doesn't have a previous neuron influence as it is the 
+            if neuron_index == 0:
+              prediction = self.activate(x)
+              current_influence = squared_error_prime(y, prediction)
+
+            prev_activation = self.prev.activate(x)
+
+            # Chain rule in action
+            weight_influence = prev_activation * current_influence
+            prev_activation_influence = self.weight * current_influence
+
+            # Starts at the back of the array
+            gradient[-1 - neuron_index] += weight_influence
+
+            self.calculate_gradient(gradient, x, y, neuron_index + 1, prev_activation_influence)
+      </code></pre>
 
       <div class="footnotes">
         <hr class="line" />
