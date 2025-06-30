@@ -22,8 +22,10 @@
     <script type="module">
       import hljs from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js";
       import py from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/python.min.js";
+      import plaintext from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/plaintext.min.js";
 
       hljs.registerLanguage("python", py);
+      hljs.registerLanguage("plaintext", plaintext);
       hljs.highlightAll();
     </script>
 
@@ -1705,24 +1707,24 @@
       </p>
 
       <pre><code class="language-python">
-        class Neuron:
-          # If this is an input neuron, there are no input neurons to that
-          def __init__(self, weight: float = 0.0, prev_neuron = None, 
-                       is_input: bool = False):
-            if is_input:
-              self.is_input = True
+class Neuron:
+  # If this is an input neuron, there are no input neurons to that
+  def __init__(self, weight: float = 0.0, prev_neuron = None, 
+                is_input: bool = False):
+                
+    self.is_input = True
 
-            self.weight = weight
-            self.prev = prev_neuron
+    self.weight = weight
+    self.prev = prev_neuron
 
-          def activate(self, x: float) -> float:
-            if self.is_input:
-              # Input neuron only returns the input, otherwise a fairly useless instance
-              return x
+  def activate(self, x: float) -> float:
+    if self.is_input:
+      # Input neuron only returns the input, otherwise a fairly useless instance
+      return x
 
-            # To get the previous neuron's activation, we simple call 
-            # the activation function on the previous neuron
-            return self.prev.activate(x) * self.weight
+    # To get the previous neuron's activation, we simple call 
+    # the activation function on the previous neuron
+    return self.prev.activate(x) * self.weight
       </code></pre>
 
       <p class="paragraph">
@@ -1777,21 +1779,21 @@
       </p>
 
       <pre><code class="language-python">
-        import random # You probably want to stick this at the top of the file
+import random # You probably want to stick this at the top of the file
 
-        # ...
+# ...
 
-        # Our amount of training examples
-        training_count = 100
+# Our amount of training examples
+training_count = 100
 
-        training_data = []
+training_data = []
 
-        for _ in range(100):
-          # Let's keep our intended range of values to be [0, 1)
-          rand_num = random.random()
+for _ in range(100):
+  # Let's keep our intended range of values to be [0, 1)
+  rand_num = random.random()
 
-          example = (rand_num, rand_num)
-          training_data.append(example)
+  example = (rand_num, rand_num)
+  training_data.append(example)
       </code></pre>
 
       <p class="paragraph">
@@ -1803,19 +1805,19 @@
       </p>
 
       <pre><code class="language-python">
-        def mean_squared_error(expected: list[float], observed: list[float]) -> float:
+def mean_squared_error(expected: list[float], observed: list[float]) -> float:
 
-          # If the length of the lists don't match, we can't
-          # compute the difference between all examples
-          assert len(expected) == len(observed)
+  # If the length of the lists don't match, we can't
+  # compute the difference between all examples
+  assert len(expected) == len(observed)
 
-          n = len(expected)
-          sum = 0.0
-          for single_expected, single_observed in zip(expected, observed):
-            sum += (single_expected - single_observed) ** 2
+  n = len(expected)
+  sum = 0.0
+  for single_expected, single_observed in zip(expected, observed):
+    sum += (single_expected - single_observed) ** 2
 
-          mean = sum / n
-          return mean
+  mean = sum / n
+  return mean
       </code></pre>
 
       <p class="paragraph">
@@ -1875,9 +1877,9 @@
       </p>
 
       <pre><code class="language-python">
-        # The explicit mention of prime just indicates this function calculates a derivative
-        def squared_error_prime(expected: float, observed: float):
-          return 2.0 * (observed - expected)
+# The explicit mention of prime just indicates this function calculates a derivative
+def squared_error_prime(expected: float, observed: float):
+  return 2.0 * (observed - expected)
       </code></pre>
 
       <p class="paragraph">
@@ -1977,34 +1979,34 @@
       </p>
 
       <pre><code class="language-python">
-        def Network:
+def Neuron:
 
-          # The other parts of the class ...
+  # The other parts of the class ...
 
-          # x is our input and y is the expected output, neuron_index is the index counting backwards
-          def calculate_gradient(self, gradient: list[float], x: float, y: float, 
-                                neuron_index: int = 0, current_influence: float = 0.0) -> None:
+  # x is our input and y is the expected output, neuron_index is the index counting backwards
+  def calculate_gradient(self, gradient: list[float], x: float, y: float, 
+                        neuron_index: int = 0, current_influence: float = 0.0) -> None:
 
-            # Base case of this recursion; we don't want to perform any logic if this is an input
-            if neuron_index == len(gradient):
-              return
+    # Base case of this recursion; we don't want to perform any logic if this is an input
+    if neuron_index == len(gradient):
+      return
 
-            # This doesn't have a previous neuron influence as it is the 
-            if neuron_index == 0:
-              prediction = self.activate(x)
-              current_influence = squared_error_prime(y, prediction)
+    # This doesn't have a previous neuron influence as it is the 
+    if neuron_index == 0:
+      prediction = self.activate(x)
+      current_influence = squared_error_prime(y, prediction)
 
-            prev_activation = self.prev.activate(x)
+    prev_activation = self.prev.activate(x)
 
-            # Chain rule in action
-            weight_influence = prev_activation * current_influence
-            prev_activation_influence = self.weight * current_influence
+    # Chain rule in action
+    weight_influence = prev_activation * current_influence
+    prev_activation_influence = self.weight * current_influence
 
-            # Starts at the back of the array
-            gradient[-1 - neuron_index] += weight_influence
+    # Starts at the back of the array
+    gradient[-1 - neuron_index] += weight_influence
 
-            # Recursing to the next neuron
-            self.calculate_gradient(gradient, x, y, neuron_index + 1, prev_activation_influence)
+    # Recursing to the next neuron
+    self.calculate_gradient(gradient, x, y, neuron_index + 1, prev_activation_influence)
       </code></pre>
 
       <p class="paragraph">
@@ -2013,15 +2015,15 @@
       </p>
 
       <pre><code class="language-python">
-        # Other stuff ...
+# Other stuff ...
 
-        gradient = [0.0, 0.0]
+gradient = [0.0, 0.0]
 
-        for x, y in training_data:
-          output_neuron.calculate_gradient(gradient, x, y)
+for x, y in training_data:
+  output_neuron.calculate_gradient(gradient, x, y)
 
-        # Little bit of fun list builder
-        gradient = [element / len(training_data) for element in training_data]
+# Little bit of fun list builder
+gradient = [element / len(training_data) for element in gradient]
       </code></pre>
 
       <p class="paragraph">
@@ -2030,19 +2032,151 @@
       </p>
 
       <pre><code class="language-python">
-        class Neuron:
-          # Other class functions ...
+class Neuron:
+  # Other class functions ...
 
-          # neuron_index will also start at the back like with gradient calculation
-          def back_propagate(gradient: list[float], learning_rate: float,
-                             neuron_index: int = 0) -> None:
+  # neuron_index will also start at the back like with gradient calculation
+  def back_propagate(self, gradient: list[float], learning_rate: float,
+                      neuron_index: int = 0) -> None:
 
-            # Once again we have our base case since when this function hits the input,
-            # we don't really want much to happen
-            if neuron_index == len(gradient):
-              return
+    # Once again we have our base case since when this function hits the input,
+    # we don't really want anything to happen
+    if neuron_index == len(gradient):
+      return
 
-            self.weight += -learning_rate * gradient[-1 - neuron_index]
+    self.weight += -learning_rate * gradient[-1 - neuron_index]
+
+    self.prev.back_propagate(gradient, learning_rate, neuron_index + 1)
+      </code></pre>
+
+      <p class="paragraph">Now we can finally perform backpropagation!</p>
+
+      <pre><code class="language-python">
+# Other stuff ...
+
+# Since the array is an array of tuples, we have to split it up 
+# for the loss function into two seperate arrays
+
+training_inputs = [e[0] for e in training_data]
+expected_outputs = [e[1] for e in training_data]
+
+network_outputs = []
+
+for x in training_inputs:
+  network_outputs.append(output_neuron.activate(x))
+
+# Seeing our loss before the network trains
+loss = mean_squared_error(training_outputs, network_outputs)
+
+print(f"Loss before training: {loss}")
+
+# Choosing a learning rate somewhat arbitrarily. Typically you want
+# to start with learning rates fairly small so you don't overshoot,
+# though it may take a long time for the network to properly learn
+output_neuron.back_propagate(gradient, 1e-2)
+
+training_outputs = []
+
+for x in training_inputs:
+  network_outputs.append(output_neuron.activate(x))
+
+loss = mean_squared_error(expected_outputs, network_outputs)
+
+print(f"Loss after training: {loss}")
+
+      </code></pre>
+
+      <p class="paragraph">
+        While the losses are going to be different for each run, the output to
+        this script should look something like
+      </p>
+
+      <pre><code class="language-plaintext">
+Loss before training: 0.16572647137140817
+Loss after training: 0.16497179277887017
+      </code></pre>
+
+      <p class="paragraph">
+        You may notice that the loss doesn't actually change that much. It does
+        lower, but we would like it to be much closer to zero. We could fix this
+        by raising the learning rate, but that will only help us to a point
+        since if we raise it too high (or even just a little), we run a high
+        risk of overshooting the local minimum the network would other settle
+        into. The way we solve this is actually pretty simple: we just
+        backpropagate over the same training data multiple times. Each run
+        through the training set a network learns on is known as an epoch (you
+        may remember this in the animation for a network training I did in an
+        earlier chapter). In our network here, we are only running through the
+        training data once, but what if we ran through it one thousand times?
+      </p>
+
+      <pre><code class="language-python">
+# Keep the other code the same up here ...
+
+epochs = 1000
+
+for _ in range(epochs):
+
+  # We have to clear this array after each epoch or else it will
+  # screw up backprop
+  gradient = [0.0, 0.0]
+
+  for x, y in training_data:
+    output_neuron.calculate_gradient(gradient, x, y)
+
+  gradient = [element / len(training_data) for element in gradient]
+  
+  for x in training_inputs:
+    output_neuron.back_propagate(gradient, 1e-2)
+
+# And keep the other stuff the same here too ...
+      </code></pre>
+
+      <p class="paragraph">Now the loss should be extremely small</p>
+
+      <pre><code class="language-plaintext">
+Loss before training: 0.18458776163907104
+Loss after training: 1.1555579684690514e-33
+      </code></pre>
+
+      <p class="paragraph">
+        You have done it! If you have followed along thus far, you have
+        implemented back-propagation in a real neural network and actually
+        understand how and why it works. While this is an incredibly simple one,
+        we have done the hard part. Now that we have this, we can begin adding a
+        bit more to it. Instead of trying to approximate a boring line, let's
+        try to approximate a sine wave within the range \( [-1, 1] \). To do
+        this, we cannot simply use these linear transformations since the best a
+        line can do to approximate \( sin(x) \) isn't up to our standards.
+        However, as you may have already guessed, we can start using the
+        non-linear activation sigmoid. If you remember, sigmoid is a fairly
+        simple function so it isn't too difficult to implement in code.
+      </p>
+
+      <pre><code class="language-python">
+        import math
+
+        # Other stuff...
+
+        # You'll want to stick this above the Neuron class definition
+
+        def sigmoid(x: float):
+          return 1 / (1 + math.exp(-x))
+      </code></pre>
+
+      <p>
+        And of course along with it, we must have the derivative to give us the
+        best linear approximation for the effect from a nudge to the parameter.
+        I won't show why the derivative is what it is, but it isn't super
+        difficult to prove to yourself with a pen and some paper if you want
+      </p>
+
+      <pre><code class="paragraph">
+
+        # Other stuff...
+
+        def sigmoid_prime(x: float):
+          return sigmoid(x) * (1 - sigmoid(x))
       </code></pre>
 
       <div class="footnotes">
