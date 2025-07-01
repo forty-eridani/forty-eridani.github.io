@@ -1788,7 +1788,7 @@ training_count = 100
 
 training_data = []
 
-for _ in range(100):
+for _ in range(training_count):
   # Let's keep our intended range of values to be [0, 1)
   rand_num = random.random()
 
@@ -1979,7 +1979,7 @@ def squared_error_prime(expected: float, observed: float):
       </p>
 
       <pre><code class="language-python">
-def Neuron:
+class Neuron:
 
   # The other parts of the class ...
 
@@ -2154,29 +2154,114 @@ Loss after training: 1.1555579684690514e-33
       </p>
 
       <pre><code class="language-python">
-        import math
+import math
 
-        # Other stuff...
+# Other stuff...
 
-        # You'll want to stick this above the Neuron class definition
+# You'll want to stick this above the Neuron class definition
 
-        def sigmoid(x: float):
-          return 1 / (1 + math.exp(-x))
+def sigmoid(x: float):
+  return 1 / (1 + math.exp(-x))
       </code></pre>
 
-      <p>
+      <p class="paragraph">
         And of course along with it, we must have the derivative to give us the
         best linear approximation for the effect from a nudge to the parameter.
         I won't show why the derivative is what it is, but it isn't super
         difficult to prove to yourself with a pen and some paper if you want
       </p>
 
-      <pre><code class="paragraph">
+      <pre><code class="language-python">
 
-        # Other stuff...
+# Other stuff...
 
-        def sigmoid_prime(x: float):
-          return sigmoid(x) * (1 - sigmoid(x))
+def sigmoid_prime(x: float):
+  return sigmoid(x) * (1.0 - sigmoid(x))
+      </code></pre>
+
+      <p class="paragraph">
+        Now let's actually use the sigmoid activation in our class
+      </p>
+
+      <pre><code class="language-python">
+class Neuron:
+
+  # Other methods and stuff ...
+
+  def activate(self, x: float) -> float:
+    if self.is_input:
+      # Input neuron only returns the input, otherwise a fairly useless instance
+      return x
+
+    # With the new activation
+    return sigmoid(self.prev.activate(x) * self.weight)
+      
+      </code></pre>
+
+      <p class="paragraph">
+        We now have to add the derivative of sigmoid to the gradient calculation
+        as well. Take a moment to think how this should be implemented. The
+        weighted sum is passed through the activation function before it is sent
+        out, so if we want to see how a nudge in the parameter influences the
+        sigmoid, we have to calculate it at the point of the current parameter.
+        This means we will be taking the derivative of sigmoid at the point of
+        our weighted sum. This is added to to the "chain" of influence to the
+        final loss function. I may sound like a very broken record, but it's
+        helpful to keep the chain rule in mind when working with this sort of
+        machine learning logic.
+      </p>
+
+      <pre><code class="language-python">
+class Neuron:
+
+  # Other methods ...
+
+  # x is our input and y is the expected output, neuron_index is the index counting backwards
+  def calculate_gradient(self, gradient: list[float], x: float, y: float, 
+                        neuron_index: int = 0, current_influence: float = 0.0) -> None:
+
+    # Base case of this recursion; we don't want to perform any logic if this is an input
+    if neuron_index == len(gradient):
+      return
+
+    # This doesn't have a previous neuron influence as it is the 
+    if neuron_index == 0:
+      prediction = self.activate(x)
+      current_influence = squared_error_prime(y, prediction)
+
+    prev_activation = self.prev.activate(x)
+
+    activation_influence = sigmoid_prime(prev_activation * self.weight)
+
+    # Chain rule in action
+    weight_influence = prev_activation * activation_influence * current_influence
+    prev_activation_influence = self.weight * activation_influence * current_influence
+
+    # Starts at the back of the array
+    gradient[-1 - neuron_index] += weight_influence
+
+    # Recursing to the next neuron
+    self.calculate_gradient(gradient, x, y, neuron_index + 1, prev_activation_influence)
+      </code></pre>
+
+      <p class="paragraph">
+        Now we have to create new training data. We could generate random
+        numbers between -1 and 1 and then find the sin of that point, but to be
+        a little bit easier on the network, let's generate points at an even
+        interval to capture all of the shape of \( sin(x) \)
+      </p>
+
+      <pre><code class="language-python">
+# Other stuff up here
+
+# Replacing the random number generation
+
+for i in range(training_count):
+  # Loop excludes highest index (since it starts at zero), but we want to include it
+  x = i / ((training_count - 1) / 2) - 1
+  y = math.sin(x)
+
+  training_data.append((x, y))
       </code></pre>
 
       <div class="footnotes">

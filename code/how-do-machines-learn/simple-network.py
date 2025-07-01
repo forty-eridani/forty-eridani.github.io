@@ -1,4 +1,12 @@
 import random
+import math
+import matplotlib.pyplot as plt
+
+def sigmoid(x: float):
+  return 1.0 / (1.0 + math.exp(-x))
+
+def sigmoid_prime(x: float):
+  return sigmoid(x) * (1.0 - sigmoid(x))
 
 class Neuron:
     # If this is an input neuron, there are no input neurons to that
@@ -12,36 +20,37 @@ class Neuron:
 
     def activate(self, x: float) -> float:
         if self.is_input:
-            # Input neuron only returns the input, otherwise a fairly useless instance
+        # Input neuron only returns the input, otherwise a fairly useless instance
             return x
 
-        # To get the previous neuron's activation, we simple call 
-        # the activation function on the previous neuron
-        return self.prev.activate(x) * self.weight
+        # With the new activation
+        return sigmoid(self.prev.activate(x) * self.weight)
         
     def calculate_gradient(self, gradient: list[float], x: float, y: float, 
-                                neuron_index: int = 0, current_influence: float = 0.0) -> None:
+                        neuron_index: int = 0, current_influence: float = 0.0) -> None:
 
-            # Base case of this recursion; we don't want to perform any logic if this is an input
-            if neuron_index == len(gradient):
-              return
+        # Base case of this recursion; we don't want to perform any logic if this is an input
+        if neuron_index == len(gradient):
+            return
 
-            # This doesn't have a previous neuron influence as it is the 
-            if neuron_index == 0:
-              prediction = self.activate(x)
-              current_influence = squared_error_prime(y, prediction)
+        # This doesn't have a previous neuron influence as it is the 
+        if neuron_index == 0:
+            prediction = self.activate(x)
+            current_influence = squared_error_prime(y, prediction)
 
-            prev_activation = self.prev.activate(x)
+        prev_activation = self.prev.activate(x)
 
-            # Chain rule in action
-            weight_influence = prev_activation * current_influence
-            prev_activation_influence = self.weight * current_influence
+        activation_influence = sigmoid_prime(prev_activation * self.weight)
 
-            # Starts at the back of the array
-            gradient[-1 - neuron_index] += weight_influence
+        # Chain rule in action
+        weight_influence = prev_activation * activation_influence * current_influence
+        prev_activation_influence = self.weight * activation_influence * current_influence
 
-            # Recursing to the next neuron
-            self.calculate_gradient(gradient, x, y, neuron_index + 1, prev_activation_influence)
+        # Starts at the back of the array
+        gradient[-1 - neuron_index] += weight_influence
+
+        # Recursing to the next neuron
+        self.calculate_gradient(gradient, x, y, neuron_index + 1, prev_activation_influence)
 
     # neuron_index will also start at the back like with gradient calculation
     def back_propagate(self, gradient: list[float], learning_rate: float,
@@ -68,12 +77,12 @@ training_count = 100
 
 training_data = []
 
-for _ in range(100):
-    # Let's keep our intended range of values to be [0, 1)
-    rand_num = random.random()
+for i in range(training_count):
+  # Loop excludes highest index (since it starts at zero), but we want to include it
+  x = i / ((training_count - 1) / 2) - 1
+  y = math.sin(x)
 
-    example = (rand_num, rand_num)
-    training_data.append(example)
+  training_data.append((x, y))
 
 def mean_squared_error(expected: list[float], observed: list[float]) -> float:
 
@@ -104,7 +113,7 @@ gradient = [element / len(training_data) for element in gradient]
 # Other stuff ...
 
 # Since the array is an array of tuples, we have to split it up 
-# for the loss function into two seperate arrays
+# for the loss function into two separate arrays
 
 training_inputs = [e[0] for e in training_data]
 expected_outputs = [e[1] for e in training_data]
