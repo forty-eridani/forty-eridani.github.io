@@ -1,6 +1,5 @@
 import random
 import math
-import matplotlib.pyplot as plt
 
 def sigmoid(x: float):
   return 1.0 / (1.0 + math.exp(-x))

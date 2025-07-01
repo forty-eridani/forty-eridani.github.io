@@ -2264,6 +2264,60 @@ for i in range(training_count):
   training_data.append((x, y))
       </code></pre>
 
+      <p class="paragraph">
+        And our loss has decreased, but probably not as much as we would have
+        liked
+      </p>
+
+      <pre><code class="language-plaintext">
+Loss before training: 0.6109113598177749
+Loss after training: 0.5852568616860203
+      </code></pre>
+
+      <p class="paragraph">
+        Let's take a look at our graph to see how the network attempted to
+        approximate sin(x)
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/images/simple-approximation-of-sine.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        As you can tell, the network (the orange line) isn't doing a
+        particularly good job approximating \( sin(x) \). First of all, \( sin
+        \) in the range \( [-1, 1] \) essentially looks like a straight line,
+        which is hard for such a curved activation function to approximate.
+        Second of all, we have a hidden layer. When a model has a hidden layer
+        with only a single neuron, you can't compound the effect of multiply
+        neurons by taking a weighted sum since there is only one neuron to take
+        the sum of! This limits us to only having the function represent half of
+        the output space it once did. More specifically, this is because each
+        output limits us to the range of \( (0, 1) \). When the inner parameter
+        is stuck at that narrow range, the left side of the sigmoid function
+        cannot be represented since to be on that side, the parameter must be \(
+        < 0 \). This forces the outer function to start at \( 0.5 \) when the
+        parameter is zero, and even if we apply a negative weight, the term that
+        makes up the inner parameter (\( w \cdot a_{n - 1}\)) will maintain the
+        same sign (meaning the same negative or positive state). To fix this, we
+        must create networks that have multiple neurons per layer as well as
+        biases since I kind of forgot to implement those here.
+      </p>
+
+      <p class="paragraph">
+        You thought this was going to be the end of a section, didn't you? Well
+        I tricked you, and now I have an excuse to talk about more calculus.
+        Let's quickly go over following the network and why these derivatives
+        are so darn important
+      </p>
+
       <div class="footnotes">
         <hr class="line" />
         <sup id="sbpfn1">
