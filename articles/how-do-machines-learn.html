@@ -2315,8 +2315,89 @@ Loss after training: 0.5852568616860203
         You thought this was going to be the end of a section, didn't you? Well
         I tricked you, and now I have an excuse to talk about more calculus.
         Let's quickly go over following the network and why these derivatives
-        are so darn important
+        are so darn important.
       </p>
+
+      <p class="paragraph">
+        When calculating the gradient, what we are essentially asking is, "For
+        this very particular point in parameter space, what is the ratio from a
+        unit of change to the parameter to the change in the loss?" This means
+        the approximation will always be linear. To have this knowledge, your
+        current neuron must know how much of an effect it has on the final
+        output. We have already written this in the aforementioned code, but
+        let's also just take a second to understand how it works. We already
+        know that the amount of an effect a neuron feeding into has by taking a
+        look at the weight (as I said before, that's kinda the point), so we can
+        pass that value recursively up to the next neuron to calculate, and when
+        we propagate this influence backwards, at any point in the network we
+        know exactly how much of an influence it has on the final loss. Let's a
+        single training example with out last network with the initial weights
+        of \( 0.4 \) and \( 0.7 \), say our input is \( 0.2 \) and we want our
+        output to be \( 0.1 \) (these are just random numbers I came up with).
+        The first step is we look at our loss. We know the expected output was
+        \( 0.1 \), but our network spit out \( 0.59 \), and our loss is \( (0.1
+        - 0.59)^2 = 0.24 \). If we use our derivative to find the best linear
+        approximation for our loss function (for this single training example),
+        we get \( 2 \cdot (0.59 - 0.1) = 0.98 \). This means for a nudge \( dx
+        \) in the activation of the output neuron, the loss function will change
+        roughly \( 0.98 \cdot dx \). This means we have assembled this part of
+        the chain. Now that we know how much a nudge in the activation of the
+        output neuron influences the output, we can move on to the weight's
+        effect on the loss function. We know that we weight's effect is
+        determined by the previous activation, and we can pretty easily
+        calculate that the previous neuron's activation was \( 0.52 \). We have
+        assembled the first part of the chain, meaning that a slight nudge in
+        the weight will change the weighted sum by \( 0.52 \). This weighted sum
+        that is calculated before the activation function is typically called \(
+        z \), so if we put it in that context, we can say that a slight nudge \(
+        dw_2 \) (since it is the second weight in the network) changes \( z \)
+        by \( 0.52w_2 \). Now we need to calculate the next part of the chain,
+        \(z\)'s influence on \( \sigma(z) \). I am not going to show the
+        calculation for the slope of \( \sigma \) at \( z \), but just know that
+        for a slight nudge \( dz \), \( \sigma \) (at point \( z \))
+        approximately changes by \( 0.24dz \). Here, we now assemble the next
+        part of the chain. We know that a slight nudge to \( w_2 \) is going to
+        change \( z \) by \( 0.52dw_2 \). Now that we know how much \( z \) will
+        change for a given nudge to our weight, we can calculate how much that
+        change will affect the output of sigmoid. And that sigmoid is the
+        activation, so if we multiply everything together (essentially
+        assembling our chain), we get \( 0.52 \cdot 0.24 \cdot 0.98 = 0.12 \).
+        This means that for a small nudge \( dw_2 \) to the weight, the loss
+        will roughly change by \( 0.12dw_2 \). To really help solidify this
+        idea, let's actually use a discrete nudge to the weight in order to see
+        how this works, let's say \( dw_2 = 0.1\). We know the ratio from a
+        small change in \( dw_2 \) to \( z \) is 0.52, so we know that the
+        change in \( z \approx 0.05 \). Now that we know how much \( z \) will
+        change, we can apply the next part of the chain. We know that the ratio
+        from a small change in \( dz \) to \( \sigma(z) \) is \( 0.24 \), so we
+        multiply that change in \( z \) (namely \( 0.05 \)) to \( 0.24 \), and
+        we get \( 0.012 \) (adding the sig fig so we don't lose it in the last
+        calculation). Knowing that a change in \( w_2 \) will change the output
+        activation by approximately \( 0.012 \), we can use the ratio from a
+        change in that activation to the loss which is roughly \( 0.98 \). We
+        can multiply these together and we finally get \( 0.012 \cdot 0.98 =
+        0.01 \). This means if we nudge \( w_2 \) by \( 0.1 \), the loss
+        function will increase by \( 0.01 \). Knowing how to do this, we can
+        also calculate the effect the previous activation has on the loss
+        function. We can keep the derivative of sigmoid and to the loss
+        function, but instead of calculating for a nudge in \( w_2 \), we can
+        calculate for a nudge in \( a_{n - 1} \). Once again, we know that \(
+        a_{n - 1} \)'s influence on \( z \) is simply the weight, which in this
+        case is \( 0.7 \). This is going to be the influence \( a_{n - 1} \) has
+        on \( z \), and we can keep all the other parts of the chain the same.
+        This gives us \( 0.7 \cdot 0.24 \cdot 0.98 = 0.17 \). We can pass this
+        influence up to the previous neuron (previous meaning towards the input)
+        for it to calculate it's own parameter's effect on the loss. We can do
+        this for as many layers as we want and will maintain an approximation
+        for a change in the parameter to a change in the loss function.
+      </p>
+
+      <p class="paragraph">
+        Now that we are done with my rambling, we can finally move on to the
+        point of this article.
+      </p>
+
+      <br />
 
       <div class="footnotes">
         <hr class="line" />
@@ -2388,6 +2469,74 @@ Loss after training: 0.5852568616860203
           >
         </sup>
       </div>
+
+      <br />
+
+      <h2>Classifying MNIST Data</h2>
+
+      <br />
+
+      <p class="paragraph">
+        There are many ways we could go about designing the method we are going
+        to use, but I believe the most useful design would allow for any
+        particular shape of the network. This will just be a fully connected
+        network (so not a convolutional one for those of you who know what that
+        is), but it's shape will be determined when creating an instance of the
+        network object rather than creating some procedural code that is very
+        difficult to modify. I also want you readers to experiment with it and
+        see if you can play around with audio or other kinds of data to see how
+        good this network is at classification. If you are feeling especially
+        curious, change around activation functions or different kinds of weight
+        initialization if you really want. This network is intended to be a
+        starting point for a lot of fun projects, and it helps to understand the
+        underlying concepts behind a neural network before you tie yourself to a
+        specific library like tensorflow or pytorch.
+      </p>
+
+      <p class="paragraph">
+        Before we begin writing some actual code, let's go over how our network
+        is going to be represented. As mentioned in a section long ago, we will
+        be implementing a weight matrix for each layer. The matrices will be
+        written in numpy, so if you don't quite understand some of the code
+        related to the matrices and vectors, numpy has some a really good
+        introduction to their library
+        <a
+          href="https://numpy.org/doc/stable/user/absolute_beginners.html"
+          class="hyperlink"
+          >here</a
+        >.
+      </p>
+
+      <p class="paragraph">
+        To begin, let's simply start by figuring out a way for the user to
+        define the shape of the network. I think an easy way is for the user to
+        provide a list of integers where each element of the list corresponds to
+        the size of a layer in the network. This array will include the size of
+        the input layer, so we have to be careful not to have some goofy off by
+        one errors
+      </p>
+
+      <pre><code class="language-python">
+import numpy as np # The common alias for the numpy module
+
+  class Network:
+    def __init__(self, shape: list[int]):
+
+      assert len(shape) > 1, "Cannot have network of only one layer"
+      
+      weight_matrices = []
+
+      # Biases will be represented by vectors that we can simply add to the output
+      # of each weight transformed input
+      bias_vectors = []
+
+      for i in range(1, len(shape)):
+        # The each row represents an output neuron and each column represents an
+        # input neuron. Ordering it this way transforms the vector in a way we
+        # want
+        weight_matrices.append(np.random.randn(shape[i], shape[i - 1]))
+        bias_vectors.append(np.random.randn(shape[i]))
+      </code></pre>
     </div>
     <div class="bottom"></div>
   </body>
