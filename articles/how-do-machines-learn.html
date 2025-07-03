@@ -2472,7 +2472,11 @@ Loss after training: 0.5852568616860203
 
       <br />
 
-      <h2>Classifying MNIST Data</h2>
+      <h2>Computational Graphs</h2>
+
+      <br />
+
+      <h2>Multi Layer Perceptrons</h2>
 
       <br />
 
@@ -2519,24 +2523,102 @@ Loss after training: 0.5852568616860203
       <pre><code class="language-python">
 import numpy as np # The common alias for the numpy module
 
-  class Network:
-    def __init__(self, shape: list[int]):
+class Network:
 
-      assert len(shape) > 1, "Cannot have network of only one layer"
-      
-      weight_matrices = []
+  # The shape's first element will be the input layer
+  def __init__(self, shape: list[int]):
 
-      # Biases will be represented by vectors that we can simply add to the output
-      # of each weight transformed input
-      bias_vectors = []
+    assert len(shape) > 1, "Cannot have network of only one layer"
+    
+    self.weight_matrices = []
 
-      for i in range(1, len(shape)):
-        # The each row represents an output neuron and each column represents an
-        # input neuron. Ordering it this way transforms the vector in a way we
-        # want
-        weight_matrices.append(np.random.randn(shape[i], shape[i - 1]))
-        bias_vectors.append(np.random.randn(shape[i]))
+    # Biases will be represented by vectors that we can simply add to the output
+    # of each weight transformed input
+    self.bias_vectors = []
+
+    for i in range(1, len(shape)):
+      # The each row represents an output neuron and each column represents an
+      # input neuron. Ordering it this way transforms the vector in a way we
+      # want
+      self.weight_matrices.append(np.random.randn(shape[i], shape[i - 1]))
+      self.bias_vectors.append(np.random.randn(shape[i]))
+
+    self.depth = len(shape)
       </code></pre>
+
+      <p class="paragraph">
+        Because this is a new project, we should also add our activation
+        function \( \sigma \)
+      </p>
+
+      <pre><code class="language-python">
+# Top of the file
+
+import math
+
+# Other imports...
+
+def sigmoid(x: float) -> float:
+  return 1 / (1 + math.exp(-x))
+
+def vector_sigmoid(x: np.ndarray) -> np.ndarray:
+  transformed_x = np.zeros(x.shape)
+
+  for i in range(len(x)):
+    transformed_x[i] = x[i]
+
+  return transformed_x
+    
+  return x
+      </code></pre>
+
+      <p class="paragraph">
+        Now we can implement the feed forward. Like mentioned in sections
+        before, we take the input, transform it with the weight matrix, and
+        apply the activation function before passing it along to the next layer
+        until we reach the output
+      </p>
+
+      <pre><code class="language-python">
+class Network:
+  # Other stuff...
+
+  def feed_forward(self, x: np.ndarray, index: int = 0) -> np.ndarray:
+
+    # Base case; no further transformations to perform
+    if index == self.depth:
+      return x
+
+    # Weight transformation
+    np.matmul(self.weight_matrices[index], x)
+
+    # Applying the bias
+    x = x + self.bias_vectors[index]
+
+    # Applying activation function
+    x = vector_sigmoid(x)
+
+    # Passing it on to the next layer
+    return self.feed_forward(x, index + 1)
+      </code></pre>
+
+      <p class="paragraph">
+        There is something we should cover something before moving on to
+        creating multi layer networks. As the very observant of you may noticed,
+        each neuron in the hidden and input layers have multiple paths to them.
+        For example, let's look at an extremely simple neural network with an
+        input and output layer with a single neuron, but a hidden layer with two
+        neurons
+      </p>
+
+      <div class="image-container">
+        <object
+          data="/media/images/simple-network-with-sum-connections.svg"
+          type=""
+        ></object>
+      </div>
+
+      <p class="paragraph">Each one of these hidden layers</p>
     </div>
     <div class="bottom"></div>
   </body>
