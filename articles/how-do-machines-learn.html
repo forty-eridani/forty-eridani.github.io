@@ -2393,8 +2393,8 @@ Loss after training: 0.5852568616860203
       </p>
 
       <p class="paragraph">
-        Now that we are done with my rambling, we can finally move on to the
-        point of this article.
+        Just bear one more section of rambling and then we can finally get on to
+        writing our MNIST classification model.
       </p>
 
       <br />
@@ -2475,6 +2475,97 @@ Loss after training: 0.5852568616860203
       <h2>Computational Graphs</h2>
 
       <br />
+
+      <p class="paragraph">
+        I understand the name may sound very boring, but computational graphs
+        are an important concept in neural networks. In fact, many libraries use
+        computational graphs under the hood to represent the networks and
+        traverse the network for backpropagation. We will not be doing anything
+        so complex here, but it is important to understand how partial
+        derivatives are taken and how gradients are applied when there are
+        multiple paths from some neuron to another neuron. There are a lot of
+        optimizations that you can perform knowing the computational graph,
+        however we will not be using them here. If you want to learn more, I
+        recommend checking
+        <a
+          href="https://colah.github.io/posts/2015-08-Backprop/"
+          class="hyperlink"
+          >Colah's article on backpropagation</a
+        >. Colah also has a bunch of other really cool articles, so I highly
+        recommend checking some more of his stuff out. I also may have learned
+        about this concept in the blog post I am linking, so any credit you give
+        to my explanation you also owe to his.
+      </p>
+
+      <p class="paragraph">
+        There are a lot of ways we can represent a mathematical equation. Let's
+        look at the equation \( z = (x + 2) \cdot (x \cdot 7) \). We can
+        represent these intermediate terms as their own variables, let's say \(
+        f = x + 2 \) and \( g = x \cdot 7 \). We can replace the terms in our
+        earlier expression with our new variables, so it looks like \( z = f
+        \cdot g \). We can represent this as a an interconnected graph where
+        each variable becomes its own node
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object data="/media/images/computational-graph.svg" type=""></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        As you could tell, a nudge in the \( x \) variable will have more than a
+        single effect on the final output since there are intermediate variables
+        that change at seperate rates according to a change in \( x \). The
+        trick is to track the influence through the paths. Because the variables
+        themselves are travelling through the paths to undergo transformations,
+        you can also track their influence (aka their derivatives) on their
+        destination through those same connections. We can label those here as
+        well
+      </p>
+
+      <br />
+
+      <div class="image-container">
+        <object
+          data="/media/images/computational-graph-partial-derivatives.svg"
+          type=""
+        ></object>
+      </div>
+
+      <br />
+
+      <p class="paragraph">
+        Similar to how we have seen the chain rule earlier, if you want to find
+        the partial derivative of a variable with respect to the output, you
+        simply follow the "chain" (or in this case more of a path) multiplying
+        by each partial derivative along the way since each partial derivative
+        is the reaction to a change in the previous node, which may have also
+        changed earlier due to other connections. The interesting thing here is
+        that if we want to solve for \( \frac{\partial{z}}{\partial{x}} \), we
+        must incorperate all of the paths from \( x \) to \( z \). The way we
+        incorperate it is addition, which may seem weird given we don't even
+        need to have any explicit addition in our simple network, but this all
+        comes back to how derivatives are simply linear approximations (aka
+        slope) at a given point. To illustrate my point, let's walk through how
+        each variable reacts to a slight change in \( x \)
+      </p>
+
+      <p class="paragraph">
+        If we observe the left size of the graph for now, we can fairly easily
+        surmise that \( z \) changes \( 1 \cdot g \) or just \( g \) times some
+        initial nudge to \( x \). This doesn't make up the entirety of the slope
+        however. Remember, \( z \) does not get to pick and choose which path
+        gets to contribute to it's result, insetad, all paths are executed
+        together at the same time. This means that the derivative along each
+        path must also be somehow act together in order to give a linear
+        approximation at a given \( x \). This is why we sum; we need a way to
+        track the resulting nudge of \( z \) for a nudge in \( x \), and when
+        there exist multiple paths, the change to \( z \) will involving summ the
+        nudges each path produces. 
+      </p>
 
       <h2>Multi Layer Perceptrons</h2>
 
@@ -2611,12 +2702,16 @@ class Network:
         neurons
       </p>
 
+      <br />
+
       <div class="image-container">
         <object
           data="/media/images/simple-network-with-sum-connections.svg"
           type=""
         ></object>
       </div>
+
+      <br />
 
       <p class="paragraph">Each one of these hidden layers</p>
     </div>
