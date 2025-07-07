@@ -2550,7 +2550,7 @@ Loss after training: 0.5852568616860203
         need to have any explicit addition in our simple network, but this all
         comes back to how derivatives are simply linear approximations (aka
         slope) at a given point. To illustrate my point, let's walk through how
-        each variable reacts to a slight change in \( x \)
+        each variable reacts to a slight change in \( x \).
       </p>
 
       <p class="paragraph">
@@ -2562,12 +2562,43 @@ Loss after training: 0.5852568616860203
         together at the same time. This means that the derivative along each
         path must also be somehow act together in order to give a linear
         approximation at a given \( x \). This is why we sum; we need a way to
-        track the resulting nudge of \( z \) for a nudge in \( x \), and when
-        there exist multiple paths, the change to \( z \) will involving summ the
-        nudges each path produces. 
+        track the resulting change of \( z \) for a nudge in \( x \), and when
+        there exist multiple paths, the change to \( z \) will involving finding
+        the sum of how each path contributes to the nudge. In the case of the
+        above graph, the calculation would look like \( 1 \cdot g + 7 \cdot f
+        \). If we expanded out the \( f \) and \( g \) variables, our derivative
+        looks like \( 1 \cdot (x \cdot 7) + 7 \cdot (x + 2) \).
       </p>
 
-      <h2>Multi Layer Perceptrons</h2>
+      <p class="paragraph">
+        In the case of a neural network, there are a lot of these overlapping
+        paths when there are several hidden layers. This means when we traverse
+        those paths, we add the gradient of the current path we are traversing.
+        Each paramter might have a different effect on the loss depending on
+        that path, and to get that total effect on the loss you simply sum the
+        effect on each parameter over each path. What confused me as I was
+        learning this topic was the fact that even when there is no explicit
+        addition in the equations themselves, you still use addition to find the
+        cumulative effect of each path. This is because the partial derivatives
+        on each connection already take into account the operation being
+        performed on the next node (that is necessary to take any derivative),
+        and addition is the way to find how much each path effects the final
+        output.
+      </p>
+
+      <p class="paragraph">
+        One other important thing to note is that because the loss function we
+        are optimizing for is a sum of each component of the loss vector, you go
+        over every output neuron and add the gradient to each parameter. This
+        isn't because of the multiple paths to the same parameter, rather this
+        is because when taking a sum of a bunch of terms, the derivative is
+        simply the sum of the derivatives of those terms. Now finally we can
+        move on to
+      </p>
+
+      <br />
+
+      <h2>Classifying MNIST Data</h2>
 
       <br />
 
@@ -2580,12 +2611,12 @@ Loss after training: 0.5852568616860203
         network object rather than creating some procedural code that is very
         difficult to modify. I also want you readers to experiment with it and
         see if you can play around with audio or other kinds of data to see how
-        good this network is at classification. If you are feeling especially
-        curious, change around activation functions or different kinds of weight
-        initialization if you really want. This network is intended to be a
-        starting point for a lot of fun projects, and it helps to understand the
-        underlying concepts behind a neural network before you tie yourself to a
-        specific library like tensorflow or pytorch.
+        good this type of network is at classification. If you are feeling
+        especially curious, change around activation functions or different
+        kinds of weight initialization if you really want. This network is
+        intended to be a starting point for a lot of fun projects, and it helps
+        to understand the underlying concepts behind a neural network before you
+        tie yourself to a specific library like tensorflow or pytorch.
       </p>
 
       <p class="paragraph">
@@ -2617,7 +2648,7 @@ import numpy as np # The common alias for the numpy module
 class Network:
 
   # The shape's first element will be the input layer
-  def __init__(self, shape: list[int]):
+  def __init__(self, shape: list[int], learning_rate):
 
     assert len(shape) > 1, "Cannot have network of only one layer"
     
@@ -2635,11 +2666,12 @@ class Network:
       self.bias_vectors.append(np.random.randn(shape[i]))
 
     self.depth = len(shape)
+    self.learning_rate = learning_rate
       </code></pre>
 
       <p class="paragraph">
-        Because this is a new project, we should also add our activation
-        function \( \sigma \)
+        Because this is a new project, we must also add our activation function
+        \( \sigma \)
       </p>
 
       <pre><code class="language-python">
@@ -2694,26 +2726,117 @@ class Network:
       </code></pre>
 
       <p class="paragraph">
-        There is something we should cover something before moving on to
-        creating multi layer networks. As the very observant of you may noticed,
-        each neuron in the hidden and input layers have multiple paths to them.
-        For example, let's look at an extremely simple neural network with an
-        input and output layer with a single neuron, but a hidden layer with two
-        neurons
+        Now to the fun parts. How will we represent our gradient? There are a
+        bunch of ways to do it, but to keep our parameter representation itself
+        simple, let's store a gradient in the network object that has the same
+        shape as the parameters (since each parameter has a correspodning
+        gradient), but instead of storing the parameters themselves, they will
+        store the gradients for the loss function. This will be somewhat similar
+        to pytorch (though I think we are being a little more clear on
+        ownership) where we will define methods in the class for the network to
+        calculate the loss and gradient for a given set of training set of
+        parameters, telling the network to "step" (apply the gradients to the
+        parameters), and set the gradient to zero before moving on to train
+        either another set of data or the data again but with a set of updated
+        parameters. Before we implement these methods however, we must first
+        edit the constructor to add our new gradients
       </p>
 
-      <br />
+      <pre><code class="language-python">
+class Network:
+  def __init__(self, shape: list[int], learning_rate):
+    self.weight_matrices = []
+    self.weight_gradient = []
 
-      <div class="image-container">
-        <object
-          data="/media/images/simple-network-with-sum-connections.svg"
-          type=""
-        ></object>
-      </div>
+    # Biases will be represented by vectors that we can simply add to the output
+    # of each weight transformed input
+    self.bias_vectors = []
+    self.bias_gradient = []
 
-      <br />
+    for i in range(1, len(shape)):
+      # The each row represents an output neuron and each column represents an
+      # input neuron. Ordering it this way transforms the vector in a way we
+      # want
+      self.weight_matrices.append(np.random.randn(shape[i], shape[i - 1]))
+      
+      # We want to start the gradient off with zeros
+      self.weight_gradient.append(np.zeros(shape[1], shape[i - 1]))
 
-      <p class="paragraph">Each one of these hidden layers</p>
+      self.bias_vectors.append(np.random.randn(shape[i]))
+      self.bias_gradient.append(np.zeros(shape[i]))
+    
+    self.depth = len(shape)
+    self.learning_rate = learning_rate
+      </code></pre>
+
+      <p class="paragraph">
+        Now we can define some methods for zeroing and applying the gradient
+      </p>
+
+      <pre><code class="language-python">
+class Network:
+  # Other methods...
+
+  def apply_gradient(self) -> None:
+    for i in range(self.depth):
+      self.weight_matrices[i] += -self.learning_rate * self.weight_gradient[i]
+      self.bias_vectors[i] += -self.learning_rate * self.bias_gradient[i]
+
+  def zero_gradient(self) -> None:
+    for i in range(self.depth):
+      self.weight_gradient[i] = np.zeros(self.weight_gradient[i].shape)
+      self.bias_gradient[i] = np.zeros(sThenelf.bias_gradient[i].shape)
+    
+      </code></pre>
+
+      <p class="paragraph">
+        Now for the hard part: actually calculating the gradient. As said
+        before, we simply add the effects through each path since each path
+        contributes to the loss. Now remember how I said that the gradient is
+        calculated across the dataset? To do that, we must calculate the
+        gradient across every single training example and calculate the average
+        before we step. This ensures that the network steps in the direction
+        that will lower the overall loss, even if it raises the loss for certain
+        examples. We will use recursion to traverse all possible paths and
+        propagate the current neuron's activation influence on the loss in order
+        to find the gradient of each parameter. Also, we will not be performing
+        the fancy optimizations by representing training data as a tensor (a 3d
+        matrix) in order to paralellize the gradient calculations, so this will
+        take a hot minute to calculate if you are using a large network.
+      </p>
+
+      <pre><code class="language-python">
+class Network:
+  # Other methods...
+
+  # We have to keep track of the z values in order to calculate how the neuron responded to the input
+  # and so we can simply activate the z without having to work backwards to find what z was. This is
+  # because calculating the derivative of sigmoid requires the unchanged parameter to find what the
+  # slope was at that point instead of the activation.
+  def calculate_z(self, training_example: np.ndarray) -> list[np.ndarray]:
+
+    # We can't have 2d inputs
+    assert training_example.dim == 1
+
+    z_values = []
+
+    
+    # Our own feed forward that keeps track of the activations
+    for transformation, bias in zip(self.weight_matrices, self.bias_vectors):
+      training_example = np.matmul(transformation, training_example)
+      training_example += bias
+
+      z_values.append(training_example)
+
+      # No activation function here
+
+    return z_values
+
+  # Only computes the gradient for a single training example; stores result in internal gradient
+  def calculate_single_gradient(self, training_example: np.ndarray, z_values = None) -> None:
+    
+    
+      </code></pre>
     </div>
     <div class="bottom"></div>
   </body>
