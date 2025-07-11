@@ -2700,9 +2700,7 @@ def vector_sigmoid_prime(x: np.ndarray) -> np.ndarray:
 
       </code></pre>
 
-      <p class="paragraph">
-        And our loss function and its derivative
-      </p>
+      <p class="paragraph">And our loss function and its derivative</p>
 
       <pre><code class="language-python">
 def squared_error(expected: float, observed: float):
@@ -2908,6 +2906,460 @@ class Network:
 
         self.weight_gradient[-1 - depth][current_neuron][index] += weight_influence
         self.calculate_single_gradient(training_example, z_values, prev_activation_influence, index, depth + 1)
+      </code></pre>
+
+      <p class="paragraph">
+        This is a lot of code I just kinda barfed up, so let's go through it bit
+        by bit. Let's first take a look at the calculate z method
+      </p>
+
+      <pre><code class="language-python">
+# We have to keep track of the z values in order to calculate how the neuron responded to the input
+# and so we can simply activate the z without having to work backwards to find what z was. This is
+# because calculating the derivative of sigmoid requires the unchanged parameter to find what the
+# slope was at that point instead of the activation.
+def calculate_z(self, training_example: np.ndarray) -> list[np.ndarray]:
+
+  # We can't have 2d inputs
+  assert training_example.ndim == 1
+
+  z_values = [training_example]
+
+  
+  # Our own feed forward that keeps track of the activations
+
+  for transformation, bias in zip(self.weight_matrices, self.bias_vectors):
+    training_example = np.matmul(transformation, training_example)
+    training_example += bias
+
+    z_values.append(training_example)
+
+    training_example = vector_sigmoid(training_example)
+
+    # No activation function here
+
+  return z_values
+      </code></pre>
+
+      <p class="paragraph">
+        The purpose of this is to keep track of the raw \( z \) values so we can
+        calculate the slope of sigmoid at \( z \) instead of like reverse
+        calculating it. It's also fairly easy to apply the activation function
+        to \( z \) after the fact to calculate the full partial derivative of
+        the weights and biases. Next, let's take a look at the actual
+        calculation of the gradient bit by bit. Let's just take a peak at some
+        of our initial conditions
+      </p>
+
+      <pre><code class="language-python">
+    # Base case, doesn't include input layer
+if depth == self.depth - 1:
+  return
+
+# Because function is recursive, state must be stored in the parameters
+if z_values == None:
+  z_values = self.calculate_z(training_example[0])
+if current_influence == math.nan:
+  current_influence = squared_error_prime(training_example[1], vector_sigmoid(z_values[-1 - depth]))
+      </code></pre>
+
+      <p class="paragraph">
+        Our initial condition is the base case (if you don't know what that is,
+        you might want to learn how recursion works) that ends when the depth
+        has reached the depth of the gradient. The self.depth attribute includes
+        the input layer which we cannot change (how could we change an input?),
+        so once the depth exceeds the amount of mutable layers, we want to
+        terminate recursion. The other conditions populate the default
+        arguments. Because in proper functional programming you don't store
+        state outside the scope of the function, so we keep our recursive state
+        inside of the function. We don't want the user to provide these since we
+        can populate them ourselves inside of the function.
+      </p>
+
+      <p class="paragraph">
+        Next, let's take a look at what heppens on the initial call
+      </p>
+
+      <pre><code class="paragraph">
+# Very inneficient, but covers every path for the gradient
+
+# We want to perform an initial loop on the first layer of neurons, then allow 
+# recursion to take care of the rest
+if depth == -1:
+  for index, z in enumerate(z_values[-1]):
+    activation = sigmoid(z)
+    influence = squared_error_prime(training_example[1][index], activation)
+
+    self.calculate_single_gradient(training_example, z_values, influence, index, depth + 1)
+      </code></pre>
+
+      <p class="paragraph">
+        The depth starts out at \( -1 \) in order to almost simulate a "ghost
+        neuron" behind the ouput layer so we can perform the branching recursion
+        we need without getting goofy with external state or nesting the
+        recursion in some other function. This is similar to adding dummy nodes
+        at the base of linked lists when dealing with certain operations. With a
+        start depth of \( -1 \), we will be able to loop over each output neuron
+        with depth at \( 0 \) and then perform the typical branching off of
+        that. We can also pass through each activation's influence on the loss
+        through the start so we don't need any special conditions regarding the
+        calculation of the loss function at the output layer. Next, let's look
+        at the typical recurse case
+      </p>
+
+      <pre><code class="language-python">
+else:
+  activation_influence = sigmoid_prime(z_values[-1 - depth][current_neuron]) * current_influence
+
+  self.bias_gradient[-1 - depth][current_neuron] += activation_influence
+
+  for index, weight in enumerate(self.weight_matrices[-1 - depth][current_neuron]):
+    prev_activation = z_values[-1 - depth][current_neuron]
+
+    # The influence of the weight is determined by the previous activation
+    weight_influence = prev_activation * activation_influence
+
+    # The influence of the previous activation is determined by the weight
+    prev_activation_influence = weight * activation_influence
+
+    self.weight_gradient[-1 - depth][current_neuron][index] += weight_influence
+    self.calculate_single_gradient(training_example, z_values, prev_activation_influence, index, depth + 1)
+      </code></pre>
+
+      <p class="paragraph">
+        Here, we add the current activation's slope to the chain and use that to
+        calculate the bias and weight gradients. Since there is only one bias
+        per neuron, we don't have to loop over it like we do with the weights.
+        You may notice that we don't explicitly include a partial derivative for
+        the bias. This is because the partial derivative for the bias to \( z \)
+        is \( 1 \), or in other words $$ \frac{\partial{z}}{\partial{b}} = 1 $$
+        This should intuitively make sense bceause if you push \( b \) by \( db
+        \), \( z \) will change by \( db \) as \( z = \sum_{i=1}^{n} w_i \cdot
+        a_{n - 1} + b \), so any change to the bias term will increase \( z \)
+        by that change since bias is just slapped on to the end. Because of
+        this, we don't need to tack on any special derivative; instead we can
+        just use the \( \frac{\partial{C}}{\partial{z}} \) term which implicitly
+        has the derivative of bias with respect to \( z \), 1, already in the
+        expression.
+      </p>
+
+      <p class="paragraph">
+        The weights are slightly more complicated. The weight matrix is
+        essentially a weighted adjacency matrix as each component of the matrix
+        represents a weighted connection between two neurons represented as the
+        row and column. In our case, the rows represent the current layer in
+        the, and the column represents the layer feeding into the current layer.
+        We are not doing any fancy optimizations here, so we are individually
+        traversing every single possible path in the network, which in our
+        quickly approaching MNIST classifier will be very computationally heavy.
+        Because we go by individual neurons, we must not only store the depth
+        (which encodes the layer) in our recursive state (such an oxymoron), but
+        also the current neuron within that layer. This allos us to tell which
+        row we are on, and thus all the connections from that neuron to all
+        previous neurons in our weight matrix. We can then individually process
+        the gradient for each weight and recurse to the connected neuron thus
+        performing the same steps until we reach the end of the gradient.
+      </p>
+
+      <p class="paragraph">
+        The rest of the class is now fairly easy. We simple need to calculate
+        and sum the gradient over each training example and calculate the
+        average. This can be done with trivial function
+      </p>
+
+      <pre><code class="language-python">
+class Network:
+  # Other methods...
+
+  def calculate_gradient(self, training_examples: list[tuple[np.ndarray, np.ndarray]]) -> None:
+    for training_example in training_examples:
+      self.calculate_single_gradient(training_example)
+
+    size = len(training_examples)
+
+    for i in range(self.depth - 1):
+      self.weight_gradient[i] / size
+      </code></pre>
+
+      <p class="paragraph">
+        And there we have it! We have a functional general neural network that
+        we can use to identify images. Let's wrap this in a file, let's call it
+        <code>network.py</code> so we can wrap it as a module to keep our code
+        clean.
+      </p>
+
+      <p class="paragraph">
+        Next, let's take a look at actually processing the MNIST data.
+        Processing binary data in python is not my expertise, so I apologize in
+        advance. First, let's actually download the dataset. The original source
+        seems to not work (at least as of writing this), so we will source the
+        data from the kaggle page
+        <a
+          href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset?resource=download-directory"
+          class="hyperlink"
+        ></a
+        >. You simply click the <code> Download dataset as zip </code> button,
+        extract file file, and stick it in your root directory. Make a directory
+        named <code> data/ </code> and stick all the files inside of that
+        directory so the structure looks like
+      </p>
+
+      <pre><code class="language-plaintext">
+data/
+├─ t10k-images-idx3-ubyte
+├─ t10k-images.idx3-ubyte
+├─ t10k-labels-idx1-ubyte
+├─ t10k-labels.idx1-ubyte
+├─ train-images-idx3-ubyte
+├─ train-images.idx3-ubyte
+├─ train-labels-idx1-ubyte
+├─ train-labels.idx1-ubyte
+      </code></pre>
+
+      <p class="paragraph">
+        To keep things a bit simpler, let's delete all the files without
+        extensions. To my knowledge, <code> t10k-images-idx3-ubyte </code> and
+        <code> t10k-images.idx3-ubyte </code> are the same files, so let's
+        simply get rid of <code> t10k-images-idx3-ubyte </code> and all the
+        other files that don't have extensions so the data directory looks like
+      </p>
+
+      <pre><code class="language-plaintext">
+data/
+├─ t10k-images.idx3-ubyte
+├─ t10k-labels.idx1-ubyte
+├─ train-images.idx3-ubyte
+├─ train-labels.idx1-ubyte
+      </code></pre>
+
+      <p class="paragraph">
+        How these files work is essentially the files beginning with
+        <code> t10k </code> are intended to be testing images. Testing images
+        are images used to evaluate the performance of model on data that it has
+        not seen (meaning trained on) before. We don't simply want to limit
+        ourselves to processing data that we already know the labels to, so
+        testing the model's performance on unseen data is critical. In this
+        dataset, there are 10,000 such test images, so that's why the filenames
+        are prefixed with t10k. The files prefixed with train don't need much
+        explanation as it is, well, the training data. There are 60,000 such
+        training images, so we have a lot of data to go off of when training.
+        The filenames also contain the terms <code> image </code> or
+        <code> label </code> which, as the name suggests, tells us whether the
+        file stores images or labels.
+      </p>
+
+      <p class="paragraph">
+        For those of you who have only dealt with text-based ways of storing
+        data like JSON or YAML, binary formats may seem a little scary. Don't
+        fret, for there are many tools to read such enigmatic data that are
+        readily available. Like any good engineer, let's start by observing the
+        file through a hex editor which essentially shows the binary file in
+        discrete bytes as hexadecimal values. I will simply be using hexdump
+        (since I am a linux user), but there are also extensions to view it in
+        VSCode or any of your favorite editors. For my fellow linux users, I
+        will use hexdump with the flag <code> -n 16 </code> which essentially
+        tells the program to only show the first 16 bytes of the files since
+        these files are quite large. I will also use the flag
+        <code> -C </code> in order to display the file as a stream of bytes
+        instead of 16 bit words which screws up the endian-ness. Let's first
+        observe the file
+        <code> t10k-images.idx3-ubyte </code>
+      </p>
+
+      <pre><code class="language-plaintext">
+0000000 00 00 08 03 00 00 27 10  00 00 00 1c 00 00 00 1c  |......'.........|
+0000010
+      </code></pre>
+
+      <p class="paragraph">
+        The first value there (0000000) doesn't actually tell us the data stored
+        within the file, it just tells us the index in hexadecimal, and each
+        "word" contains two bytes (4 hexadecimal digits) with eight words per
+        line, so each line should increment the index by 16, which is what we
+        are seeing (since 10 is 16 in hexadecimal). Another important thing to
+        note is that the MNIST data is stored in big endian format. This means
+        that the largest or most significant byte is stored first. For example,
+        let's say we had the word <code> 0x00f0</code>. If we were to read this
+        in big-endian, the more significant byte would be first which in this
+        case is <code> 0x00</code>, and the least significant byte,
+        <code> 0xf0</code>, would be last. This means the value of
+        <code> 0x00f0 </code> in decimal would simply be 15. This differs from
+        little-endian where the least significant byte comes first, and the most
+        significant would come last. This means <code> 0x00f0 </code> would be
+        <code> 0xf000 </code> if we used the traditional interpretation of the
+        left-most digit is the largest. To be clear, this does not mean that the
+        bit order within the byte is any different, within the byte the data
+        remains in the typical order of left-most bit being the largest or most
+        significant. However, in little endian with numbers involving several
+        bytes, the least significant byte (the 8s place you could say) comes
+        first.
+      </p>
+
+      <p class="paragraph">
+        With all this endian-ness hell out of the way, we can move on to reading
+        the bytes as big endian. The first couple bytes, <code> 00 00</code>,
+        are just padding, so it's not really all that important to the data and
+        we can ignore it when reading this file. The second pair of bytes,
+        <code> 08 03</code>, are slightly more important. The
+        <code> 03 </code> byte indicates that there are three dimensions to the
+        data. This makes sense as we are reading a file full of a bunch of
+        images. All of these images are of the same dimensions, and they are
+        stored in 3 dimensions where the first two are the x and y planes that
+        the image rests on, and the third dimensions is the dimension that each
+        image is stored along. Think of this like a stack of photos, where the
+        first two axes represent the data for an individual picture, while the
+        third axis (or depth) is the axis the photos are stacked upon. The next
+        byte, <code> 08</code>, represents the datatype of the pixel data
+        itself. In this case, the <code> 08 </code>
+        tells us that the data is stored in unsigned 8 bit integers (8 is the
+        same in typical decimal as it is in hexadecimal, and there are 8 bits in
+        the integer format).
+      </p>
+
+      <p class="paragraph">
+        Now the data is being stored in 4 byte (32 bit) big-endian integers.
+        This means we have to read <code> 00 00 27 10 </code> as a single
+        number. This first number tells us how big the first dimensions is, and
+        in this case <code> 00 00 27 10 </code> is 10,000 in decimal. This is
+        the axis that the image data is "stacked" along. The next number,
+        <code> 00 00 00 1c</code>, tells us how big the second axis is.
+        <code> 00 00 00 1c </code> is 28 in decimal, which is one axis of the
+        individual images, and the third axis is the same since the images are
+        square. After this sort of "metadata," the files store the data of the
+        images themselves. Armed with this knowledge howerver, we can tackle the
+        data.
+      </p>
+
+      <p class="paragraph">
+        Even though the data itself is only stored in a single dimensions,
+        knowing how big each dimension is allows to encode (or in our case,
+        decode) the file how it was intended. For the image dimensions, the
+        creators of the file simply flattened each image by putting each row of
+        pixels next to each other along a single dimension, and then taking the
+        "stack" of images which is now only in 2d as we have just reduced the
+        individual images to a single dimension, and stick each image (aka row)
+        next to each other. This squishes everything to a single dimensions,
+        but, as I said earlier, knowing the dimensions we are able to decode the
+        images and return them to their desired state.
+      </p>
+
+      <p class="paragraph">
+        Next, let's hexdump the label file
+        <code> t10k-labels.idx1-ubyte </code> to see how it works
+      </p>
+
+      <pre><code class="language-plaintext">
+00000000  00 00 08 01 00 00 27 10  07 02 01 00 04 01 04 09  |......'.........|
+00000010
+      </code></pre>
+
+      <p class="paragraph">
+        Already, I think we can start noticing differences. Since the file is in
+        the same format, we can read the metadata in the same way. Here, what
+        was <code> 03 </code> last time has changed to a <code> 01 </code>. This
+        is because the labels are simply 8 bit numbers stored along a single
+        dimension. We only need a single dimension to store the labels along
+        since the "stack" of images is also only along a single dimension as
+        there is only one label per image (duh). This also means that there is
+        only a single size, <code> 00 00 27 10</code>, which is the same as the
+        amount of images we had since we need one label per image. After this,
+        you can actually see the labels for each image, and snce the digits in
+        the images cannot exceed 9, the labels can be read in hexadecimal just
+        as they would in typical decimal format.
+      </p>
+
+      <p class="paragraph">
+        The same format is also used for the training data (if you paid
+        attention to the file names, you would notice we were hexdumping the
+        testing data), so we can create a method that takes in a string of bytes
+        and turns it into a multi dimensional numpy array that can properly
+        encode our images for training. Before we do that however, we must
+        actually
+        <em>read</em> the file as a binary file first. Let's create a method
+        that turns a file name into a numpy array with the dimensions as
+        specified in the read file. To begin, let's simply extract the
+        dimensions out of the file
+      </p>
+
+      <pre><code class="language-python">
+import numpy as np
+import struct # For interpreting the binary data
+
+def load_data(filename: str) -> np.ndarray:
+
+    raw_bin = None
+
+    with open(filename, "rb") as file:
+        raw_bin = file.read()
+
+    # Excludes padding bytes
+    raw_bin = raw_bin[2:]
+
+    # We will ignore the type since all of our data will use unsigned 8 bit
+    # ints. ndim is the amount of dimensions in the data
+    ndim = struct.unpack('>BB', raw_bin[:2])[1]
+      </code></pre>
+
+      <p class="paragraph">
+        You may notice the strange <code> '>BB' </code> argument inside of the
+        function for unpacking the binary data. The &gt; indicates that we want
+        to read the data as big endian (I think it serves a visual
+        representation of how significant the bytes should be along the number;
+        little endian is &lt;). The BB indicates that we want to read in an
+        unsigned char, which is only one byte (a useful table for all of the
+        types can be found
+        <a
+          href="https://docs.python.org/3/library/struct.html"
+          class="hyperlink"
+          >here</a
+        >). Multiple of these letters indicates that we would like to read
+        multiple bytes. So to put it all together, we want to read two unsigned
+        chars in big-endian format. Next, let's read the sizes across each
+        dimension now that we know how many dimensions there are
+      </p>
+
+      <pre><code class="language-python">
+def load_data(filename: str) -> np.ndarray:
+  # Other stuff...
+
+  dim_sizes = []
+
+  for i in range(ndim):
+      # A little cursed. struct.unpack gives a goofy array-like thingy, so 
+      # I have to index it to get the underlying value
+      size = struct.unpack('>I', raw_bin[2 + i * 4:2 + (i + 1) * 4])[0]
+      dim_sizes.append(size)
+      </code></pre>
+
+      <p class="paragraph">
+        You may be a little confused by how we index the array, but
+        fundementally it's pretty simple. We start at index 2 at the beginning
+        since we want to skip the bytes we have already read. Next, the start
+        index of the integer is going to be our current index * 4 since the size
+        of an integer is 4 bytes and <code> raw_bin </code> is essentially an
+        array of individual bytes. To end the slice, all we do is take the first
+        index of the next byte since python slicing is exclusive on the end of
+        the slice. This gives us the raw integer in bytes which we then process
+        with <code> struct.unpack </code>, which gives us the length of the
+        dimension. Now all we have to do is normalize the data from 0-1 and
+        reshape it into its proper dimensions and add an extra flag parameter to
+        the function to indicate whether this we are processing labels or not
+        since if we are, the labels are integers but the images are floats in
+        the range of 0-1.
+      </p>
+
+      <pre><code class="language-python">
+def load_data(filename: str) -> np.ndarray:
+  # Other stuff...
+
+  array = None
+
+  if is_label:
+      array = np.array(list(raw_bin[2 + ndim * 4:]), dtype=np.int32)
+  else:
+      array = np.array((list(raw_bin[2 + ndim * 4:]), dtype=np.float32) / 255).reshape(dim_sizes)
+
+  return array
       </code></pre>
     </div>
     <div class="bottom"></div>
