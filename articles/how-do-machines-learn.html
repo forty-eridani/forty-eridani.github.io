@@ -2483,10 +2483,8 @@ Loss after training: 0.5852568616860203
         traverse the network for backpropagation. We will not be doing anything
         so complex here, but it is important to understand how partial
         derivatives are taken and how gradients are applied when there are
-        multiple paths from some neuron to another neuron. There are a lot of
-        optimizations that you can perform knowing the computational graph,
-        however we will not be using them here. If you want to learn more, I
-        recommend checking
+        multiple paths from some neuron to another neuron. If you want to learn
+        more, I recommend checking out
         <a
           href="https://colah.github.io/posts/2015-08-Backprop/"
           class="hyperlink"
@@ -2499,12 +2497,15 @@ Loss after training: 0.5852568616860203
 
       <p class="paragraph">
         There are a lot of ways we can represent a mathematical equation. Let's
-        look at the equation \( z = (x + 2) \cdot (x \cdot 7) \). We can
-        represent these intermediate terms as their own variables, let's say \(
-        f = x + 2 \) and \( g = x \cdot 7 \). We can replace the terms in our
-        earlier expression with our new variables, so it looks like \( z = f
-        \cdot g \). We can represent this as a an interconnected graph where
-        each variable becomes its own node
+        look at the equation \( z = (x + 2) \cdot (x \cdot 7) \). Instead of
+        having the entire expression present, let's instead break it up by
+        treating each binary operator (like \( + \), \( \cdot \), etc. Not
+        operators that operate on binary data, but rather ones that utilize two
+        arguments) as an intermediate variable, so \( f = x + 2 \) and \( g = x
+        \cdot 7 \). We can replace the terms in our earlier expression with our
+        new variables, so it looks like \( z = f \cdot g \). We can represent
+        this as a an interconnected graph where each variable becomes its own
+        node
       </p>
 
       <br />
@@ -2558,7 +2559,7 @@ Loss after training: 0.5852568616860203
         surmise that \( z \) changes \( 1 \cdot g \) or just \( g \) times some
         initial nudge to \( x \). This doesn't make up the entirety of the slope
         however. Remember, \( z \) does not get to pick and choose which path
-        gets to contribute to it's result, insetad, all paths are executed
+        gets to contribute to its result, insetad, all paths are executed
         together at the same time. This means that the derivative along each
         path must also be somehow act together in order to give a linear
         approximation at a given \( x \). This is why we sum; we need a way to
@@ -2582,18 +2583,18 @@ Loss after training: 0.5852568616860203
         cumulative effect of each path. This is because the partial derivatives
         on each connection already take into account the operation being
         performed on the next node (that is necessary to take any derivative),
-        and addition is the way to find how much each path effects the final
+        and addition is the way to find how much each path affects the final
         output.
       </p>
 
       <p class="paragraph">
-        One other important thing to note is that because the loss function we
-        are optimizing for is a sum of each component of the loss vector, you go
-        over every output neuron and add the gradient to each parameter. This
-        isn't because of the multiple paths to the same parameter, rather this
-        is because when taking a sum of a bunch of terms, the derivative is
-        simply the sum of the derivatives of those terms. Now finally we can
-        move on to
+        In this case, traversing each path explicitly is fairly performant as
+        most of the nodes in our small graph can only be reached via a single
+        path (with the exception of \( z \) and \( x \)), but in useful neural
+        networks there exist many, <em>many</em> paths to each hidden node in
+        such a network. This is because of how a network is fundementally
+        structured as each neuron in a layer has a connection to every neuron in
+        the next layer.
       </p>
 
       <br />
@@ -3278,7 +3279,8 @@ data/
         <em>read</em> the file as a binary file first. Let's create a method
         that turns a file name into a numpy array with the dimensions as
         specified in the read file. To begin, let's simply extract the
-        dimensions out of the file
+        dimensions out of the file. Let's call this module
+        <code> loader.py </code>
       </p>
 
       <pre><code class="language-python">
@@ -3355,11 +3357,115 @@ def load_data(filename: str) -> np.ndarray:
   array = None
 
   if is_label:
-      array = np.array(list(raw_bin[2 + ndim * 4:]), dtype=np.int32)
+      # Multiplying the amound of dimensions by the byte-size of the size of the dimensions skips 
+      # size data that we don't want
+      array = np.array(list(raw_bin[2 + ndim * 4:]), dtype=np.uint8)
   else:
       array = np.array((list(raw_bin[2 + ndim * 4:]), dtype=np.float32) / 255).reshape(dim_sizes)
 
   return array
+      </code></pre>
+
+      <p class="paragraph">
+        Here, we cast the raw binary data to a list where each character in the
+        string becomes an iterable item in the list. NumPy is then able to turn
+        that into a proper numpy array that we can reshape in order to make our
+        "stack" of images the proper shape. Now we can finally assemble our
+        final network. To start, let's finally create a <code> main.py </code>
+        file and import our modules
+      </p>
+
+      <pre><code class="language-python">
+import network
+import loader
+      </code></pre>
+
+      <p class="paragraph">
+        Befeore we begin loading our data, let's create a quick helper method to
+        turn a number into a one-hot encoded list
+      </p>
+
+      <pre><code class="language-python">
+def to_one_hot(n: int, length: int) -> np.ndarray:
+  assert n < length and n >= 0
+
+  arr = np.zeros(length)
+  arr[n] = 1.0
+
+  return arr
+      </code></pre>
+
+      <p class="paragraph">Now let's load the data</p>
+
+      <pre><code class="language-python">
+train_imgs = loader.load_data('./data/train-images.idx3-ubyte', False)
+# Not in one-hot-encoded form
+raw_train_labels = loader.load_data('./data/train-labels.idx1-ubyte', True)
+train_labels = [to_one_hot(n, 10) for n in raw_train_labels]
+
+test_imgs = loader.load_data('./data/t10k-images.idx3-ubyte', False)
+raw_test_labels = loader.load_data('./data/t10k-labels.idx1-ubyte', True)
+train_labels = [to_one_hot(n, 10) for n in raw_test_labels]
+
+print("Data loaded!")
+      </code></pre>
+
+      <p class="paragraph">
+        Now we can create our constants and (finally) create an instance of the
+        network
+      </p>
+
+      <pre><code class="language-python">
+learning_rate = 1e-2
+
+network = network.Network([28 * 28, 16, 16, 10], learning_rate)
+      </code></pre>
+
+      <p class="paragraph">
+        Before we move onto training the model, let's discuss one more
+        optimization commonly made to speed up training: stochastic gradient
+        descent. What that means is that instead of finding the average of the
+        gradients across the entire dataset, let's instead find it on a much
+        smaller subset (called a mini-batch) of the dataset that is somewhat
+        representative of the entire dataset and then apply the gradient. This
+        allows us to move much faster instead of having to wait for the entire
+        network to train, however, this also means that that we are adjusting
+        based off of a less accurate loss landscape, so the steps we take will
+        not be perfect, but we will likely move much faster as we can take many
+        more steps in a single epoch. Let's define a helper method that trains
+        the network in mini-batches
+      </p>
+
+      <pre><code class="language-python">
+def train(model: network.Network, batch_size: int, images: np.ndarray, labels: np.ndarray):
+  assert len(images) == len(labels)
+  size = len(images)
+
+  index = 0
+
+  while index + batch_size < size:
+    # Needs to flatten since the network only accepts a 1d input
+    batch = zip(images[index:index + size].flatten(), labels[index:index + size])
+    model.calculate_gradient(batch)
+    model.apply_gradient()
+    model.zero_gradient()
+
+    index += batch_size
+
+  batch = zip(images[index:size].flatten(), labels[index:size])
+  model.calculate_gradient(batch)
+  model.apply_gradient()
+  model.zero_gradient()
+
+  network_outputs = []
+  expected_outputs = list(labels)
+
+  for image in images:
+    image = image.flatten()
+
+    network_outputs.append(model.feed_forward(image))
+
+  print("Loss after training:", network.mean_squared_error(expected_outputs, network_outputs))
       </code></pre>
     </div>
     <div class="bottom"></div>

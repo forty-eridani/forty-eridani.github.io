@@ -20,10 +20,13 @@ def sigmoid_prime(x: float) -> float:
 def squared_error(expected: float, observed: float) -> float:
   return (expected - observed) ** 2.0
 
-def squared_error_prime(expected: float | np.ndarray, observed: float | np.ndarray) -> float:
+def squared_error_prime(expected: float | np.ndarray, observed: float | np.ndarray) -> np.ndarray:
   return 2.0 * (observed - expected)
 
-def mean_squared_error(expected: list[float], observed: list[float]) -> float:
+def sigmoid_prime_activation(a: float) -> float:
+  return a * (1 - a)
+
+def mean_squared_error(expected: list[float] | list[np.ndarray], observed: list[float] | list[np.ndarray]) -> float | np.ndarray:
   
   assert len(expected) == len(observed)
 
@@ -50,18 +53,20 @@ class Network:
       # The each row represents an output neuron and each column represents an
       # input neuron. Ordering it this way transforms the vector in a way we
       # want
-      self.weight_matrices.append(np.random.rand(shape[i], shape[i - 1]))
+      self.weight_matrices.append((np.random.rand(shape[i], shape[i - 1]) - 0.5) / 5.0)
       
       # We want to start the gradient off with zeros
       self.weight_gradient.append(np.zeros((shape[i], shape[i - 1])))
 
-      self.bias_vectors.append(np.random.rand(shape[i]))
+      self.bias_vectors.append(np.zeros((shape[i])))
       self.bias_gradient.append(np.zeros(shape[i]))
-    
+
     self.depth = len(shape)
     self.learning_rate = learning_rate
 
   def feed_forward(self, x: np.ndarray, index: int = 0) -> np.ndarray:
+
+    x = x.flatten()
 
     # Base case; no further transformations to perform
     if index == self.depth - 1:
@@ -95,78 +100,61 @@ class Network:
   # and so we can simply activate the z without having to work backwards to find what z was. This is
   # because calculating the derivative of sigmoid requires the unchanged parameter to find what the
   # slope was at that point instead of the activation.
-  def calculate_z(self, training_example: np.ndarray) -> list[np.ndarray]:
+  def record_activations(self, x: np.ndarray) -> list[np.ndarray]:
 
     # We can't have 2d inputs
-    assert training_example.ndim == 1
-
-    z_values = [training_example]
-
-    
-    # Our own feed forward that keeps track of the activations
-
-    for transformation, bias in zip(self.weight_matrices, self.bias_vectors):
-      training_example = np.matmul(transformation, training_example)
-      training_example += bias
-
-      z_values.append(training_example)
-
-      training_example = vector_sigmoid(training_example)
-
-      # No activation function here
-
-    return z_values
-
-  # Only computes the gradient for a single training example; stores result in internal gradient, tuple
-  # stores first element as the training input and the second element as the true output
-  def calculate_single_gradient(self, training_example: tuple[np.ndarray, np.ndarray], z_values = None,
-                                current_influence: float = math.nan, current_neuron: int = 0, depth: int = -1) -> None:
-
-    # Base case, doesn't include input layer
-    if depth == self.depth - 1:
-      return
-    
-    # Because function is recursive, state must be stored in the parameters
-    if z_values == None:
-      z_values = self.calculate_z(training_example[0])
-    if current_influence == math.nan:
-      current_influence = squared_error_prime(training_example[1], vector_sigmoid(z_values[-1 - depth]))
-    if depth == 0:
-      assert len(training_example[1]) == len(z_values[-1 - depth])
-
-    # Very inneficient, but covers every path for the gradient
-
-    # We want to perform an initial loop on the first layer of neurons, then allow 
-    # recursion to take care of the rest
-    if depth == -1:
-      for index, z in enumerate(z_values[-1]):
-        activation = sigmoid(z)
-        influence = squared_error_prime(training_example[1][index], activation)
-
-        self.calculate_single_gradient(training_example, z_values, influence, index, depth + 1)
-
-    else:
-      activation_influence = sigmoid_prime(z_values[-1 - depth][current_neuron]) * current_influence
-
-      self.bias_gradient[-1 - depth][current_neuron] += activation_influence
-
-      for index, weight in enumerate(self.weight_matrices[-1 - depth][current_neuron]):
-        prev_activation = z_values[-1 - depth][current_neuron]
-
-        # The influence of the weight is determined by the previous activation
-        weight_influence = prev_activation * activation_influence
-
-        # The influence of the previous activation is determined by the weight
-        prev_activation_influence = weight * activation_influence
-
-        self.weight_gradient[-1 - depth][current_neuron][index] += weight_influence
-        self.calculate_single_gradient(training_example, z_values, prev_activation_influence, index, depth + 1)
-
-  def calculate_gradient(self, training_examples: list[tuple[np.ndarray, np.ndarray]]) -> None:
-    for training_example in training_examples:
-      self.calculate_single_gradient(training_example)
-
-    size = len(training_examples)
+    activations = [x.copy()]
 
     for i in range(self.depth - 1):
-      self.weight_gradient[i] / size
+      x = np.matmul(self.weight_matrices[i], x)
+      x = x + self.bias_vectors[i]
+      x = vector_sigmoid(x)
+
+      activations.append(x.copy())
+
+    return activations
+
+
+  def calculate_gradient(self, training_data: list[tuple[np.ndarray, np.ndarray]]) -> None:
+    for x, y in training_data:
+
+      x = x.flatten()
+      a = self.record_activations(x)
+      influence = squared_error_prime(y, a[-1])
+
+      for layer in range(self.depth - 1):
+        layer = -1 - layer
+
+        self.bias_gradient[layer] += sigmoid_prime_activation(a[layer]) * influence
+        tmp_influence = np.zeros(self.weight_gradient[layer].shape[1])
+
+        # influence_matrix = np.array([
+        #   [row_influence * sp] * self.weight_gradient[layer].shape[1] for row_influence, sp in zip(influence, sigmoid_prime_activation(a[layer]))
+        # ])
+
+        # prev_activation_matrix = np.array([
+        #   [prev] * self.weight_gradient[layer].shape[0] for prev in a[layer - 1]
+        # ])
+        # prev_activation_matrix = np.rot90(prev_activation_matrix)
+
+        # print(prev_activation_matrix.shape, influence_matrix.shape)
+
+        # self.weight_gradient[layer] += influence_matrix * prev_activation_matrix
+        # influence = (influence_matrix * self.weight_matrices[layer]).sum(axis=0)
+
+        for neuron_index in range(self.weight_gradient[layer].shape[0]):
+          activation = a[layer][neuron_index]
+
+          delta = sigmoid_prime_activation(activation) * influence[neuron_index]
+          for prev_neuron_index in range(self.weight_gradient[layer].shape[1]):
+            prev_activation = a[layer - 1][prev_neuron_index]
+
+            self.weight_gradient[layer][neuron_index][prev_neuron_index] += prev_activation * delta
+            
+            tmp_influence[prev_neuron_index] += self.weight_matrices[layer][neuron_index][prev_neuron_index] * delta
+
+        influence = tmp_influence
+
+    for i in range(len(self.weight_gradient)):
+      self.weight_gradient[i] /= len(training_data)
+      self.bias_gradient[i] /= len(training_data)

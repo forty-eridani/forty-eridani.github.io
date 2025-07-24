@@ -2,6 +2,14 @@ import numpy as np
 import struct # For interpreting the binary data
 import matplotlib.pyplot as plt
 
+def arr_product(arr: list[int]) -> int:
+    product = 1
+
+    for element in arr:
+        product *= element
+
+    return product
+
 def load_data(filename: str, is_label: bool) -> np.ndarray:
 
     raw_bin = None
@@ -27,11 +35,8 @@ def load_data(filename: str, is_label: bool) -> np.ndarray:
     array = None
 
     if is_label:
-        array = np.array(list(raw_bin[2 + ndim * 4:]), dtype=np.int32)
+        array = np.array(list(raw_bin[2 + ndim * 4:]), dtype=np.uint8)
     else:
       array = (np.array(list(raw_bin[2 + ndim * 4:]), dtype=np.float32) / 255).reshape(dim_sizes)
 
     return array
-
-plt.imshow(load_data("./data/t10k-images.idx3-ubyte", False)[9000], cmap="gray")
-plt.show()
