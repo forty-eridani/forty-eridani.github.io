@@ -6,14 +6,6 @@ import math
 def sigmoid(x: float) -> float:
   return 1 / (1 + np.exp(-x))
 
-def vector_sigmoid(x: np.ndarray) -> np.ndarray:
-  transformed_x = np.zeros(x.shape)
-
-  for i in range(len(x)):
-    transformed_x[i] = sigmoid(x[i])
-
-  return transformed_x
-
 def sigmoid_prime(x: float) -> float:
   return sigmoid(x) * (1.0 - sigmoid(x))
 
@@ -79,7 +71,7 @@ class Network:
     x = x + self.bias_vectors[index]
 
     # Applying activation function
-    x = vector_sigmoid(x)
+    x = sigmoid(x)
 
     # Passing it on to the next layer
     return self.feed_forward(x, index + 1)
@@ -115,7 +107,6 @@ class Network:
     return activations
 
   def calculate_gradient(self, batch: list[tuple[np.ndarray, np.ndarray]]) -> None:
-    size = len(batch)
     for x, y in batch:
 
       x = x.flatten()
@@ -141,5 +132,5 @@ class Network:
         delta = np.transpose(self.weight_matrices[layer]) @ delta
 
     for i in range(self.depth - 1):
-      self.bias_gradient[i] /= size
-      self.weight_gradient[i] /= size
+      self.bias_gradient[i] /= len(batch)
+      self.weight_gradient[i] /= len(batch)

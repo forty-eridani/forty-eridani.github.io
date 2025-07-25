@@ -2806,7 +2806,7 @@ class Network:
     x = x + self.bias_vectors[index]
 
     # Applying activation function
-    x = vector_sigmoid(x)
+    x = sigmoid(x)
 
     # Passing it on to the next layer
     return self.feed_forward(x, index + 1)
@@ -2897,7 +2897,7 @@ class Network:
     for weight, bias in zip(self.weight_matrices, self.bias_vectors):
       x = np.matmul(weight, x)
       x += bias
-      x = vector_sigmoid(x)
+      x = sigmoid(x)
 
       activations.append(x.copy())
 
@@ -2919,7 +2919,7 @@ class Network:
       delta = squared_error_prime(y, activations[-1]) * sigmoid_prime_from_activation(activations[-1])
       
       # We start at the end of the gradient; stop is exclusive
-      for layer in range(start=self.depth - 2, stop=-1, step=-1):
+      for layer in range(self.depth - 2, -1, -1):
       
         # The derivative of z with respect to bias is 1, so no further
         # calculations are needed
@@ -2930,14 +2930,51 @@ class Network:
         # layer
         prev_activations = activations[layer]
 
-        self.weight_gradients[layer] += np.outer(delta, prev_activations)
+        self.weight_gradient[layer] += np.outer(delta, prev_activations)
 
         delta = np.matmul(np.transpose(self.weight_matrices[layer]), delta)
+
+    for i in range(self.depth - 1):
+      self.bias_gradient[i] /= len(batch)
+      self.weight_gradient[i] /= len(batch)
       </code></pre>
 
       <p class="paragraph">
-        And there we have it! We have a functional general neural network that
-        we can use to identify images. Let's wrap this in a file, let's call it
+        You may have notice an interesting way we calculate the gradient for the
+        weights. If you recall from our earlier section on single-width hidden
+        layers, the partial derivative with respect to the weight comes out to
+        be $$ \frac{\partial{C}}{\partial{w}} = \frac{\partial{z}}{\partial{w}}
+        \cdot \frac{\partial{a_n}}{\partial{z}} \cdot
+        \frac{\partial{C}}{\partial{a_n}} $$ The last two terms in this equation
+        are already covered by the \( \delta \) vector, and we already know that
+        \( \frac{\partial{z}}{\partial{w}} = a_{n - 1} \), but when we are
+        dealing with matrix representations of our weights, we have to be a
+        little more mathematically precise if we want to effectively calculate
+        the gradient. Once again, let's put on our thinking caps. If we were
+        naive, we would simple loop over the entire matrix and calculate each
+        component by seing which column (previous neuron) and row (current
+        neuron) we are at, but there is a much simpler way to do this. In each
+        component of the final matrix, we want the product of the current
+        neuron's delta and the previous neuron's activation. Because we have
+        both a vector of the previous layer's activation and the delta, we can
+        construct a matrix by creating a sort of grid where the left contains
+        the deltas, and the top contains the previous activation, and every
+        "cell" in that grid is just the product of the corresponding delta and
+        activation. To make it a little more clear, let's image a delta with the
+        influence of two neurons, and feeding into our current layer are 3
+        activation (these are unrealistic values, only here because integer math
+        is easy) $$ \delta = \begin{bmatrix} 1\\ 2 \end{bmatrix}, \hspace{15px}
+        a_{n - 1} = \begin{bmatrix} 3\\ 4\\ 5 \end{bmatrix} $$ And how let's
+        construct our weight gradient for that layer $$ \nabla{C_n} =
+        \begin{bmatrix} 1 \cdot 3 & 1 \cdot 4 & 1 \cdot 5\\ 2 \cdot 3 & 2 \cdot
+        4 & 2 \cdot 5 \end{bmatrix} $$ This is precisely what the np.outer
+        function is doing.
+      </p>
+
+      <p class="paragraph">
+        With all that out of the way, we finally have a functional general
+        neural network that we can use to identify images! Let's save this as
+        its own file and call it
         <code>network.py</code> so we can wrap it as a module to keep our code
         clean.
       </p>
@@ -3297,15 +3334,26 @@ def train(model: network.Network, batch_size: int, images: np.ndarray, labels: n
   index = 0
 
   while index + batch_size < size:
-    # Needs to flatten since the network only accepts a 1d input
-    batch = zip(images[index:index + size].flatten(), labels[index:index + size])
+    
+    batch = list(zip(images[index:index + batch_size], labels[index:index + batch_size]))
+
     model.calculate_gradient(batch)
     model.apply_gradient()
     model.zero_gradient()
 
+    preds = []
+    expected = []
+
+    for x, y in batch:
+      preds.append(model.feed_forward(x))
+      expected.append(y)
+
+    if math.floor(index / batch_size) % 5 == 0:
+      print(f"Loss after batch {int(index / batch_size)} / {int(len(images) / batch_size) + 1}: {network.mean_squared_error(expected, preds).sum()}")
+
     index += batch_size
 
-  batch = zip(images[index:size].flatten(), labels[index:size])
+  batch = list(zip(images[index:], labels[index:]))
   model.calculate_gradient(batch)
   model.apply_gradient()
   model.zero_gradient()
@@ -3318,8 +3366,86 @@ def train(model: network.Network, batch_size: int, images: np.ndarray, labels: n
 
     network_outputs.append(model.feed_forward(image))
 
-  print("Loss after training:", network.mean_squared_error(expected_outputs, network_outputs))
+  print("Loss after training:", network.mean_squared_error(expected_outputs, network_outputs).sum())
       </code></pre>
+
+      <p class="paragraph">And we can define our testing function like so</p>
+
+      <pre><code class="language-python">
+def test(model: network.Network, images: np.ndarray, labels: np.ndarray):
+  assert len(images) == len(labels)
+
+  correct = 0.0
+
+  for x, y in zip(images, labels):
+    y = np.argmax(y)
+    pred = np.argmax(model.feed_forward(x))
+
+    if y == pred:
+      correct += 1.0
+
+  print(f"Total Accuracy: {correct / len(images) * 100.0:.4}%")
+      </code></pre>
+
+      <p class="paragraph">
+        Now all we have to do is define our model. I chose the learning rate and
+        architecture fairly arbitrarily, but it seems to train well enough and
+        it isn't too computationally expensive
+      </p>
+
+      <pre><code class="language-python">
+model = network.Network([28 * 28, 16, 10], 0.1)
+      </code></pre>
+
+      <p class="paragraph">
+        Now all we have to do is create a loop so the model can train over
+        several epochs, and we also want to test the model on both testing and
+        training datasets to ensure the model is overfitting (when a model
+        "memorizes" the labels so the training accuracy is really high, but the
+        testing accuracy is not)
+      </p>
+
+      <pre><code class="language-python">
+for epoch in range(epochs):
+  print(f"Epoch {epoch}\n---------------------")
+  train(model, 64, train_imgs, train_labels)
+  print("Training Data")
+  test(model, train_imgs, train_labels)
+  print("Testing Data")
+  test(model, test_imgs, test_labels)
+      </code></pre>
+
+      <p class="paragraph">
+        And there we have done it! If your computer isn't the fastest, this may
+        take a little while to run, but my results are pretty good
+      </p>
+
+      <pre><code class="language-plaintext">
+Training Data
+Total Accuracy: 80.73%
+Testing Data
+Total Accuracy: 81.25%
+      </code></pre>
+
+      <p class="paragraph">
+        Your results will almost certainly differ somewhat (remember, the
+        initial weight initialization is random), but this model is pretty good!
+        Now you could probably push these numbers up to around 90-95% if you had
+        some time to tweak the program, but I am happy with these results.
+      </p>
+
+      <p class="paragraph">
+        I encourage you to take a moment to appreciate what you have done! You
+        have wrote a program that allows a computer to actually <em>learn</em>,
+        and a program that you are completely free to modify and fit to whatever
+        simple ML ideas you may have. You are now in a place to learn about all
+        sorts of libraries like PyTorch or TensorFlow and do some really neat
+        stuff (I highly recommend compteting in some kaggle challenges with
+        these more advanced libraries). I hope this article has provided you a
+        foundation to understand more complex AI concepts or maybe even read
+        some older foundational papers on ML. Anywho, thanks for reading and
+        have a good day!
+      </p>
     </div>
     <div class="bottom"></div>
   </body>

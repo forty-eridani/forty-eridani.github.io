@@ -23,10 +23,6 @@ test_labels = [to_one_hot(n, 10) for n in raw_test_labels]
 
 print("Data loaded!")
 
-learning_rate = 1.0
-
-model = network.Network([28 * 28, 16, 16, 10], learning_rate)
-
 def train(model: network.Network, batch_size: int, images: np.ndarray, labels: np.ndarray):
   assert len(images) == len(labels)
   size = len(images)
@@ -47,10 +43,6 @@ def train(model: network.Network, batch_size: int, images: np.ndarray, labels: n
     for x, y in batch:
       preds.append(model.feed_forward(x))
       expected.append(y)
-
-      # print((x ** 2.0).sum())
-      # print(y)
-      # print('\n')
 
     if math.floor(index / batch_size) % 5 == 0:
       print(f"Loss after batch {int(index / batch_size)} / {int(len(images) / batch_size) + 1}: {network.mean_squared_error(expected, preds).sum()}")
@@ -86,22 +78,14 @@ def test(model: network.Network, images: np.ndarray, labels: np.ndarray):
 
   print(f"Total Accuracy: {correct / len(images) * 100.0:.4}%")
 
-epochs = 16
+model = network.Network([28 * 28, 16, 10], 0.1)
 
-# new_train_data = []
-# new_train_labels = []
-
-# model = network.Network([2, 3, 2], 1e-1)
-
-# for i in range(1025):
-#   coord = np.random.uniform(-0.7, 0.7, 2)
-#   label = np.array([1.0, 0.0]) if (coord ** 2.0).sum() > 0.49 else np.array([0.0, 1.0])
-
-#   new_train_data.append(coord)
-#   new_train_labels.append(label)
+epochs = 8
 
 for epoch in range(epochs):
   print(f"Epoch {epoch}\n---------------------")
   train(model, 64, train_imgs, train_labels)
+  print("Training Data")
+  test(model, train_imgs, train_labels)
   print("Testing Data")
   test(model, test_imgs, test_labels)
