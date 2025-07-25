@@ -86,7 +86,7 @@ def test(model: network.Network, images: np.ndarray, labels: np.ndarray):
 
   print(f"Total Accuracy: {correct / len(images) * 100.0:.4}%")
 
-epochs = 5
+epochs = 16
 
 # new_train_data = []
 # new_train_labels = []

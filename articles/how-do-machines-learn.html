@@ -2594,8 +2594,78 @@ Loss after training: 0.5852568616860203
         networks there exist many, <em>many</em> paths to each hidden node in
         such a network. This is because of how a network is fundementally
         structured as each neuron in a layer has a connection to every neuron in
-        the next layer.
+        the next layer, and calculating the gradient by summing over every
+        single path becomes way too computationally expensive. Luckily, there
+        exists a simple optimization which allows us to only compute each node a
+        single time.
       </p>
+
+      <p class="paragraph">
+        To reason about how we may be able to perform this optimization, let's
+        remind ourselves how we compute the partial derivative with respect to a
+        previous activation $$ \frac{\partial{C}}{\partial{a_n}} =
+        \frac{\partial{C}}{\partial{a_{n - 1}}} \cdot \frac{\partial{a_{n -
+        1}}}{\partial{z}} \cdot \frac{\partial{z}}{\partial{a_n}} $$ Each of
+        these terms are trivial to calculate, but this only gives us the partial
+        derivative of the cost to a single \( a_{n - 1} \). In actual networks,
+        there are many previous activations, so the math isn't quite this
+        simple. In order to get the full effect to the loss, we must take the
+        sum of the neuron's effect on all the neurons in the previous layer
+        (this is sort of what the path approach is doing, but it is much more
+        verbose). Let's put our thinking caps on for a moment. Remember when I
+        said the weight matrix was important? Well this is a very large reason
+        why as each column in the matrix tells us the weights across all the
+        output neurons for a single input neuron.
+        <sup><a href="#scgfn1" id="tscgfn1" class="hyperlink">1</a></sup> We can
+        sum across them along with each neuron's appropriate influence on cost
+        on each layer utilizing this matrix, and we get the total influence of
+        any neuron!
+      </p>
+
+      <p class="paragraph">
+        Before we move on to the next chapter, let's take a quick moment to
+        understand the pragmatics of this process. In calculating the gradient,
+        we will calculate a vector that corresponds to each neuron's influence
+        on the loss on whichever layer we are calculating at that time. This is
+        what \( \frac{\partial{C}}{\partial{a_n}} \) is, and is what allows us
+        to calculate the gradient accurately in a network of any depth. In order
+        to properly calculate these influences, we must use some of our linear
+        algebra knowledge. First, we can construct a vector of the partial
+        derivatives of \( C \) with respect to \( z \) for each neuron (aka \(
+        \frac{\partial{C}}{\partial{z}} \)). This is called the delta, or \(
+        \delta \), and is very useful to calculate since it is reused several
+        times in the gradient calculation. We also know the effect the previous
+        neuron's activation has on the activation is, of course, the weights,
+        and the weights for a particular input neuron across all output neurons
+        is simply the column corresponding to whichever input neuron you are
+        processing. There is a really neat operation we can perform if we have
+        this knowledge. Imagnine swapping the rows and columns of our weight
+        (called a transpose in linear algebra speak) matrix such that each
+        column represents the weights from all the input neurons to a single
+        output neuron instead of the row. This means when we perform matrix
+        multiplication with this new transposed matrix, the linear combination
+        gives the sum across all output neurons for a single input neuron. This
+        is exactly what we want to determine the influence of the input (isn't
+        linear algebra cool?)! All we have to do then is perform the matrix
+        multiplication with the delta vector across the transposed weight
+        matrix, and the resulting vector gives us the influence of the next
+        layer.
+      </p>
+
+      <p class="paragraph">
+        With this boring math out of the way, we can <em>finally</em> move on to
+        the fun stuff.
+      </p>
+
+      <div class="footnotes">
+        <hr class="line" />
+        <sup id="scgfn1">
+          1. I am using the terms "input" and "output" a little ambiguously
+          here. I don't mean the inputs and output of the entire network, rather
+          I mean the input and output of any two layers in a network.
+          <a href="#tscgfn1" class="hyperlink">Return to text</a>
+        </sup>
+      </div>
 
       <br />
 
@@ -2671,33 +2741,24 @@ class Network:
       </code></pre>
 
       <p class="paragraph">
-        Because this is a new project, we must also add our activation function
-        \( \sigma \) and its derivative \( sigma' \)
+        Before moving on to writing our mathematical functions, there is a
+        little optimization I neglected to mention. Remember how \( \sigma{'} =
+        \sigma(x) \cdot (1 - \sigma(x)) \)? Well there is an interesting
+        optimization we can make instead of tracking the \( z \) values. Notice
+        how the \( \sigma \) function appears in its own derivative (this is
+        because \( e \) is a really cool number)? Well instead of tracking the
+        \( z \) value only to reapply it in the derivative, we can simply track
+        the actual activations and compute the derivative from the activation
+        instead of dealing with \( z \) at all. Now let's write our activations
       </p>
 
       <pre><code class="language-python">
-# Top of the file
 
-import math
+def sigmoid(x: float | np.ndarray) -> float | np.ndarray:
+  return 1 / (1 + np.exp(-x))
 
-# Other imports...
-
-def sigmoid(x: float) -> float:
-  return 1 / (1 + math.exp(-x))
-
-def vector_sigmoid(x: np.ndarray) -> np.ndarray:
-  transformed_x = np.zeros(x.shape)
-
-  for i in range(len(x)):
-    transformed_x[i] = sigmoid(x[i])
-
-  return transformed_x
-
-def sigmoid_prime(x: float) -> float:
-  return sigmoid(x) * (1.0 - sigmoid(x))
-
-def vector_sigmoid_prime(x: np.ndarray) -> np.ndarray:
-  return vector_sigmoid(x) * (1.0 - vector_sigmoid(x))
+def sigmoid_prime_from_activation(activation: float | np.ndarray) -> float | np.ndarray:
+  return activatoin * (1.0 - activation)
 
       </code></pre>
 
@@ -2710,14 +2771,12 @@ def squared_error(expected: float, observed: float):
 def squared_error_prime(expected: float | np.ndarray, observed: float | np.ndarray) -> float:
   return 2.0 * (observed - expected)
 
-def mean_squared_error(expected: list[float], observed: list[float]) -> float:
-  
-  assert len(expected) == len(observed)
-
+# Expects tuple to be formatted as (expected, observed)
+def mean_squared_error(data: list[tuple[np.ndarray, np.ndarray]]) -> float:
   sum = 0.0
 
-  for ex, ob in zip(expected, observed):
-    sum += (ex - ob) ** 2.0
+  for ex, ob :
+    sum += ((ex - ob) ** 2.0).sum()
 
   return sum / len(expected)
 
@@ -2784,13 +2843,14 @@ class Network:
     for i in range(1, len(shape)):
       # The each row represents an output neuron and each column represents an
       # input neuron. Ordering it this way transforms the vector in a way we
-      # want
-      self.weight_matrices.append(np.random.randn(shape[i], shape[i - 1]))
+      # want. Small range of values to ensure weights are on steeper slopes in
+      # the sigmoid function
+      self.weight_matrices.append(np.random.uniform(-0.1, 0.1, (shape[i], shape[i - 1])))
       
       # We want to start the gradient off with zeros
       self.weight_gradient.append(np.zeros(shape[1], shape[i - 1]))
 
-      self.bias_vectors.append(np.random.randn(shape[i]))
+      self.bias_vectors.append(np.zeros(shape[i]))
       self.bias_gradient.append(np.zeros(shape[i]))
     
     self.depth = len(shape)
@@ -2818,268 +2878,61 @@ class Network:
       </code></pre>
 
       <p class="paragraph">
-        Now for the hard part: actually calculating the gradient. As said
-        before, we simply add the effects through each path since each path
-        contributes to the loss. Now remember how I said that the gradient is
-        calculated across the dataset? To do that, we must calculate the
-        gradient across every single training example and calculate the average
-        before we step. This ensures that the network steps in the direction
-        that will lower the overall loss, even if it raises the loss for certain
-        examples. We will use recursion to traverse all possible paths and
-        propagate the current neuron's activation influence on the loss in order
-        to find the gradient of each parameter. Also, we will not be performing
-        the fancy optimizations by representing training data as a tensor (a 3d
-        matrix) in order to paralellize the gradient calculations, so this will
-        take a hot minute to calculate if you are using a large network.
+        Now for the hard part: actually calculating the gradient. Luckily, I
+        have already ran through all of the math for this process, so
+        articulating it in code should not be too difficult. Before actually
+        writing the method to calculate the gradient, we must have a method to
+        record the activations
       </p>
 
       <pre><code class="language-python">
 class Network:
   # Other methods...
 
-  # We have to keep track of the z values in order to calculate how the neuron responded to the input
-  # and so we can simply activate the z without having to work backwards to find what z was. This is
-  # because calculating the derivative of sigmoid requires the unchanged parameter to find what the
-  # slope was at that point instead of the activation.
-  def calculate_z(self, training_example: np.ndarray) -> list[np.ndarray]:
+  def record_activations(self, x: np.ndarray) -> list[np.ndarray]:
 
-    # We can't have 2d inputs
-    assert training_example.ndim == 1
+    # List by default stores reference
+    activations = [x.copy()]
 
-    z_values = [training_example]
+    for weight, bias in zip(self.weight_matrices, self.bias_vectors):
+      x = np.matmul(weight, x)
+      x += bias
+      x = vector_sigmoid(x)
 
-    
-    # Our own feed forward that keeps track of the activations
+      activations.append(x.copy())
 
-    for transformation, bias in zip(self.weight_matrices, self.bias_vectors):
-      training_example = np.matmul(transformation, training_example)
-      training_example += bias
+    return activations
 
-      z_values.append(training_example)
+</code></pre>
 
-      training_example = vector_sigmoid(training_example)
-
-      # No activation function here
-
-    return z_values
-
-  # Only computes the gradient for a single training example; stores result in internal gradient, tuple
-  # stores first element as the training input and the second element as the true output
-  def calculate_single_gradient(self, training_example: tuple[np.ndarray, np.ndarray], z_values = None,
-                                current_influence: float = math.nan, current_neuron: int = 0, depth: int = -1) -> None:
-
-    # Base case, doesn't include input layer
-    if depth == self.depth - 1:
-      return
-    
-    # Because function is recursive, state must be stored in the parameters
-    if z_values == None:
-      z_values = self.calculate_z(training_example[0])
-    if current_influence == math.nan:
-      current_influence = squared_error_prime(training_example[1], vector_sigmoid(z_values[-1 - depth]))
-    if depth == 0:
-      assert len(training_example[1]) == len(z_values[-1 - depth])
-
-    # Very inneficient, but covers every path for the gradient
-
-    # We want to perform an initial loop on the first layer of neurons, then allow 
-    # recursion to take care of the rest
-    if depth == -1:
-      for index, z in enumerate(z_values[-1]):
-        activation = sigmoid(z)
-        influence = squared_error_prime(training_example[1][index], activation)
-
-        self.calculate_single_gradient(training_example, z_values, influence, index, depth + 1)
-
-    else:
-      activation_influence = sigmoid_prime(z_values[-1 - depth][current_neuron]) * current_influence
-
-      self.bias_gradient[-1 - depth][current_neuron] += activation_influence
-
-      for index, weight in enumerate(self.weight_matrices[-1 - depth][current_neuron]):
-        prev_activation = z_values[-1 - depth][current_neuron]
-
-        # The influence of the weight is determined by the previous activation
-        weight_influence = prev_activation * activation_influence
-
-        # The influence of the previous activation is determined by the weight
-        prev_activation_influence = weight * activation_influence
-
-        self.weight_gradient[-1 - depth][current_neuron][index] += weight_influence
-        self.calculate_single_gradient(training_example, z_values, prev_activation_influence, index, depth + 1)
-      </code></pre>
-
-      <p class="paragraph">
-        This is a lot of code I just kinda barfed up, so let's go through it bit
-        by bit. Let's first take a look at the calculate z method
-      </p>
-
-      <pre><code class="language-python">
-# We have to keep track of the z values in order to calculate how the neuron responded to the input
-# and so we can simply activate the z without having to work backwards to find what z was. This is
-# because calculating the derivative of sigmoid requires the unchanged parameter to find what the
-# slope was at that point instead of the activation.
-def calculate_z(self, training_example: np.ndarray) -> list[np.ndarray]:
-
-  # We can't have 2d inputs
-  assert training_example.ndim == 1
-
-  z_values = [training_example]
-
-  
-  # Our own feed forward that keeps track of the activations
-
-  for transformation, bias in zip(self.weight_matrices, self.bias_vectors):
-    training_example = np.matmul(transformation, training_example)
-    training_example += bias
-
-    z_values.append(training_example)
-
-    training_example = vector_sigmoid(training_example)
-
-    # No activation function here
-
-  return z_values
-      </code></pre>
-
-      <p class="paragraph">
-        The purpose of this is to keep track of the raw \( z \) values so we can
-        calculate the slope of sigmoid at \( z \) instead of like reverse
-        calculating it. It's also fairly easy to apply the activation function
-        to \( z \) after the fact to calculate the full partial derivative of
-        the weights and biases. Next, let's take a look at the actual
-        calculation of the gradient bit by bit. Let's just take a peak at some
-        of our initial conditions
-      </p>
-
-      <pre><code class="language-python">
-    # Base case, doesn't include input layer
-if depth == self.depth - 1:
-  return
-
-# Because function is recursive, state must be stored in the parameters
-if z_values == None:
-  z_values = self.calculate_z(training_example[0])
-if current_influence == math.nan:
-  current_influence = squared_error_prime(training_example[1], vector_sigmoid(z_values[-1 - depth]))
-      </code></pre>
-
-      <p class="paragraph">
-        Our initial condition is the base case (if you don't know what that is,
-        you might want to learn how recursion works) that ends when the depth
-        has reached the depth of the gradient. The self.depth attribute includes
-        the input layer which we cannot change (how could we change an input?),
-        so once the depth exceeds the amount of mutable layers, we want to
-        terminate recursion. The other conditions populate the default
-        arguments. Because in proper functional programming you don't store
-        state outside the scope of the function, so we keep our recursive state
-        inside of the function. We don't want the user to provide these since we
-        can populate them ourselves inside of the function.
-      </p>
-
-      <p class="paragraph">
-        Next, let's take a look at what heppens on the initial call
-      </p>
-
-      <pre><code class="paragraph">
-# Very inneficient, but covers every path for the gradient
-
-# We want to perform an initial loop on the first layer of neurons, then allow 
-# recursion to take care of the rest
-if depth == -1:
-  for index, z in enumerate(z_values[-1]):
-    activation = sigmoid(z)
-    influence = squared_error_prime(training_example[1][index], activation)
-
-    self.calculate_single_gradient(training_example, z_values, influence, index, depth + 1)
-      </code></pre>
-
-      <p class="paragraph">
-        The depth starts out at \( -1 \) in order to almost simulate a "ghost
-        neuron" behind the ouput layer so we can perform the branching recursion
-        we need without getting goofy with external state or nesting the
-        recursion in some other function. This is similar to adding dummy nodes
-        at the base of linked lists when dealing with certain operations. With a
-        start depth of \( -1 \), we will be able to loop over each output neuron
-        with depth at \( 0 \) and then perform the typical branching off of
-        that. We can also pass through each activation's influence on the loss
-        through the start so we don't need any special conditions regarding the
-        calculation of the loss function at the output layer. Next, let's look
-        at the typical recurse case
-      </p>
-
-      <pre><code class="language-python">
-else:
-  activation_influence = sigmoid_prime(z_values[-1 - depth][current_neuron]) * current_influence
-
-  self.bias_gradient[-1 - depth][current_neuron] += activation_influence
-
-  for index, weight in enumerate(self.weight_matrices[-1 - depth][current_neuron]):
-    prev_activation = z_values[-1 - depth][current_neuron]
-
-    # The influence of the weight is determined by the previous activation
-    weight_influence = prev_activation * activation_influence
-
-    # The influence of the previous activation is determined by the weight
-    prev_activation_influence = weight * activation_influence
-
-    self.weight_gradient[-1 - depth][current_neuron][index] += weight_influence
-    self.calculate_single_gradient(training_example, z_values, prev_activation_influence, index, depth + 1)
-      </code></pre>
-
-      <p class="paragraph">
-        Here, we add the current activation's slope to the chain and use that to
-        calculate the bias and weight gradients. Since there is only one bias
-        per neuron, we don't have to loop over it like we do with the weights.
-        You may notice that we don't explicitly include a partial derivative for
-        the bias. This is because the partial derivative for the bias to \( z \)
-        is \( 1 \), or in other words $$ \frac{\partial{z}}{\partial{b}} = 1 $$
-        This should intuitively make sense bceause if you push \( b \) by \( db
-        \), \( z \) will change by \( db \) as \( z = \sum_{i=1}^{n} w_i \cdot
-        a_{n - 1} + b \), so any change to the bias term will increase \( z \)
-        by that change since bias is just slapped on to the end. Because of
-        this, we don't need to tack on any special derivative; instead we can
-        just use the \( \frac{\partial{C}}{\partial{z}} \) term which implicitly
-        has the derivative of bias with respect to \( z \), 1, already in the
-        expression.
-      </p>
-
-      <p class="paragraph">
-        The weights are slightly more complicated. The weight matrix is
-        essentially a weighted adjacency matrix as each component of the matrix
-        represents a weighted connection between two neurons represented as the
-        row and column. In our case, the rows represent the current layer in
-        the, and the column represents the layer feeding into the current layer.
-        We are not doing any fancy optimizations here, so we are individually
-        traversing every single possible path in the network, which in our
-        quickly approaching MNIST classifier will be very computationally heavy.
-        Because we go by individual neurons, we must not only store the depth
-        (which encodes the layer) in our recursive state (such an oxymoron), but
-        also the current neuron within that layer. This allos us to tell which
-        row we are on, and thus all the connections from that neuron to all
-        previous neurons in our weight matrix. We can then individually process
-        the gradient for each weight and recurse to the connected neuron thus
-        performing the same steps until we reach the end of the gradient.
-      </p>
-
-      <p class="paragraph">
-        The rest of the class is now fairly easy. We simple need to calculate
-        and sum the gradient over each training example and calculate the
-        average. This can be done with trivial function
-      </p>
+      <p class="paragraph">Now let's calculate the gradient</p>
 
       <pre><code class="language-python">
 class Network:
   # Other methods...
 
-  def calculate_gradient(self, training_examples: list[tuple[np.ndarray, np.ndarray]]) -> None:
-    for training_example in training_examples:
-      self.calculate_single_gradient(training_example)
+  def calculate_gradient(self, batch: list[tuple[np.ndarray, np.ndarray]]) -> None:
+    for x, y in batch:
 
-    size = len(training_examples)
+      activations = self.record_activations(x)
 
-    for i in range(self.depth - 1):
-      self.weight_gradient[i] / size
+      delta = squared_error_prime(y, activations[-1]) * sigmoid_prime_from_activation(activations[-1])
+      
+      # We start at the end of the gradient; stop is exclusive
+      for layer in range(start=self.depth - 2, stop=-1, step=-1):
+      
+        # The derivative of z with respect to bias is 1, so no further
+        # calculations are needed
+        self.bias_gradient[layer] += delta
+
+        # The previous activations are at the current layer since there
+        # is one more activation layer than weight/bias transformation 
+        # layer
+        prev_activations = activations[layer]
+
+        self.weight_gradients[layer] += np.outer(delta, prev_activations)
+
+        delta = np.matmul(np.transpose(self.weight_matrices[layer]), delta)
       </code></pre>
 
       <p class="paragraph">

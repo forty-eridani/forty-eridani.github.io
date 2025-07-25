@@ -4,7 +4,7 @@ import math
 # Other imports...
 
 def sigmoid(x: float) -> float:
-  return 1 / (1 + math.exp(-x))
+  return 1 / (1 + np.exp(-x))
 
 def vector_sigmoid(x: np.ndarray) -> np.ndarray:
   transformed_x = np.zeros(x.shape)
@@ -23,7 +23,7 @@ def squared_error(expected: float, observed: float) -> float:
 def squared_error_prime(expected: float | np.ndarray, observed: float | np.ndarray) -> np.ndarray:
   return 2.0 * (observed - expected)
 
-def sigmoid_prime_activation(a: float) -> float:
+def sigmoid_prime_from_activation(a: float) -> float:
   return a * (1 - a)
 
 def mean_squared_error(expected: list[float] | list[np.ndarray], observed: list[float] | list[np.ndarray]) -> float | np.ndarray:
@@ -102,59 +102,44 @@ class Network:
   # slope was at that point instead of the activation.
   def record_activations(self, x: np.ndarray) -> list[np.ndarray]:
 
-    # We can't have 2d inputs
+    # List by default stores reference
     activations = [x.copy()]
 
-    for i in range(self.depth - 1):
-      x = np.matmul(self.weight_matrices[i], x)
-      x = x + self.bias_vectors[i]
-      x = vector_sigmoid(x)
+    for weight, bias in zip(self.weight_matrices, self.bias_vectors):
+      x = weight @ x
+      x += bias
+      x = sigmoid(x)
 
       activations.append(x.copy())
 
     return activations
 
-
-  def calculate_gradient(self, training_data: list[tuple[np.ndarray, np.ndarray]]) -> None:
-    for x, y in training_data:
+  def calculate_gradient(self, batch: list[tuple[np.ndarray, np.ndarray]]) -> None:
+    size = len(batch)
+    for x, y in batch:
 
       x = x.flatten()
-      a = self.record_activations(x)
-      influence = squared_error_prime(y, a[-1])
 
-      for layer in range(self.depth - 1):
-        layer = -1 - layer
+      activations = self.record_activations(x)
 
-        self.bias_gradient[layer] += sigmoid_prime_activation(a[layer]) * influence
-        tmp_influence = np.zeros(self.weight_gradient[layer].shape[1])
+      delta = squared_error_prime(y, activations[-1]) * sigmoid_prime_from_activation(activations[-1])
+      
+      # We start at the end of the gradient; stop is exclusive
+      for layer in range(self.depth - 2, -1, -1):
+      
+        # The derivative of z with respect to bias is 1, so no further
+        # calculations are needed
+        self.bias_gradient[layer] += delta
 
-        # influence_matrix = np.array([
-        #   [row_influence * sp] * self.weight_gradient[layer].shape[1] for row_influence, sp in zip(influence, sigmoid_prime_activation(a[layer]))
-        # ])
+        # The previous activations are at the current layer since there
+        # is one more activation layer than weight/bias transformation 
+        # layer
+        prev_activations = activations[layer]
 
-        # prev_activation_matrix = np.array([
-        #   [prev] * self.weight_gradient[layer].shape[0] for prev in a[layer - 1]
-        # ])
-        # prev_activation_matrix = np.rot90(prev_activation_matrix)
+        self.weight_gradient[layer] += np.outer(delta, prev_activations)
 
-        # print(prev_activation_matrix.shape, influence_matrix.shape)
+        delta = np.transpose(self.weight_matrices[layer]) @ delta
 
-        # self.weight_gradient[layer] += influence_matrix * prev_activation_matrix
-        # influence = (influence_matrix * self.weight_matrices[layer]).sum(axis=0)
-
-        for neuron_index in range(self.weight_gradient[layer].shape[0]):
-          activation = a[layer][neuron_index]
-
-          delta = sigmoid_prime_activation(activation) * influence[neuron_index]
-          for prev_neuron_index in range(self.weight_gradient[layer].shape[1]):
-            prev_activation = a[layer - 1][prev_neuron_index]
-
-            self.weight_gradient[layer][neuron_index][prev_neuron_index] += prev_activation * delta
-            
-            tmp_influence[prev_neuron_index] += self.weight_matrices[layer][neuron_index][prev_neuron_index] * delta
-
-        influence = tmp_influence
-
-    for i in range(len(self.weight_gradient)):
-      self.weight_gradient[i] /= len(training_data)
-      self.bias_gradient[i] /= len(training_data)
+    for i in range(self.depth - 1):
+      self.bias_gradient[i] /= size
+      self.weight_gradient[i] /= size
