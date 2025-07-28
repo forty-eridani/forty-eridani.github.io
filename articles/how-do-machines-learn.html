@@ -58,7 +58,7 @@
         <div class="article-text">
           <h2 class="section-header" id="introduction">Introduction</h2>
           <p class="paragraph">
-            In this era, the use of machine learning seems to be extremely
+            Today, the use of machine learning seems to be extremely
             commonplace. Everything from targeted advertisements to stock market
             predictions to speech recognition all typically use some form of
             machine learning, often in the form of neural networks. Despite
@@ -74,58 +74,85 @@
             commonly used to train systems just like the one we will create. Our
             goal will to create a program that can accurately identify a large
             majority of these digits without any special python libraries
-            (besides numpy, no way in hell am I writing vector and matrix
-            operations when numpy exists).
+            (besides numpy, but that's not cheating, right?).
           </p>
 
           <p class="paragraph">
-            This article is not for the faint of heart. Some amount of
-            programming knowledge will be necessary to not only follow but
-            understand the program that we will write. I highly encourage
-            anybody reading to re-read any section they don't understand as well
-            as looking into other resources if there are any parts I did not
-            articulate well. If you find that I could have explained something
-            better or made some sort of error or have some other suggestion,
-            please feel free to reach out as I would be happy to edit this
-            resource. The math for this may become somewhat complex. While we
-            will be touching on a slight amount of multi-variable calculus, I
+            This article is geared torwards the motivated. You don't have to be
+            a math genius to understand this material, but you must be motivated
+            to look on other resources (such as those which I have provided) and
+            have some ability to slow down to work at a problem for a little
+            while (it took me several months to grasp this material!). This is
+            also somewhat of a project for me to confirm I know what the hell I
+            am doing, and I am glad I did since I learned <em>a lot</em> in the
+            process in writing this.
+          </p>
+
+          <p class="paragraph">
+            This article can get a little dense, so I highly encourage anybody
+            reading to re-read any section they don't understand as well as
+            looking into other resources if there are any parts I did not
+            articulate well. To get the most out of this content, it may help to
+            be somewhat literate in the python programming language, but I think
+            you can still get a lot out of this article if you are unable to
+            program. If you find that I could have explained something better or
+            made some sort of error or have some other suggestion, please feel
+            free to reach out as I would be happy to edit this resource. While
+            we will be touching on a slight amount of multi-variable calculus, I
             will do my best to explain the concepts as intuitively as possible
             and avoid a lot of the notation that a lot of people get trapped in
             while learning this topic, at least until we have covered enough
             where the notation can be understood with the intuition I have
             provided. If at any point the math feels like too much, I highly
-            recommend checking out out 3Blue1Brown's calculus or linear algebra
+            recommend checking out out 3Blue1Brown's
+            <a
+              href="https://www.youtube.com/watch?v=WUvTyaaNkzM&list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr"
+              class="hyperlink"
+              >calculus</a
+            >
+            or
+            <a
+              href="https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab&pp=0gcJCV8EOCosWNin"
+              class="hyperlink"
+              >linear algebra</a
+            >
             courses. They have incredible animations paired with great
             explanations on the math topics we will cover. 3Blue1Brown also has
-            a course on neural networks, so that may also be a useful resource
-            if you ever feel stuck. I gained much of my knowledge on the topic
-            from 3Blue1Brown as well as Michael Nielson's book
+            a course on
+            <a
+              href="https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
+              class="hyperlink"
+              >neural networks</a
+            >, so that may also be a useful resource if you ever feel stuck. I
+            gained much of my knowledge on the topic from 3Blue1Brown as well as
+            Michael Nielson's book
             <a
               href="https://neuralnetworksanddeeplearning.com/"
               class="hyperlink"
               >Neural Networks and Deep Learning</a
-            >. Anywho, enough of the blabbering, let's get into the fun stuff!
+            >. Anywho, enough of the blabbering, let's jump in!
           </p>
           <br />
           <h2 class="section-header" id="perceptrons-and-decision-boundaries">
             Perceptrons and Decision Boundaries
           </h2>
           <p class="paragraph">
-            The perceptron is the the simplest neural network that is out there
-            and works in a similar way to how you probably weigh your own
-            decisions. Let us imagine that you are deciding whether to learn the
-            piccolo. We can represent the decision-making process by quantifying
-            the factors that go into that decision. For now, let's consider just
-            two factors that may influence your decision (this will be easier to
-            visually represent later): the amount of hours per week you would
-            put into the instrument, and how much you enjoy the piccolo.<sup
+            Perceptrons are the simplest implementation of neural networks, and
+            they work using the same cost-benefit analysis we use to weigh our
+            own decisions. Let us imagine that you are deciding whether to learn
+            the piccolo. We can represent the decision-making process by
+            quantifying the factors that go into that decision. For now, let's
+            consider just two factors that may influence your decision (this
+            will be easier to visually represent later): the amount of hours per
+            week you would put into the instrument, and how much you enjoy the
+            piccolo.<sup
               ><a href="#fn1" id="tfn1" class="footnote-navigation">1</a></sup
             >
             We can represent these factors as the "activation" of two input
             neurons, and they both lead into another neuron known as the output
             neuron. The output neuron will sum all of the input activations and
-            apply a threshold that represents whether you are actually willing
-            to learn how to play the piccolo with the given parameters.
+            apply a threshold which decides whether you are actually willing to
+            learn how to play the piccolo with the given parameters.
           </p>
 
           <div class="image-container">
@@ -166,12 +193,10 @@
               ><a href="#fn2" class="footnote-navigation" id="tfn2">2</a></sup
             >
             This is where weights and biases come in. We need some way to
-            transform those input parameters in a way that could represent our
+            transform those input parameters in a way that represents our
             decision process. In other words, we must simply weigh the factors
-            that go into our decision. Weights in a neural network are
-            essentially seeing how important an activation is to the output by
-            applying some coefficient to it's own activation before the
-            activation is sent to the output.
+            that go into our decision. Weights in a neural network tells an
+            output how a given input activation should weigh its decision.
           </p>
 
           <div class="image-container">
@@ -184,11 +209,11 @@
             we could imagine the input neuron representing time receiving a
             negative weight. This would mean that the more time we would
             practice, the more we would have to enjoy the instrument in order
-            for us to decide to play the piccolo. Up until now, all of our
-            weights have been 1 since we are directly piping in the activations
-            of the inputs neurons straight into the output neurons, but to get a
-            more accurate representation of our decision, let's just say the the
-            weight between practice time and the output is -1.
+            for us to decide to pick it up. Until now, all of our weights have
+            been 1 since we are directly piping in the activations of the inputs
+            neurons straight into the output neurons, but to get a more accurate
+            representation of our decision, let's just say the the weight
+            between practice time and the output is -1.
           </p>
 
           <br />
@@ -206,14 +231,13 @@
             consider: bias. Bias is essentially the offset we apply to the sum
             of the activations before they reach the output. According to the
             graph we have just created, even if we like the piccolo just a tiny
-            amount (to put this another way, \( x = \epsilon \) for some small
-            \( \epsilon > 0 \)), we are willing to learn it with some minimal
-            amount of practice. Now maybe that is you, but to learn the piccolo
-            there is an upfront cost which most wouldn't be willing to pay if
-            they only liked the instrument a small amount. To represent this
-            numerically, we use the aforementioned bias. In this case, the
-            negative bias will simply act as the minimum enjoyment it will take
-            to make the decision to get an instrument with some small amount of
+            amount, we are willing to learn it with some minimal amount of
+            practice. Now maybe that is you, but to learn the piccolo there is
+            an upfront cost which most wouldn't be willing to pay if they only
+            liked the instrument a small amount. To represent this numerically,
+            we use the aforementioned bias. In this case, the negative bias will
+            simply act as the minimum enjoyment it will take to make the
+            decision to get an instrument with some small amount of
             practice.<sup
               ><a href="#fn3" class="footnote-navigation" id="tfn3">3</a></sup
             >
@@ -237,7 +261,7 @@
             neglected to mention much about: the decision boundary. The decision
             boundary is a fundamental aspect to any algorithm that classifies
             information like we are. As the name implies, it is the boundary
-            between regions of classification. In our case, this is simply the
+            that seperates regions of decision. In our case, this is simply the
             line that separates whether we should play the piccolo or not with
             the given inputs, but as the classification becomes more abstract
             (like recognizing the digits from the MNIST database), so too do the
@@ -262,8 +286,7 @@
             weight at index \( i \), \( x^i \) is the input activation at neuron
             index \( i \), and \( t\) is our threshold. If you are not too
             comfortable with summation notation, I would recommend familiarizing
-            yourself with it as we will be using it a lot throughout this
-            article.
+            yourself with it as we will be using it throughout this article.
           </p>
 
           <br />
@@ -283,10 +306,9 @@
             <sup id="fn2">
               2. Pretend that our practice time could be negative. I am unsure
               how that is really possible, maybe intentionally worsening our
-              skills at piccolo somehow? I am too lazy to redo and re-edit the
-              GeoGebra svg file, and this gives us a more holistic view of the
-              possible activations of other kinds of parameters beyond perfect
-              piccolo predictions.
+              skills at piccolo somehow? Though it may not be realistic, this
+              gives us a more holistic view of the possible activations of other
+              kinds of parameters beyond perfect piccolo predictions.
               <a href="#tfn2" title="Return to text" class="footnote-navigation"
                 >Return to text</a
               ></sup
@@ -315,8 +337,8 @@
             useful neural networks require hidden layers. A hidden layer can be
             thought of in many ways, but to stick to our geometric view let's
             imagine them as matrix transformations. Because we have not yet
-            learned of non-polynomial activation functions, hidden layers will
-            not serve any meaningful purpose for us since all of the linear
+            learned of non-linear activation functions, hidden layers will not
+            serve any meaningful purpose for us since all of the linear
             transformations in a hidden layer could all be represented by a
             single matrix, or series of weights, between the input and output
             neurons. Don't worry if this doesn't quite make sense yet, for now
@@ -345,7 +367,7 @@
           <br />
 
           <p class="paragraph">
-            Now vectors can have any number of components, but the most we can
+            Vectors can have any number of components, but the most we can
             visualize is 3. What make vectors interesting is that we can
             represent our inputs as vectors. While this explanation isn't
             completely necessary, it gives us a more geometric interpretation of
@@ -403,13 +425,14 @@
 
           <p class="paragraph">
             Similar to vector addition, scalars work in a way you would probably
-            expect. Scalars, as the name implies, simply scale the vector. This
-            means that the vector will retain the same direction (which is slope
-            in this coordinate system), but the magnitude will change. For
-            example, a scalar operation on vector \( \vec{v} \) would look like
-            $$ \vec{u} = 2\vec{v} $$ and if we were to expand that out a bit, it
-            would look like $$ \vec{u} = 2\begin{bmatrix} 1\\ 2\\ \end{bmatrix}
-            $$ Now all we do is scale each component by the scalar $$ \vec{u} =
+            expect. Scalars, as the name implies, simply scale the vector but
+            retain the vector's direction. This means that the vector will
+            retain the same direction (which is slope in this coordinate
+            system), but the magnitude will change. For example, a scalar
+            operation on vector \( \vec{v} \) would look like $$ \vec{u} =
+            2\vec{v} $$ and if we were to expand that out a bit, it would look
+            like $$ \vec{u} = 2\begin{bmatrix} 1\\ 2\\ \end{bmatrix} $$ Now all
+            we do is scale each component by the scalar $$ \vec{u} =
             \begin{bmatrix} 2 \cdot 1\\ 2 \cdot 2\\ \end{bmatrix} $$ And there
             we go, now we have our scaled vector. If we were to plot both \(
             \vec{u} \) and \( \vec{v} \), it would look something like
@@ -478,25 +501,27 @@
             this example didn't show much, but we did something very powerful,
             something called a linear combination. In principle, a linear
             combination is fairly simple. In the case of vectors, all you do is
-            get the sum of some scaled vectors. Earlier when I said that all
-            vectors can be implicitly described using the unit vectors, what I
-            mean was that any vector can be described as a linear combination of
-            those unit vectors. If a set of vectors is able to describe any
-            other vector in your current vector space, it is a valid basis
-            vector. The reason we use \( \hat{\imath} \) and \( \hat{\jmath} \)
-            as our basis vectors is that it's quite simple to construct your
-            linear combinations because as each unit vector points a single unit
-            in a single direction, and because it is just a single unit, each
-            component of your vector can be used directly as the scalar for the
-            corresponding unit vector. This doesn't mean that we can't use other
-            vectors as our basis vectors however. To prove this, let's use the
-            vectors \( \vec{v} \) and \( \vec{u} \) as our basis vectors where
-            $$ \vec{v} = \begin{bmatrix} 1\\ 2 \end{bmatrix}, \hspace{15px}
-            \vec{u} = \begin{bmatrix} -1\\ 1 \end{bmatrix} $$ Let's also say
-            that we want a linear combination of the vectors to form vector \(
-            \vec{w} \) where $$ \vec{w} = \begin{bmatrix} 4\\ 1 \end{bmatrix} $$
-            If we solve a basic system, we find that $$ \frac{5}{3} \vec{v} -
-            \frac{7}{3} \vec{u} = \vec{w} $$ Which looks like
+            get the sum of some scaled vectors, and typically those scalars
+            represent the components of some other vectors. Earlier when I said
+            that all vectors can be implicitly described using the unit vectors,
+            what I mean was that any vector can be described as a linear
+            combination of those unit vectors. If a set of vectors is able to
+            describe any other vector in your current vector space, it is a
+            valid basis vector. The reason we use \( \hat{\imath} \) and \(
+            \hat{\jmath} \) as our basis vectors is that it's quite simple to
+            construct your linear combinations because as each unit vector
+            points a single unit in a single direction, and because it is just a
+            single unit, each component of your vector can be used directly as
+            the scalar for the corresponding unit vector. This doesn't mean that
+            we can't use other vectors as our basis vectors however. To prove
+            this, let's use the vectors \( \vec{v} \) and \( \vec{u} \) as our
+            basis vectors where $$ \vec{v} = \begin{bmatrix} 1\\ 2
+            \end{bmatrix}, \hspace{15px} \vec{u} = \begin{bmatrix} -1\\ 1
+            \end{bmatrix} $$ Let's also say that we want a linear combination of
+            the vectors to form vector \( \vec{w} \) where $$ \vec{w} =
+            \begin{bmatrix} 4\\ 1 \end{bmatrix} $$ If we solve a basic system,
+            we find that $$ \frac{5}{3} \vec{v} - \frac{7}{3} \vec{u} = \vec{w}
+            $$ Which looks like
           </p>
 
           <br />
@@ -519,8 +544,9 @@
             they are linearly dependent. One example of two linearly dependent
             vectors could be $$ \vec{u} = \begin{bmatrix} 1\\ 1 \end{bmatrix},
             \hspace{15px} \vec{v} = \begin{bmatrix} -1\\ -1 \end{bmatrix} $$ If
-            we draw these out, we find they lie upon the same line and could be
-            written as scaled version of each other.
+            we draw these out, we find they lie upon the same line as either of
+            them could be scaled by \(-1\) and then would equal the other vector
+            which violates the rule of linear independence.
           </p>
 
           <br />
@@ -532,13 +558,13 @@
           <br />
 
           <p class="paragraph">
-            Now think about how we could transform the space vectors are
-            described in by changing our basis vectors. We wouldn't change the
-            scalars applied to the basis vectors (since those scalars are the
-            components of the vector we want to transform), but just the basis
-            vectors themselves. This has the effect of performing some operation
-            to the space, and subsequently transforming the vectors within that
-            space.
+            Think about how we could transform the space vectors are described
+            in by changing our basis vectors. We wouldn't change the scalars
+            applied to the basis vectors (since those scalars are the components
+            of the vector we want to transform), but just the basis vectors
+            themselves. This has the effect of performing some operation to the
+            space (the set of all possible vectors), which is exactly what we
+            want to do.
           </p>
 
           <p class="paragraph">
@@ -603,22 +629,19 @@
             essentially what neural networks undergo when classifying data. Each
             layer of neurons represents some transformation to the input space,
             and we most often use matrices as the language to describe that
-            transformation. For example, in our little perceptron, our function
-            to determine whether we should play the piccolo was like a 1x2
-            matrix. Now when matrices are not square, that means they are doing
-            one of two things: either describing the input vector in a higher
-            dimension or describing the input vector in a lower dimension. In
-            our case, we took two dimensions of input (practice time and
-            enjoyment) and transformed it into a single dimensions output that
-            we ended up applying a threshold two. If we thought about this a bit
-            more generally, we could say that the corresponding output vector
-            will contain the same amount of rows as the matrix (since the linear
-            combination involves addition), and the columns represent the
-            elements of the vector you are applying the combination to (since
-            each column represents a vector to be scaled by the corresponding
-            component in the vector you are multiplying the matrix to). For our
-            piccolo example, the entire process can be visually (each of the
-            black vectors represent example inputs)
+            transformation. For example, in our little perceptron, the function
+            to determine whether we should play the piccolo was a 1x2 matrix.
+            Now when matrices are not square, they are doing one of two things:
+            describing the input vector in a higher dimension or describing the
+            input vector in a lower dimension. In our case, we took two
+            dimensions of input (practice time and enjoyment) and transformed it
+            into a single dimensions output that we ended up applying a
+            threshold to. This is why matrices are so useful in describing
+            feed-forward in a neural network; each component of the input scales
+            the correspodning weights (since each neuron in the output has
+            connections to all the inputs), and the linear combination takes the
+            sum of each column, which means each output neuron gets a weighted
+            sum of the entire input
           </p>
 
           <br />
@@ -637,7 +660,7 @@
             As you can see (and as I said earlier), this matrix transformed the
             input into a single dimensional output. The expression \( x - y > 0
             \) that we use to determine the relationship between enjoyment and
-            practice time can be modeled as the matrix \( \begin{bmatrix} 1 &
+            practice can be modeled as the matrix \( \begin{bmatrix} 1 &
             -1\end{bmatrix} \) (bias is not included since in linear algebra the
             origin must remain static throughout the transformation). Each
             column of this matrix represents the relationship that input has to
@@ -645,12 +668,11 @@
             to a single input for all neurons in a layer. This is essentially
             how much the activation of a single input neuron should affect all
             output neurons. Now each row is the weights that apply to all input
-            for a single neuron. This is how much all inputs should determine a
-            single output neuron. This means our output is represented as a
-            vector where each component of that vector represents the activation
-            of a neuron in that layer. I encourage you to take a minute and
-            apply this logic to the matrix we used for the piccolo example and
-            apply this principle in general.
+            for a single neuron. This means our output is represented as a
+            vector where each component of that vector represents the
+            pre-activation of a neuron in that layer. I encourage you to take a
+            minute and apply this logic to the matrix we used for the piccolo
+            example and apply this principle in general.
           </p>
 
           <p class="paragraph">
@@ -679,11 +701,12 @@
             way we could, for example, classify points on whether they are
             inside or outside of a circle and we have no guarantees that a model
             architecture like this could engage in more complex and abstract
-            classification like in the case of the MNIST dataset. This forces us
-            to find a way to transform and warp space in a manner that can
-            represent any decision boundary shape. To find out how we can do
-            that, we must look at the reason why neural networks are so powerful
-            in the first place, called
+            classification (drawing a more complex decision boundary) like in
+            the case of the MNIST dataset. This forces us to find a way to
+            transform and warp space in a manner that can represent any decision
+            boundary shape. To find out how we can do that, we must look at the
+            reason why neural networks are so powerful in the first place,
+            called
           </p>
 
           <br />
@@ -729,24 +752,25 @@
             layer from a neural network can be described as a vector? Now take
             that vector and apply a non-linear function to each component. The
             result is your new activation that will either serve as the output
-            or be sent along to the next layer for further processing. One very
-            common non-linear activation function is the sigmoid function
-            (written as \( \sigma(x) \)) which gives an output very close to
-            zero for extremely negative inputs, and gives an output very close
-            to one very positive inputs. The function itself is \( \sigma(x) =
-            \frac{1}{1 + e^{-x}} \) and I encourage you to take a moment to
-            understand why this function approaches zero and one.
+            of the network, or be sent along to the next layer for further
+            processing. One very common non-linear activation function is the
+            sigmoid function (written as \( \sigma(x) \)) which gives an output
+            very close to zero for extremely negative inputs, and gives an
+            output very close to one very positive inputs. The function itself
+            is \( \sigma(x) = \frac{1}{1 + e^{-x}} \) and I encourage you to
+            take a moment to understand why this function approaches zero and
+            one.
           </p>
 
           <p class="paragraph">
             The curious among you may ask why the universal approximation
             theorem is correct. While I am not going to present any sort of
-            formal proof, I will present a visual one to help motivate the
-            geometric interpretation of the network as I have done so far in
-            this article. Let us attempt to approximate the function \( f(x) =
-            -\frac{1}{4}x^2 + 4 \). As you could probably tell, this function
-            cannot be accurately approximated with linear transformations, and
-            must be done with a different kind of activation. Here is \( f(x) \)
+            formal proof, I will present a visual one to help motivate a
+            geometric interpretation as I have done so far in this article. Let
+            us attempt to approximate the function \( f(x) = -\frac{1}{4}x^2 + 4
+            \). As you could probably tell, this function cannot be accurately
+            approximated with linear transformations, and must be done with a
+            different kind of activation. Here is \( f(x) \)
           </p>
 
           <br />
@@ -958,9 +982,8 @@
           <br />
 
           <p class="paragraph">
-            Now as you can see that neuron offset the left size, so we need to
-            use the last neuron to encode the falling top edge and push the
-            other edges down
+            Now we have to push the left edge down as it was offset in the
+            previous edit
           </p>
 
           <br />
@@ -1003,11 +1026,12 @@
             point on the sum of two lines is proportional to the distance from
             the intersection of the lines. When we use non-linear activations,
             we are able to form them into step-like functions and fit them to
-            extremely complex decision boundaries. As we add more and more
-            neurons, it is almost like we are increasing the "resolution" of the
-            decision boundary. While I have only mentioned the sigmoid
-            activation, there are a lot more. Some popular ones include tanh and
-            ReLU, but for our purposes, sigmoid is will work just fine.
+            extremely complex decision boundaries across hundreds or thousands
+            of dimensions. As we add more and more neurons, it is almost like we
+            are increasing the "resolution" of the decision boundary. While I
+            have only mentioned the sigmoid activation, there are a lot more.
+            Some popular ones include tanh and ReLU, but for our purposes,
+            sigmoid will work just fine.
           </p>
 
           <p class="paragraph">
@@ -1024,10 +1048,10 @@
             line on the right side of the image. You could imagine neurons on
             the output layer which correspond to digits with a line on the right
             (like 9 or 7) having strong weights to that neuron that can identify
-            the line. However, it's essentially impossible to know exactly how
-            given network works exactly since there are just too many parameters
-            (the neural network we will create to identify MNIST digits will
-            have over 10,000).
+            the line. However, it's quite difficult to know exactly how given
+            network works exactly since there are just too many parameters (the
+            neural network we will create to identify MNIST digits will have
+            over 10,000).
           </p>
 
           <p class="paragraph">
@@ -3177,8 +3201,8 @@ data/
           <p class="paragraph">
             The first value there (0000000) doesn't actually tell us the data
             stored within the file, it just tells us the index in hexadecimal,
-            and each "word" contains two bytes (4 hexadecimal digits) with eight
-            words per line, so each line should increment the index by 16, which
+            and each "word" contains two bytes (4 hexadecimal digits) with 16
+            bytes per line, so each line should increment the index by 16, which
             is what we are seeing (since 10 is 16 in hexadecimal). Another
             important thing to note is that the MNIST data is stored in big
             endian format. This means that the largest or most significant byte
@@ -3527,6 +3551,8 @@ model = network.Network([28 * 28, 16, 10], 0.1)
           </p>
 
           <pre><code class="language-python">
+epochs = 8
+
 for epoch in range(epochs):
   print(f"Epoch {epoch}\n---------------------")
   train(model, 64, train_imgs, train_labels)
@@ -3564,15 +3590,19 @@ Total Accuracy: 81.25%
             place to learn about all sorts of libraries like PyTorch or
             TensorFlow and do some really neat stuff (I highly recommend
             compteting in some kaggle challenges with these more advanced
-            libraries). I hope this article has provided you a foundation to
-            understand more complex AI concepts or maybe even read some older
-            foundational papers on ML. Anywho, thanks for reading and have a
-            good day!
+            libraries). Another fun idea would be to read some seminal papers in
+            the field and apply those idea to this network you have created. Or
+            do something completely different; I don't care (though if you do
+            something really cool, please reach out to me as I would love to
+            see)!
           </p>
         </div>
         <div class="article-toc">
           <h2 class="toc-header">Table of Contents</h2>
           <a href="#introduction" class="toc-text">Introduction</a>
+          <a href="#perceptrons-and-decision-boundaries" class="toc-text"
+            >Perceptrons and Decision Boundaries</a
+          >
           <a href="#hidden-layers-and-feed-forward" class="toc-text"
             >Hidden Layers and Feed-Forward</a
           >
