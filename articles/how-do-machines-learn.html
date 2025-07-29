@@ -78,7 +78,7 @@
           </p>
 
           <p class="paragraph">
-            This article is geared torwards the motivated. You don't have to be
+            This article is geared towards the motivated. You don't have to be
             a math genius to understand this material, but you must be motivated
             to look on other resources (such as those which I have provided) and
             have some ability to slow down to work at a problem for a little
@@ -177,7 +177,7 @@
 
           <div class="image-container">
             <object
-              data="/media/images/untransformed-decision-bounary.svg"
+              data="/media/images/untransformed-decision-boundary.svg"
               class="image"
             ></object>
           </div>
@@ -261,7 +261,7 @@
             neglected to mention much about: the decision boundary. The decision
             boundary is a fundamental aspect to any algorithm that classifies
             information like we are. As the name implies, it is the boundary
-            that seperates regions of decision. In our case, this is simply the
+            that separates regions of decision. In our case, this is simply the
             line that separates whether we should play the piccolo or not with
             the given inputs, but as the classification becomes more abstract
             (like recognizing the digits from the MNIST database), so too do the
@@ -610,7 +610,7 @@
             vector describe the vector, and if we get the linear combination of
             the components of the vector and a different set of vectors (rather
             than the unit vectors), the new resulting will be the original
-            vector as though it's basis vectors were different. This can
+            vector as though its basis vectors were different. This can
             sometimes be a little difficult to fully wrap one's head around, so
             I strongly recommend checking out other resources like
             <a
@@ -638,7 +638,7 @@
             into a single dimensions output that we ended up applying a
             threshold to. This is why matrices are so useful in describing
             feed-forward in a neural network; each component of the input scales
-            the correspodning weights (since each neuron in the output has
+            the corresponding weights (since each neuron in the output has
             connections to all the inputs), and the linear combination takes the
             sum of each column, which means each output neuron gets a weighted
             sum of the entire input
@@ -748,7 +748,7 @@
             What exactly do I mean when I say activation function? An activation
             function, in principle, is quite simple. All an activation does is
             apply some function to the weighted sum with bias and use that as
-            it's activation. Remember how we described how the output of one
+            its activation. Remember how we described how the output of one
             layer from a neural network can be described as a vector? Now take
             that vector and apply a non-linear function to each component. The
             result is your new activation that will either serve as the output
@@ -1061,7 +1061,7 @@
             classification. If you are already familiar with how a neural
             network does this, feel free to skip this next section, but for the
             rest of you, this is an important section (if a little dull) about
-            how we interpret what a neural network is thinking.
+            how we interpret what a neural network tell us.
           </p>
 
           <br />
@@ -1085,13 +1085,13 @@
             finite amount of points from the polynomial \( -\frac{1}{4}x^2 + 4
             \) and trained it based off of the input (\( x \)) and expected
             outputs (\( y \)) that were sampled. Typically, neural networks that
-            participate in such regression only adjusts the coefficients of a
+            participate in such regression only adjust the coefficients of a
             polynomial to fit a curve to data (so the network tries to find the
             best \( a \), \( b \), and \( c \) in \( ax^2+bx+c \) that can best
             map the data), but we just used the network's output directly
-            approximate our function. This isn't really used much in the real
+            approximate our function. This isn't a common method in the real
             world, but it does better help demonstrate how the network itself
-            can approximate a function.
+            can approximate a function directly.
           </p>
 
           <p class="paragraph">
@@ -1127,28 +1127,30 @@
             In order for us to train a neural network, we must have some way to
             quantify how wrong it is, and just as important, we need some way to
             tell the network how to adjust itself in order to be less wrong. To
-            quantify how wrong the network is, we use cost functions. There
-            exist many cost functions out there. For softmax outputs, you would
-            typically use something called cross-entropy loss for the output
-            layer. Here, we are going to use a fairly simple cost function known
-            as Mean Squared Error (MSE for short). In principle, MSE is very
-            simple. First, we calculate the error which is \( y - \hat{y} \)
-            where \( y \) is our label, or expected output, of the network for a
-            given neuron, and \( \hat{y} \) is the value our neural network spit
-            out. Typically, \( y \) and \( \hat{y} \) are the one-hot-encoded
-            vectors for the label and network output. After we find the error,
-            we square it. This prevents errors from canceling out when used
-            across the dataset and is extremely easy to differentiate (we will
-            get into why that's important later). For example, let's say our
-            network output is just a bunch of random noise as our model isn't
-            trained yet, and the label is 4. Let us keep the labels \( y \) and
-            \( \hat{y} \) $$ y = \begin{bmatrix} 0.00\\ 0.00\\ 0.00\\ 0.00\\
-            1.00\\ 0.00\\ 0.00\\ 0.00\\ 0.00\\ 0.00\\ \end{bmatrix},
-            \hspace{15px} \hat{y} = \begin{bmatrix} 0.95\\ 0.58\\ 0.85\\ 0.91\\
-            0.90\\ 0.30\\ 0.36\\ 0.88\\ 0.06\\ 0.32\\ \end{bmatrix} $$ And now
-            we can square the difference $$ (y - \hat{y})^2 = \begin{bmatrix}
-            0.90\\ 0.34\\ 0.72\\ 0.83\\ 0.10\\ 0.09\\ 0.13\\ 0.77\\ 0.00\\
-            0.10\\ \end{bmatrix} $$
+            do this, we use cost functions.<sup
+              ><a href="#scfgdfn1" id="tscfgdfn1" class="hyperlink">1</a></sup
+            >
+            There exist many cost functions out there. For softmax outputs, you
+            would typically use something called cross-entropy loss for the
+            output layer. Here, we are going to use a fairly simple cost
+            function known as Mean Squared Error (MSE for short). In principle,
+            MSE is very simple. First, we calculate the error which is \( y -
+            \hat{y} \) where \( y \) is our label, or expected output, of the
+            network for a given neuron, and \( \hat{y} \) is the value our
+            neural network spit out. Typically, \( y \) and \( \hat{y} \) are
+            the one-hot-encoded vectors for the label and network output. After
+            we find the error, we square it. This prevents errors from canceling
+            out when used across the dataset and is extremely easy to
+            differentiate (we will get into why that's important later). For
+            example, let's say our network output is just a bunch of random
+            noise as our model isn't trained yet, and the label is 4. Let us
+            keep the labels \( y \) and \( \hat{y} \) $$ y = \begin{bmatrix}
+            0.00\\ 0.00\\ 0.00\\ 0.00\\ 1.00\\ 0.00\\ 0.00\\ 0.00\\ 0.00\\
+            0.00\\ \end{bmatrix}, \hspace{15px} \hat{y} = \begin{bmatrix} 0.95\\
+            0.58\\ 0.85\\ 0.91\\ 0.90\\ 0.30\\ 0.36\\ 0.88\\ 0.06\\ 0.32\\
+            \end{bmatrix} $$ And now we can square the difference $$ (y -
+            \hat{y})^2 = \begin{bmatrix} 0.90\\ 0.34\\ 0.72\\ 0.83\\ 0.10\\
+            0.09\\ 0.13\\ 0.77\\ 0.00\\ 0.10\\ \end{bmatrix} $$
           </p>
 
           <p class="paragraph">
@@ -1261,7 +1263,7 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/aproxximation-difference.svg"></object>
+            <object data="/media/images/approximation-difference.svg"></object>
           </div>
 
           <br />
@@ -1311,11 +1313,11 @@
             an \( x \) that lowers the result of the function. This coefficient
             is known as \( \eta \hspace{5px} \) (the greek letter eta) and is
             referred to as the learning rate since it determines how quickly the
-            network will traverse the "parameter space" in order to find a set
-            of parameters that can most accurately approximate the desired
-            function. This process is known as gradient descent, and it is an
-            extremely powerful tool to find good solutions to problems, but it
-            has its drawbacks.
+            network will traverse the "parameter space" (or the set of all
+            possible parameters) in order to find a set of parameters that can
+            most accurately approximate the desired function. This process is
+            known as gradient descent, and it is an extremely powerful tool to
+            find good solutions to problems, but it has its drawbacks.
           </p>
           <p class="paragraph">
             One major problem with gradient descent is that it is only able to
@@ -1394,10 +1396,10 @@
             that, with respect to a small nudge to \( x \), \( \Delta{C} =
             y\Delta{x} \). This is exactly where we landed before! Putting this
             in fraction form will yield us the ratio from a tiny nudge \(
-            \Delta{x} \) to \( \Delta{C} \) which we can then multiply to an
-            arbitrary \( \Delta{x} \) to find \( \Delta{C} \). If we wanted to
-            write the ratio of a change in each parameter to a change in the
-            overall function, you may expect we write something like \(
+            \Delta{x} \) to \( \sim \Delta{C} \) which we can then multiply to
+            an arbitrary \( \Delta{x} \) to find \( \sim \Delta{C} \). If we
+            wanted to write the ratio of a change in each parameter to a change
+            in the overall function, you may expect we write something like \(
             \frac{\Delta{C}}{\Delta{x}}, \hspace{7px}
             \frac{\Delta{C}}{\Delta{y}} \) or, if you are familiar with single
             variable calculus, something like \( \frac{dC}{dx}, \hspace{7px}
@@ -1476,6 +1478,20 @@
             what it is. Now that we have this out of the way, we can tackle the
             elephant in the room
           </p>
+
+          <div class="footnotes">
+            <hr class="line" />
+            <sup id="scfgdfn1"
+              >1. I use the terms cost functions and loss functions essentially
+              interchangeably in this article which is technically incorrect but
+              I don't believe it takes away from the article. For those of you
+              who are curious, the loss of a model is the error (in our case the
+              squared error) for a single training example while cost is the
+              average cost across the entire dataset (in our case,
+              <em>mean</em> squared error.
+              <a href="#tscfgdfn1" class="hyperlink">Return to text</a>
+            </sup>
+          </div>
 
           <br />
 
@@ -1588,7 +1604,7 @@
             be \( 2xdx + dx^2 \). If we wanted to have this as slope, we know
             the run is \( dx \), so the full expression is\( \hspace{7px}
             \frac{2xdx + dx^2}{dx} \). But now let's think about this as \( dx
-            \) approaches \( 0 \). The \( 2xdx \) term will keep it's ratio of
+            \) approaches \( 0 \). The \( 2xdx \) term will keep its ratio of
             \( 2xdx \), but the \( dx^2 \) term will approach zero much faster
             than \( dx \) and thus become negligible. Because of this, we can
             drop the \( dx^2 \) term out of the derivative and just keep the \(
@@ -2150,7 +2166,7 @@ class Neuron:
 # Other stuff ...
 
 # Since the array is an array of tuples, we have to split it up 
-# for the loss function into two seperate arrays
+# for the loss function into two separate arrays
 
 training_inputs = [e[0] for e in training_data]
 expected_outputs = [e[1] for e in training_data]
@@ -2489,7 +2505,7 @@ Loss after training: 0.5852568616860203
             \( a_{n - 1} \) has on \( z \), and we can keep all the other parts
             of the chain the same. This gives us \( 0.7 \cdot 0.24 \cdot 0.98 =
             0.17 \). We can pass this influence up to the previous neuron
-            (previous meaning towards the input) for it to calculate it's own
+            (previous meaning towards the input) for it to calculate its own
             parameter's effect on the loss. We can do this for as many layers as
             we want and will maintain an approximation for a change in the
             parameter to a change in the loss function.
@@ -2543,7 +2559,7 @@ Loss after training: 0.5852568616860203
               the function (change in the area of the square) would approach \(
               -2 \cdot (y - \hat{y}) \). Notice if we distribute the \( -1 \) to
               the inner expression, we get \( 2 \cdot -(y - \hat{y}) \) which we
-              can incorperate the negative into the term as \( 2 \cdot (-y +
+              can incorporate the negative into the term as \( 2 \cdot (-y +
               \hat{y}) \) which is just a different order of the derivative we
               got which is \( 2 \cdot (\hat{y} - y) \).
               <a
@@ -2641,9 +2657,9 @@ Loss after training: 0.5852568616860203
           <p class="paragraph">
             As you could tell, a nudge in the \( x \) variable will have more
             than a single effect on the final output since there are
-            intermediate variables that change at seperate rates according to a
+            intermediate variables that change at separate rates according to a
             change in \( x \). The trick is to track the influence through the
-            paths. Because the variables themselves are travelling through the
+            paths. Because the variables themselves are traveling through the
             paths to undergo transformations, you can also track their influence
             (aka their derivatives) on their destination through those same
             connections. We can label those here as well
@@ -2667,8 +2683,8 @@ Loss after training: 0.5852568616860203
             each partial derivative is the reaction to a change in the previous
             node, which may have also changed earlier due to other connections.
             The interesting thing here is that if we want to solve for \(
-            \frac{\partial{z}}{\partial{x}} \), we must incorperate all of the
-            paths from \( x \) to \( z \). The way we incorperate it is
+            \frac{\partial{z}}{\partial{x}} \), we must incorporate all of the
+            paths from \( x \) to \( z \). The way we incorporate it is
             addition, which may seem weird given we don't even need to have any
             explicit addition in our simple network, but this all comes back to
             how derivatives are simply linear approximations (aka slope) at a
@@ -2682,7 +2698,7 @@ Loss after training: 0.5852568616860203
             times some initial nudge to \( x \). This doesn't make up the
             entirety of the slope however. Remember, \( z \) does not get to
             pick and choose which path gets to contribute to its result,
-            insetad, all paths are executed together at the same time. This
+            instead, all paths are executed together at the same time. This
             means that the derivative along each path must also be somehow act
             together in order to give a linear approximation at a given \( x \).
             This is why we sum; we need a way to track the resulting change of
@@ -2698,7 +2714,7 @@ Loss after training: 0.5852568616860203
             In the case of a neural network, there are a lot of these
             overlapping paths when there are several hidden layers. This means
             when we traverse those paths, we add the gradient of the current
-            path we are traversing. Each paramter might have a different effect
+            path we are traversing. Each parameter might have a different effect
             on the loss depending on that path, and to get that total effect on
             the loss you simply sum the effect on each parameter over each path.
             What confused me as I was learning this topic was the fact that even
@@ -2716,7 +2732,7 @@ Loss after training: 0.5852568616860203
             single path (with the exception of \( z \) and \( x \)), but in
             useful neural networks there exist many, <em>many</em> paths to each
             hidden node in such a network. This is because of how a network is
-            fundementally structured as each neuron in a layer has a connection
+            fundamentally structured as each neuron in a layer has a connection
             to every neuron in the next layer, and calculating the gradient by
             summing over every single path becomes way too computationally
             expensive. Luckily, there exists a simple optimization which allows
@@ -2764,7 +2780,7 @@ Loss after training: 0.5852568616860203
             course, the weights, and the weights for a particular input neuron
             across all output neurons is simply the column corresponding to
             whichever input neuron you are processing. There is a really neat
-            operation we can perform if we have this knowledge. Imagnine
+            operation we can perform if we have this knowledge. Imagine
             swapping the rows and columns of our weight (called a transpose in
             linear algebra speak) matrix such that each column represents the
             weights from all the input neurons to a single output neuron instead
@@ -2806,7 +2822,7 @@ Loss after training: 0.5852568616860203
             going to use, but I believe the most useful design would allow for
             any particular shape of the network. This will just be a fully
             connected network (so not a convolutional one for those of you who
-            know what that is), but it's shape will be determined when creating
+            know what that is), but its shape will be determined when creating
             an instance of the network object rather than creating some
             procedural code that is very difficult to modify. I also want you
             readers to experiment with it and see if you can play around with
@@ -2947,7 +2963,7 @@ class Network:
             a bunch of ways to do it, but to keep our parameter representation
             itself simple, let's store a gradient in the network object that has
             the same shape as the parameters (since each parameter has a
-            correspodning gradient), but instead of storing the parameters
+            corresponding gradient), but instead of storing the parameters
             themselves, they will store the gradients for the loss function.
             This will be somewhat similar to pytorch (though I think we are
             being a little more clear on ownership) where we will define methods
@@ -3084,7 +3100,7 @@ class Network:
             we have to be a little more mathematically precise if we want to
             effectively calculate the gradient. Once again, let's put on our
             thinking caps. If we were naive, we would simple loop over the
-            entire matrix and calculate each component by seing which column
+            entire matrix and calculate each component by seeing which column
             (previous neuron) and row (current neuron) we are at, but there is a
             much simpler way to do this. In each component of the final matrix,
             we want the product of the current neuron's delta and the previous
@@ -3257,7 +3273,7 @@ data/
             of the individual images, and the third axis is the same since the
             images are square. After this sort of "metadata," the files store
             the data of the images themselves. Armed with this knowledge
-            howerver, we can tackle the data.
+            however, we can tackle the data.
           </p>
 
           <p class="paragraph">
@@ -3366,7 +3382,7 @@ def load_data(filename: str) -> np.ndarray:
 
           <p class="paragraph">
             You may be a little confused by how we index the array, but
-            fundementally it's pretty simple. We start at index 2 at the
+            fundamentally it's pretty simple. We start at index 2 at the
             beginning since we want to skip the bytes we have already read.
             Next, the start index of the integer is going to be our current
             index * 4 since the size of an integer is 4 bytes and
@@ -3594,36 +3610,38 @@ Total Accuracy: 81.25%
             the field and apply those idea to this network you have created. Or
             do something completely different; I don't care (though if you do
             something really cool, please reach out to me as I would love to
-            see)!
+            see)! Anywho, thank you for reading and send any feedback to
+            nolanthw8s@gmail.com.
           </p>
         </div>
-        <div class="article-toc">
-          <h2 class="toc-header">Table of Contents</h2>
-          <a href="#introduction" class="toc-text">Introduction</a>
-          <a href="#perceptrons-and-decision-boundaries" class="toc-text"
-            >Perceptrons and Decision Boundaries</a
-          >
-          <a href="#hidden-layers-and-feed-forward" class="toc-text"
-            >Hidden Layers and Feed-Forward</a
-          >
-          <a href="#the-universal-approximation-theorem" class="toc-text"
-            >The Universal Approximation Theorem</a
-          >
-          <a href="#regression-vs-one-hot-encoding" class="toc-text"
-            >Regression vs One-Hot Encoding</a
-          >
-          <a href="#cost-functions-and-gradient-descent" class="toc-text"
-            >Cost Functions and Gradient Descent</a
-          >
-          <a href="#backpropagation" class="toc-text">Backpropagation</a>
-          <a href="#computational-graphs" class="toc-text"
-            >Computational Graphs</a
-          >
-          <a href="#classifying-mnist-data" class="toc-text"
-            >Classifying MNIST Data</a
-          >
+          <ul class="article-toc">
+            <h2 class="toc-header">Table of Contents</h2>
+            <a href="#introduction" class="toc-text">Introduction</a>
+            <a href="#perceptrons-and-decision-boundaries" class="toc-text"
+              >Perceptrons and Decision Boundaries</a
+            >
+            <a href="#hidden-layers-and-feed-forward" class="toc-text"
+              >Hidden Layers and Feed-Forward</a
+            >
+            <a href="#the-universal-approximation-theorem" class="toc-text"
+              >The Universal Approximation Theorem</a
+            >
+            <a href="#regression-vs-one-hot-encoding" class="toc-text"
+              >Regression vs One-Hot Encoding</a
+            >
+            <a href="#cost-functions-and-gradient-descent" class="toc-text"
+              >Cost Functions and Gradient Descent</a
+            >
+            <a href="#calculus" class="toc-text"> Calculus </a>
+            <a href="#backpropagation" class="toc-text">Backpropagation</a>
+            <a href="#computational-graphs" class="toc-text"
+              >Computational Graphs</a
+            >
+            <a href="#classifying-mnist-data" class="toc-text"
+              >Classifying MNIST Data</a
+            >
+          </ul>
         </div>
-      </div>
     </div>
     <div class="bottom"></div>
   </body>
