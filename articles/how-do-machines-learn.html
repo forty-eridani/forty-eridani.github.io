@@ -1,0 +1,3648 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/articles/how-machines-learn.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-light.min.css"
+    />
+    <script type="module">
+      import hljs from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js";
+      import py from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/python.min.js";
+      import plaintext from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/plaintext.min.js";
+
+      hljs.registerLanguage("python", py);
+      hljs.registerLanguage("plaintext", plaintext);
+      hljs.highlightAll();
+    </script>
+
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="nav-container-left">
+        <a href="/" class="navigation">Nolan Thwaits</a>
+      </div>
+      <div class="nav-container-right">
+        <a href="/about.html" class="navigation">About</a>
+        <a href="/contact.html" class="navigation">Contact</a>
+      </div>
+    </div>
+
+    <div class="page-title">
+      <h1 class="">How Do Machines Learn?</h1>
+      <hr class="line" />
+    </div>
+
+    <div class="section"></div>
+
+    <div class="article-container">
+      <div class="article-content">
+        <div class="article-text">
+          <h2 class="section-header" id="introduction">Introduction</h2>
+          <p class="paragraph">
+            Today, the use of machine learning seems to be extremely
+            commonplace. Everything from targeted advertisements to stock market
+            predictions to speech recognition all typically use some form of
+            machine learning, often in the form of neural networks. Despite
+            their prevalence, most of those who are subject to such algorithms
+            lack the fundamental knowledge of how they work. In this (rather
+            long) article, we will go beyond a typical explanation of a neural
+            network and will instead dive deep into the math and computer
+            science that underlies their function. By the end of this article,
+            we will have developed a fully functional program (written in
+            python) that can identify digits from the MNIST database. The MNIST
+            database (short for Modified National Institute of Standards and
+            Technology) is a collection of handwritten digits with labels
+            commonly used to train systems just like the one we will create. Our
+            goal will to create a program that can accurately identify a large
+            majority of these digits without any special python libraries
+            (besides numpy, but that's not cheating, right?).
+          </p>
+
+          <p class="paragraph">
+            This article is geared towards the motivated. You don't have to be
+            a math genius to understand this material, but you must be motivated
+            to look on other resources (such as those which I have provided) and
+            have some ability to slow down to work at a problem for a little
+            while (it took me several months to grasp this material!). This is
+            also somewhat of a project for me to confirm I know what the hell I
+            am doing, and I am glad I did since I learned <em>a lot</em> in the
+            process in writing this.
+          </p>
+
+          <p class="paragraph">
+            This article can get a little dense, so I highly encourage anybody
+            reading to re-read any section they don't understand as well as
+            looking into other resources if there are any parts I did not
+            articulate well. To get the most out of this content, it may help to
+            be somewhat literate in the python programming language, but I think
+            you can still get a lot out of this article if you are unable to
+            program. If you find that I could have explained something better or
+            made some sort of error or have some other suggestion, please feel
+            free to reach out as I would be happy to edit this resource. While
+            we will be touching on a slight amount of multi-variable calculus, I
+            will do my best to explain the concepts as intuitively as possible
+            and avoid a lot of the notation that a lot of people get trapped in
+            while learning this topic, at least until we have covered enough
+            where the notation can be understood with the intuition I have
+            provided. If at any point the math feels like too much, I highly
+            recommend checking out out 3Blue1Brown's
+            <a
+              href="https://www.youtube.com/watch?v=WUvTyaaNkzM&list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr"
+              class="hyperlink"
+              >calculus</a
+            >
+            or
+            <a
+              href="https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab&pp=0gcJCV8EOCosWNin"
+              class="hyperlink"
+              >linear algebra</a
+            >
+            courses. They have incredible animations paired with great
+            explanations on the math topics we will cover. 3Blue1Brown also has
+            a course on
+            <a
+              href="https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
+              class="hyperlink"
+              >neural networks</a
+            >, so that may also be a useful resource if you ever feel stuck. I
+            gained much of my knowledge on the topic from 3Blue1Brown as well as
+            Michael Nielson's book
+            <a
+              href="https://neuralnetworksanddeeplearning.com/"
+              class="hyperlink"
+              >Neural Networks and Deep Learning</a
+            >. Anywho, enough of the blabbering, let's jump in!
+          </p>
+          <br />
+          <h2 class="section-header" id="perceptrons-and-decision-boundaries">
+            Perceptrons and Decision Boundaries
+          </h2>
+          <p class="paragraph">
+            Perceptrons are the simplest implementation of neural networks, and
+            they work using the same cost-benefit analysis we use to weigh our
+            own decisions. Let us imagine that you are deciding whether to learn
+            the piccolo. We can represent the decision-making process by
+            quantifying the factors that go into that decision. For now, let's
+            consider just two factors that may influence your decision (this
+            will be easier to visually represent later): the amount of hours per
+            week you would put into the instrument, and how much you enjoy the
+            piccolo.<sup
+              ><a href="#fn1" id="tfn1" class="footnote-navigation">1</a></sup
+            >
+            We can represent these factors as the "activation" of two input
+            neurons, and they both lead into another neuron known as the output
+            neuron. The output neuron will sum all of the input activations and
+            apply a threshold which decides whether you are actually willing to
+            learn how to play the piccolo with the given parameters.
+          </p>
+
+          <div class="image-container">
+            <object
+              data="/media/images/simple-perceptron.svg"
+              width="250"
+              height="250"
+            ></object>
+          </div>
+
+          <p class="paragraph">
+            For now, let's just arbitrarily consider the threshold as zero. We
+            can represent possible activations for our inputs on a coordinate
+            plane, and the possible output activation (whether we actually want
+            to learn the piccolo) will be split by a line since our output
+            activation would be x (enjoyment) + y (practice time) > 0 (the blue
+            region represents the combinations of factors that would lead to us
+            making the decision to play the piccolo).
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/images/untransformed-decision-boundary.svg"
+              class="image"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            As you could probably surmise, this doesn't really represent how we
+            feel about playing the piccolo. The more we practice, the less
+            enjoyment is required for us to decide that we would like to play
+            the piccolo!
+            <sup
+              ><a href="#fn2" class="footnote-navigation" id="tfn2">2</a></sup
+            >
+            This is where weights and biases come in. We need some way to
+            transform those input parameters in a way that represents our
+            decision process. In other words, we must simply weigh the factors
+            that go into our decision. Weights in a neural network tells an
+            output how a given input activation should weigh its decision.
+          </p>
+
+          <div class="image-container">
+            <object data="/media/images/weight-network.svg"></object>
+          </div>
+
+          <p class="paragraph">
+            For our example, we would probably consider practice time a negative
+            to our decision to play piccolo. To show this within our perceptron,
+            we could imagine the input neuron representing time receiving a
+            negative weight. This would mean that the more time we would
+            practice, the more we would have to enjoy the instrument in order
+            for us to decide to pick it up. Until now, all of our weights have
+            been 1 since we are directly piping in the activations of the inputs
+            neurons straight into the output neurons, but to get a more accurate
+            representation of our decision, let's just say the the weight
+            between practice time and the output is -1.
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/images/transformed-decision-boundary.svg"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Now that's more like it! However, there is one more thing we must
+            consider: bias. Bias is essentially the offset we apply to the sum
+            of the activations before they reach the output. According to the
+            graph we have just created, even if we like the piccolo just a tiny
+            amount, we are willing to learn it with some minimal amount of
+            practice. Now maybe that is you, but to learn the piccolo there is
+            an upfront cost which most wouldn't be willing to pay if they only
+            liked the instrument a small amount. To represent this numerically,
+            we use the aforementioned bias. In this case, the negative bias will
+            simply act as the minimum enjoyment it will take to make the
+            decision to get an instrument with some small amount of
+            practice.<sup
+              ><a href="#fn3" class="footnote-navigation" id="tfn3">3</a></sup
+            >
+            Let's say the minimum enjoyment is two units which would mean a bias
+            of -2.
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/images/transformed-biased-decision-boundary.svg"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Now here we have it! Our decision making plot to decide whether we
+            should play piccolo. However, there is an aspect to this I have
+            neglected to mention much about: the decision boundary. The decision
+            boundary is a fundamental aspect to any algorithm that classifies
+            information like we are. As the name implies, it is the boundary
+            that separates regions of decision. In our case, this is simply the
+            line that separates whether we should play the piccolo or not with
+            the given inputs, but as the classification becomes more abstract
+            (like recognizing the digits from the MNIST database), so too do the
+            boundaries. In the case of the MNIST dataset, there are 784 input
+            parameters, and if we were to represent that like how we have
+            represented our piccolo antics, it would require a visualization of
+            784 dimensions! This means our decision boundaries are hyperplanes
+            (basically 3d planes in more dimensions). Unfortunately, us mere
+            mortals are unable to visualize such a high-dimensions space, but if
+            you can grasp the idea of 2d or 3d decision boundaries, just
+            understand that the math for higher dimensions all works out the
+            same.
+          </p>
+
+          <p class="paragraph">
+            Now that we grasp the intuition, let's put our activation in proper
+            mathematical terms. If we are just keeping with our example of a
+            simple perceptron, we could simply sum over all of the inputs and
+            add the bias. In math-speak, this would be \( a = \sum_{i=1}^n (w^i
+            \cdot x^i) + b > t \) where \( a \) is the activation of the output
+            neuron, \( n \) is the amount of input neurons, \( w^i \) is the
+            weight at index \( i \), \( x^i \) is the input activation at neuron
+            index \( i \), and \( t\) is our threshold. If you are not too
+            comfortable with summation notation, I would recommend familiarizing
+            yourself with it as we will be using it throughout this article.
+          </p>
+
+          <br />
+
+          <div class="footnotes">
+            <hr class="line" />
+            <sup id="fn1">
+              1. Most introductions to perceptrons contain contain only binary
+              input neurons (as in they are either on or off) and then apply the
+              weights. I am taking a slightly different approach to help
+              motivate a more geometric interpretation of how neural networks
+              truly function since it will soon become much more complex.
+              <a href="#tfn1" title="Return to text" class="footnote-navigation"
+                >Return to text</a
+              ></sup
+            >
+            <sup id="fn2">
+              2. Pretend that our practice time could be negative. I am unsure
+              how that is really possible, maybe intentionally worsening our
+              skills at piccolo somehow? Though it may not be realistic, this
+              gives us a more holistic view of the possible activations of other
+              kinds of parameters beyond perfect piccolo predictions.
+              <a href="#tfn2" title="Return to text" class="footnote-navigation"
+                >Return to text</a
+              ></sup
+            >
+            <sup id="fn3">
+              3. Okay well technically the bias will not be the minimum
+              enjoyment since at x = -bias the practice time will be zero as the
+              terms cancel out, but bear with me.
+              <a href="#tfn3" title="Return to text" class="footnote-navigation"
+                >Return to text</a
+              ></sup
+            >
+          </div>
+
+          <br />
+
+          <h2 class="section-header" id="hidden-layers-and-feed-forward">
+            Hidden layers and Feed-Forward
+          </h2>
+
+          <br />
+
+          <p class="paragraph">
+            Our perceptron from the previous chapter is extremely simple without
+            any significantly large operations performed to the inputs. Most
+            useful neural networks require hidden layers. A hidden layer can be
+            thought of in many ways, but to stick to our geometric view let's
+            imagine them as matrix transformations. Because we have not yet
+            learned of non-linear activation functions, hidden layers will not
+            serve any meaningful purpose for us since all of the linear
+            transformations in a hidden layer could all be represented by a
+            single matrix, or series of weights, between the input and output
+            neurons. Don't worry if this doesn't quite make sense yet, for now
+            let's just learn about the basics of linear algebra.
+          </p>
+          <p class="paragraph">
+            For our purposes, only two aspects of linear algebra will really
+            matter to us: vectors and matrices. A vector, in principle, is a
+            very simple entity; all it does is denote a direction in space and a
+            magnitude. In the coordinate system we are using these are not
+            explicitly denoted by the vector itself, though both the magnitude
+            and direction can be calculated with a trivial amount of effort.
+            Here is an example of a very simple vector: $$ \vec{v} =
+            \begin{bmatrix} 1\\ 2\\ \end{bmatrix} $$ This vector has an x
+            component of 1 and a y component of 2. Typically, vectors are
+            centered at the origin, so in this case we can think of the vector
+            with its base at \( (0, 0) \) and tip at \( (1, 2) \).
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/simple-vector.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Vectors can have any number of components, but the most we can
+            visualize is 3. What make vectors interesting is that we can
+            represent our inputs as vectors. While this explanation isn't
+            completely necessary, it gives us a more geometric interpretation of
+            how inputs can be transformed by the weights and biases. For our
+            purposes, all a neural network does is transform some input vector
+            into a space that can be easily classified. In our case, the
+            perceptron was just an algorithm which took a 2 dimensional input
+            vector and transformed it to a single dimensional output vector
+            (which is just a vector lying on a number line) and applied a
+            threshold to its own activation to determine whether it should
+            activate. In linear algebra, we have a really useful tool to
+            describe these transformations: matrices.
+          </p>
+
+          <p class="paragraph">
+            Before we get on to how matrices work, we must first understand how
+            vectors are, in a way, implicitly expressed. And before we
+            understand that, we must first understand scalars and vector
+            addition. Vector addition is very simple in principle: you simply
+            add each component of each vector. This has the effect of first
+            walking along the first vector from the origin and then, from the
+            tip of that initial vector, walking along the second vector. This is
+            what 3Blue1Brown calls "tip to tail." To show this, let us first
+            define two vectors: $$ \vec{v} = \begin{bmatrix} 1\\ 2\\
+            \end{bmatrix}, \hspace{10px} \vec{u} = \begin{bmatrix} -5\\ 1\\
+            \end{bmatrix} $$ Add then the operation: $$ \vec{v} + \vec{u} =
+            \vec{w} $$ And to visualize this operation:
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/vector-addition.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            As I stated earlier, we are simply adding each component of the
+            vector. Vector addition is just a way to record the effect of
+            multiple vectors. Just as you would expect from simple single-number
+            addition, vector addition is commutative meaning that the order in
+            which the vectors are added together does not matter.
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/images/commutative-vector-addition.svg"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Similar to vector addition, scalars work in a way you would probably
+            expect. Scalars, as the name implies, simply scale the vector but
+            retain the vector's direction. This means that the vector will
+            retain the same direction (which is slope in this coordinate
+            system), but the magnitude will change. For example, a scalar
+            operation on vector \( \vec{v} \) would look like $$ \vec{u} =
+            2\vec{v} $$ and if we were to expand that out a bit, it would look
+            like $$ \vec{u} = 2\begin{bmatrix} 1\\ 2\\ \end{bmatrix} $$ Now all
+            we do is scale each component by the scalar $$ \vec{u} =
+            \begin{bmatrix} 2 \cdot 1\\ 2 \cdot 2\\ \end{bmatrix} $$ And there
+            we go, now we have our scaled vector. If we were to plot both \(
+            \vec{u} \) and \( \vec{v} \), it would look something like
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/scaled-vector.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            With that out of the way, we can now get on to my two favorite
+            vectors, \( \hat{\imath} \) and \( \hat{\jmath} \). On paper, these
+            two vectors are very simple $$ \hat{\imath} = \begin{bmatrix} 1\\
+            0\\ \end{bmatrix}, \hspace{15px} \hat{\jmath} = \begin{bmatrix} 0\\
+            1\\ \end{bmatrix} $$ but don't let their simplicity fool you, they
+            have a very special property: they act as the set of basis vectors
+            that all 2d vectors can be implicitly described as.
+          </p>
+
+          <p class="paragraph">
+            To understand what I mean, let's take a closer look at those two
+            vectors. Notice that \( \hat{\imath} \) only has non-zero component
+            in the x direction? This means if we treated the first component of
+            \( \vec{v} \) as a scalar to \( \hat{\imath} \), we would get a
+            vector that represents only the x-direction magnitude of \( \vec{v}
+            \) since the other component of the vector is 0. The same logic
+            applies to \( \hat{\jmath} \) where if you treat the y component of
+            \( \vec{v} \) as a scalar to \( \hat{\jmath} \), you will get a
+            vector representing only the y-direction magnitude of \( \vec{v} \).
+            We could write this a little more formally and say $$ \vec{v}_x
+            \hat{\imath} = \begin{bmatrix} \vec{v}_x\\ 0 \end{bmatrix},
+            \hspace{15px} \vec{v}_y \hat{\jmath} = \begin{bmatrix} 0\\ \vec{v}_y
+            \end{bmatrix}$$ To unpack this a little more, note that \( \vec{v}_x
+            \) represents the x component of \( \vec{v} \) and \( \vec{v}_y \)
+            represents the y component of \( \vec{v} \). These are just numbers,
+            and in the first part of the expression they act as scalars and in
+            the second part they act as the element of the vector. They are just
+            numbers so you can do to they whatever you can do to a number. Now
+            as an exercise to the reader, I encourage you to draw out the
+            vectors \( \hat{\imath} \) and \( \hat{\jmath} \) as well as their
+            scaled versions lined out in the previous expression as even though
+            this is a fairly simple concept, I think this could really help
+            build some intuition.
+          </p>
+
+          <p class="paragraph">
+            Now let us take these scaled vectors and simply add them. Since both
+            have elements that are "complementary" (as each of their non-zero
+            element lines up with the other vector's zero component), by adding
+            the vectors we simply get our original vector \( \vec{v} \). If we
+            were to write out our whole expression and expand \( \hat{\imath} \)
+            and \( \hat{\jmath} \) to see what I mean, it would look something
+            like $$ \vec{v}_x \begin{bmatrix} 1\\ 0 \end{bmatrix} + \vec{v}_y
+            \begin{bmatrix} 0\\ 1 \end{bmatrix} = \begin{bmatrix} \vec{v}_x\\
+            \vec{v}_y \end{bmatrix} = \vec{v}$$
+          </p>
+
+          <p class="paragraph">
+            Now you are probably wondering, "Why should I care about this? All
+            you did was get the sum of vectors that represent each component of
+            the original vector which is just the original vector!" And yes,
+            this example didn't show much, but we did something very powerful,
+            something called a linear combination. In principle, a linear
+            combination is fairly simple. In the case of vectors, all you do is
+            get the sum of some scaled vectors, and typically those scalars
+            represent the components of some other vectors. Earlier when I said
+            that all vectors can be implicitly described using the unit vectors,
+            what I mean was that any vector can be described as a linear
+            combination of those unit vectors. If a set of vectors is able to
+            describe any other vector in your current vector space, it is a
+            valid basis vector. The reason we use \( \hat{\imath} \) and \(
+            \hat{\jmath} \) as our basis vectors is that it's quite simple to
+            construct your linear combinations because as each unit vector
+            points a single unit in a single direction, and because it is just a
+            single unit, each component of your vector can be used directly as
+            the scalar for the corresponding unit vector. This doesn't mean that
+            we can't use other vectors as our basis vectors however. To prove
+            this, let's use the vectors \( \vec{v} \) and \( \vec{u} \) as our
+            basis vectors where $$ \vec{v} = \begin{bmatrix} 1\\ 2
+            \end{bmatrix}, \hspace{15px} \vec{u} = \begin{bmatrix} -1\\ 1
+            \end{bmatrix} $$ Let's also say that we want a linear combination of
+            the vectors to form vector \( \vec{w} \) where $$ \vec{w} =
+            \begin{bmatrix} 4\\ 1 \end{bmatrix} $$ If we solve a basic system,
+            we find that $$ \frac{5}{3} \vec{v} - \frac{7}{3} \vec{u} = \vec{w}
+            $$ Which looks like
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/linear-combination.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            These basis vectors must satisfy an important condition: they must
+            be linearly independent. This means that one vector cannot be
+            described as the linear combination of the other vectors in the set.
+            In our case, \( \vec{v} \) cannot be described as a linear
+            combination of \( \vec{u} \) (you can have a linear combination of
+            just one vector), and \( \vec{u} \) cannot be described as a linear
+            combination of \( \vec{v} \). If a set of vectors lie upon a line,
+            each of them are able to express the other if scaled, and this means
+            they are linearly dependent. One example of two linearly dependent
+            vectors could be $$ \vec{u} = \begin{bmatrix} 1\\ 1 \end{bmatrix},
+            \hspace{15px} \vec{v} = \begin{bmatrix} -1\\ -1 \end{bmatrix} $$ If
+            we draw these out, we find they lie upon the same line as either of
+            them could be scaled by \(-1\) and then would equal the other vector
+            which violates the rule of linear independence.
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/linearly-dependent.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Think about how we could transform the space vectors are described
+            in by changing our basis vectors. We wouldn't change the scalars
+            applied to the basis vectors (since those scalars are the components
+            of the vector we want to transform), but just the basis vectors
+            themselves. This has the effect of performing some operation to the
+            space (the set of all possible vectors), which is exactly what we
+            want to do.
+          </p>
+
+          <p class="paragraph">
+            Think about ways we could do this. What if we wrote some array of
+            typical vectors, but each vector in the array represents the new
+            basis vector that would transform the space. This would act like
+            where the new \( \hat{\imath} \) and \( \hat{\jmath} \) would land,
+            and our vector can perform a linear combination with each of its
+            components of the vector array against the transformed basis vector
+            in the array that corresponds to that component, just as we would do
+            with the typical \( \hat{\imath} \) and \( \hat{\jmath} \). If we
+            wanted to see what the transformation does to a given vector, let's
+            define a vector \( \vec{v} \) where $$ \vec{v} = \begin{bmatrix} 1\\
+            2 \end{bmatrix} $$ and describe the array of new basis vectors as $$
+            \begin{bmatrix} 1 & 2\\ 3 & 4 \end{bmatrix} $$ where each column
+            represents where we want that column index's basis vector to land.
+            Now we can perform a linear combination of these elements, this
+            would be written as $$ \begin{bmatrix} 1 & 2\\ 3 & 4 \end{bmatrix}
+            \vec{v} = \begin{bmatrix} 1 & 2\\ 3 & 4 \end{bmatrix}
+            \begin{bmatrix} 1\\ 2 \end{bmatrix} $$ and now we can perform the
+            linear combination $$ 1\begin{bmatrix} 1\\ 3 \end{bmatrix} +
+            2\begin{bmatrix} 2\\ 4 \end{bmatrix} = \begin{bmatrix} 5\\ 11
+            \end{bmatrix} $$
+          </p>
+
+          <br />
+
+          <p class="paragraph">
+            The eagle-eyed among you may have noticed that we just invented
+            matrices! Matrices are the language in which we describe
+            transformations of space. In fact, if we want a matrix that simply
+            describes the linear combination of \( \hat{\imath} \) and \(
+            \hat{\jmath} \), we can write the matrix as so $$ \begin{bmatrix} 1
+            & 0\\ 0 & 1\end{bmatrix} $$ This is known as the identity matrix,
+            and is the almost implicit transformation that vectors undergo to be
+            described in space.
+          </p>
+
+          <p class="paragraph">
+            To put this all a little more succinctly, each component of a vector
+            represents a scalar to the corresponding unit vector. The linear
+            combination of all of the units vectors and the components of the
+            vector describe the vector, and if we get the linear combination of
+            the components of the vector and a different set of vectors (rather
+            than the unit vectors), the new resulting will be the original
+            vector as though its basis vectors were different. This can
+            sometimes be a little difficult to fully wrap one's head around, so
+            I strongly recommend checking out other resources like
+            <a
+              href="https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+              class="hyperlink"
+              >3Blue1Brown's course on linear algebra</a
+            >
+            to help fully understand this process as the purpose of this article
+            is not to teach linear algebra.
+          </p>
+
+          <p class="paragraph">
+            Now remember how I said this was somehow relevant to neural
+            networks? I know that was a while ago (I think the explanation was
+            worth it however), but we must not forget that this process is
+            essentially what neural networks undergo when classifying data. Each
+            layer of neurons represents some transformation to the input space,
+            and we most often use matrices as the language to describe that
+            transformation. For example, in our little perceptron, the function
+            to determine whether we should play the piccolo was a 1x2 matrix.
+            Now when matrices are not square, they are doing one of two things:
+            describing the input vector in a higher dimension or describing the
+            input vector in a lower dimension. In our case, we took two
+            dimensions of input (practice time and enjoyment) and transformed it
+            into a single dimensions output that we ended up applying a
+            threshold to. This is why matrices are so useful in describing
+            feed-forward in a neural network; each component of the input scales
+            the corresponding weights (since each neuron in the output has
+            connections to all the inputs), and the linear combination takes the
+            sum of each column, which means each output neuron gets a weighted
+            sum of the entire input
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/video/perceptron-transformation.gif"
+              width="360"
+              height="280"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            As you can see (and as I said earlier), this matrix transformed the
+            input into a single dimensional output. The expression \( x - y > 0
+            \) that we use to determine the relationship between enjoyment and
+            practice can be modeled as the matrix \( \begin{bmatrix} 1 &
+            -1\end{bmatrix} \) (bias is not included since in linear algebra the
+            origin must remain static throughout the transformation). Each
+            column of this matrix represents the relationship that input has to
+            the output. Think of each column as the set of weights that applies
+            to a single input for all neurons in a layer. This is essentially
+            how much the activation of a single input neuron should affect all
+            output neurons. Now each row is the weights that apply to all input
+            for a single neuron. This means our output is represented as a
+            vector where each component of that vector represents the
+            pre-activation of a neuron in that layer. I encourage you to take a
+            minute and apply this logic to the matrix we used for the piccolo
+            example and apply this principle in general.
+          </p>
+
+          <p class="paragraph">
+            This is essentially the process of each layer of a neural network.
+            Each layer (besides the input layer, of course) will take the output
+            of the preceding layer of neurons and transform it in some way, and
+            then send it on as the input to the next layer of neurons for
+            further processing. This process of repeating transforming the data
+            is known as Feed-Forward. Here is an example of a neural network
+            with two hidden layers with four neurons each
+          </p>
+
+          <div class="image-container">
+            <object
+              data="/media/images/neural-network-vector-graphic.svg"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Now isn't this beautiful? We are now able to describe a method in
+            which input space can be molded in order to effectively classify
+            data. There is one problem with this approach however, our
+            operations can only mold the space in a linear manner. There is no
+            way we could, for example, classify points on whether they are
+            inside or outside of a circle and we have no guarantees that a model
+            architecture like this could engage in more complex and abstract
+            classification (drawing a more complex decision boundary) like in
+            the case of the MNIST dataset. This forces us to find a way to
+            transform and warp space in a manner that can represent any decision
+            boundary shape. To find out how we can do that, we must look at the
+            reason why neural networks are so powerful in the first place,
+            called
+          </p>
+
+          <br />
+
+          <h2 class="section-header" id="the-universal-approximation-theorem">
+            The Universal Approximation Theorem
+          </h2>
+
+          <p class="paragraph">
+            To put it simply, the universal approximation theorem states any
+            neural network with a non-linear activation function can approximate
+            any continuous function with an arbitrary amount of error. To put it
+            a touch more mathematically, let's say we have a non-linear function
+            \( f(x) \) and we would like to approximated that function with a
+            neural network. Let's call this approximated function \( \hat{f}(x)
+            \). The theorem states that for any \( \epsilon > 0 \), there exists
+            a set of weights, biases, and layer size in a neural network with a
+            single hidden layer where \( |f(x) - \hat{f}(x)| &lt; \epsilon \).
+            As you could imagine, this is an extremely powerful piece of
+            mathematics. To use our future MNIST interpreter as an example, we
+            could imagine some continuous function that takes in the pixel
+            values as a vector an can perfectly classify it every time. Whether
+            this function actually exists is irrelevant, what matters is that we
+            can create some neural network that can approximate it to an error
+            close to that of individual humans.
+          </p>
+
+          <p class="paragraph">
+            There are some caveats to this theorem. Just because there
+            <em>exists</em> a set of parameters that can approximate the
+            function doesn't mean that we have a way to figure out what those
+            parameters are. In later sections of this article we will go over
+            how we can find a set of parameters that can find a local minimum,
+            but that will almost certainly not be the best set of parameters for
+            our network as that is much more difficult to find.
+          </p>
+
+          <p class="paragraph">
+            What exactly do I mean when I say activation function? An activation
+            function, in principle, is quite simple. All an activation does is
+            apply some function to the weighted sum with bias and use that as
+            its activation. Remember how we described how the output of one
+            layer from a neural network can be described as a vector? Now take
+            that vector and apply a non-linear function to each component. The
+            result is your new activation that will either serve as the output
+            of the network, or be sent along to the next layer for further
+            processing. One very common non-linear activation function is the
+            sigmoid function (written as \( \sigma(x) \)) which gives an output
+            very close to zero for extremely negative inputs, and gives an
+            output very close to one very positive inputs. The function itself
+            is \( \sigma(x) = \frac{1}{1 + e^{-x}} \) and I encourage you to
+            take a moment to understand why this function approaches zero and
+            one.
+          </p>
+
+          <p class="paragraph">
+            The curious among you may ask why the universal approximation
+            theorem is correct. While I am not going to present any sort of
+            formal proof, I will present a visual one to help motivate a
+            geometric interpretation as I have done so far in this article. Let
+            us attempt to approximate the function \( f(x) = -\frac{1}{4}x^2 + 4
+            \). As you could probably tell, this function cannot be accurately
+            approximated with linear transformations, and must be done with a
+            different kind of activation. Here is \( f(x) \)
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/images/function-to-be-approximated.svg"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            To start, let's us imagine the architecture of our neural network.
+            As we are only approximating a function with one input and one
+            output, we only need one input neuron and one output neuron, but we
+            will have a large hidden layer betwixt them. For now let us just use
+            four neurons in our hidden layer. This looks something like
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/images/approximation-neural-network.svg"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            For now, we will not use any realistic activation functions. For the
+            hidden layers we will use a threshold activation where each "weight"
+            will be the location of the threshold. Here, we are essentially
+            defining a piecewise function. This will make the entire process
+            easier to visualize. If you think this is cheating, well you are
+            kind of right. Actual neural networks do not engage in such behavior
+            and this would be an odd architecture to train with and would have
+            limited accuracy. The reason this is a valid proof is that you can
+            approximate step functions with sigmoid activations by using a large
+            weight for the input
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/video/sigmoid-approximation.gif"
+              width="256"
+              height="256"
+            ></object>
+          </div>
+
+          <br />
+
+          <p>
+            To adjust the position of this approximated step function, we simply
+            adjust the bias
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/video/bias-step-transformation.gif"
+              width="256"
+              height="256"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Sometimes it is a helpful reminder that the step point goes
+            backwards as the bias increases since the sigmoid is calculating at
+            a point farther forward than the current \( x \). Also, to calculate
+            the point isn't as simple as taking the bias directly since as the
+            weight increases, the bias must also increase for that same point to
+            evaluate to zero. In other words, we want some \( x \) where \( wx +
+            b = 0 \). As \( w \) increases, we must reduce the bias to keep the
+            expression equal to zero. If we use some basic algebra, we find that
+            the point that evaluates to zero is \( x = \frac{-b}{w} \). One way
+            to think about this is that the negative bias tells you how much you
+            must offset a raw \( x \) with no weight to push the expression to
+            zero, and the weight tells you how much a single unit of raw x
+            impacts the function as a whole. We won't actually use the sigmoid
+            step function here, but I hope I have justified why I can use a step
+            function and retain the validity of my proof for a sigmoid function.
+            If you want to learn more about this, I recommend you check out
+            Chapter 4 of Neural Networks and Deep Learning
+            <a
+              href="http://neuralnetworksanddeeplearning.com/chap4.html"
+              class="hyperlink"
+              >here</a
+            >.
+          </p>
+
+          <p class="paragraph">
+            Finally, we can begin deciding our weights and biases to approximate
+            our function. There is no definitive process we are going to use to
+            determine these parameters, and these will certainly not be the best
+            parameters we could use, but it will prove the point. It's worth
+            noting that the only weights will be the ones from the hidden layer
+            to the output layer as we are just using piecewise step functions
+            for our hidden layer activations, and our neural network will only
+            be calculating \( f(x) \) within the range \( [-4, 4] \).
+          </p>
+
+          <p class="paragraph">
+            To start, let's use the first hidden neuron to encode the first part
+            of the curve. We will set the bias to -2 since that is where we can
+            effectively capture that part of the curve starts
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/first-neuron-effect.svg"></object>
+          </div>
+
+          <br />
+
+          <p>
+            And how we can scale it by two with the weight going from the first
+            neuron to the output neuron. Let's set that weight to 2
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/hidden-output-weighted.svg"></object>
+          </div>
+
+          <br />
+
+          <p>
+            Now we can set the second hidden neuron to the opposite in order to
+            encode the fall of the curve
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/second-neuron-effect.svg"></object>
+          </div>
+
+          <br />
+
+          <p>
+            And apply the weight between this layer and the output like we did
+            with the first neuron
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/weighted-second-neuron.svg"></object>
+          </div>
+
+          <br />
+
+          <p>
+            Now let's see the cumulative effect of both neurons as the output
+            layer sees them
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/images/first-two-neuron-cumulative-effect.svg"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            This is alright, but there are a few issues. First of all, all
+            points are guaranteed to be greater than or equal to two since when
+            if our \( x \) is at a point where one is zero, it marks the
+            activation point of another. If we for some reason wanted to go
+            beyond the range of \( [-4, 4] \), our network would give us 2 which
+            is less than ideal. To compensate for this, we can apply a bias of
+            -2 to the output which would give us zero for inputs beyond our
+            range
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/output-neuron-bias.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Now this is alright, but we still have two neurons to play with!
+            Let's use them to encode the top edge of our polynomial. Let's use
+            the third neuron to encode the rising edge and add it to our output
+            (our weight to the output will also be 2 like the last two neurons)
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/third-neuron-effect.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Now we have to push the left edge down as it was offset in the
+            previous edit
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/fourth-neuron-effect.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Look at that! We just made a basic neural network that can
+            approximate our function \( f(x) = -\frac{1}{4}x^2 + 4 \). I could
+            have probably done a better job with positioning some of the step
+            functions, but you still get the idea. If we had more neurons in our
+            hidden layer, you could imagine that those step functions would
+            become a better and better approximation to the true function. Now
+            with sigmoids, often you are better able to match some of that
+            function curvature with the curvature of the sigmoid. To see what I
+            mean, here a network training to fit itself to \( f(x) \) with the
+            same amount of neurons and same activation functions I used earlier
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/video/fit-to-line.gif"
+              width="256"
+              height="256"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            I hope now we can see why a non-linear activation function is so
+            important to approximating functions like these. If we used a linear
+            function, the sum of the function will just give us a line since any
+            point on the sum of two lines is proportional to the distance from
+            the intersection of the lines. When we use non-linear activations,
+            we are able to form them into step-like functions and fit them to
+            extremely complex decision boundaries across hundreds or thousands
+            of dimensions. As we add more and more neurons, it is almost like we
+            are increasing the "resolution" of the decision boundary. While I
+            have only mentioned the sigmoid activation, there are a lot more.
+            Some popular ones include tanh and ReLU, but for our purposes,
+            sigmoid will work just fine.
+          </p>
+
+          <p class="paragraph">
+            Now with this explanation, you may be wondering why I bothered
+            explaining so much linear algebra. The truth is there are many ways
+            to interpret how neural networks work, and we will explore lots of
+            different interpretations as they all have their uses. For example,
+            we use matrix operations to transform the data into ways the
+            activation functions can manipulate effectively since we can't
+            really change the activation function on the fly, but we can change
+            the weights. You can also think of neurons as identifying features
+            within a given input. To use an MNIST classifier for example, one
+            neuron in the last hidden layer may be able to identify a straight
+            line on the right side of the image. You could imagine neurons on
+            the output layer which correspond to digits with a line on the right
+            (like 9 or 7) having strong weights to that neuron that can identify
+            the line. However, it's quite difficult to know exactly how given
+            network works exactly since there are just too many parameters (the
+            neural network we will create to identify MNIST digits will have
+            over 10,000).
+          </p>
+
+          <p class="paragraph">
+            Before we cover the mechanics of how exactly a neural network
+            learns, we should probably clear up the difference between
+            approximating functions like \( f(x) \) and the task of
+            classification. If you are already familiar with how a neural
+            network does this, feel free to skip this next section, but for the
+            rest of you, this is an important section (if a little dull) about
+            how we interpret what a neural network tell us.
+          </p>
+
+          <br />
+
+          <h2 class="section-header" id="regression-vs-one-hot-encoding">
+            Regression vs One-Hot Encoding
+          </h2>
+
+          <br />
+
+          <p class="paragraph">
+            For those of you who were asleep during introduction to statistics,
+            regression is the method of figuring out a continuous function which
+            can map the relationship of an independent variable (in our case \(
+            x \)) to a dependent variable (in our case \( y \)) by using several
+            data points. Typically, the continuous function is linear since most
+            data statisticians use varies directly (as one increases, the other
+            increases proportionally to the size of the first increase), so the
+            relationship can be mapped as a line. In our little line example, we
+            did something quite different. To train the model, I sampled a
+            finite amount of points from the polynomial \( -\frac{1}{4}x^2 + 4
+            \) and trained it based off of the input (\( x \)) and expected
+            outputs (\( y \)) that were sampled. Typically, neural networks that
+            participate in such regression only adjust the coefficients of a
+            polynomial to fit a curve to data (so the network tries to find the
+            best \( a \), \( b \), and \( c \) in \( ax^2+bx+c \) that can best
+            map the data), but we just used the network's output directly
+            approximate our function. This isn't a common method in the real
+            world, but it does better help demonstrate how the network itself
+            can approximate a function directly.
+          </p>
+
+          <p class="paragraph">
+            In contrast to regression, one-hot encoding is how we typically
+            encode the result of a classification. Let's say we wanted to
+            classify MNIST digits. In base 10, there are only 10 digits (0-9),
+            so our neural network would have ten outputs as each output neuron
+            corresponds to a digit. After the process of feed forward, the
+            output neuron with the highest output is considered the networks
+            "result." If the first output neuron has the highest activation, the
+            network thinks the input is a zero. Likewise, if the last output
+            neuron has the highest activation, the networks thinks the input is
+            a nine. This is called one-hot encoding since the output the network
+            predicted is the "hottest" neuron. Most modern neural networks use
+            an activation function on the output layer called softmax which
+            makes the output of the network a vector of probabilities. This is
+            commonly used in larger image-recognition networks where you will
+            see the outputs as something like the network is 90% sure the image
+            is a dog. We will not bother with softmax as the math gets a little
+            wild and sigmoid activations on the output layer will be plenty
+            accurate even if the output isn't a nice probability.
+          </p>
+
+          <br />
+
+          <h2 class="section-header" id="cost-functions-and-gradient-descent">
+            Cost Functions and Gradient Descent
+          </h2>
+
+          <br />
+
+          <p class="paragraph">
+            In order for us to train a neural network, we must have some way to
+            quantify how wrong it is, and just as important, we need some way to
+            tell the network how to adjust itself in order to be less wrong. To
+            do this, we use cost functions.<sup
+              ><a href="#scfgdfn1" id="tscfgdfn1" class="hyperlink">1</a></sup
+            >
+            There exist many cost functions out there. For softmax outputs, you
+            would typically use something called cross-entropy loss for the
+            output layer. Here, we are going to use a fairly simple cost
+            function known as Mean Squared Error (MSE for short). In principle,
+            MSE is very simple. First, we calculate the error which is \( y -
+            \hat{y} \) where \( y \) is our label, or expected output, of the
+            network for a given neuron, and \( \hat{y} \) is the value our
+            neural network spit out. Typically, \( y \) and \( \hat{y} \) are
+            the one-hot-encoded vectors for the label and network output. After
+            we find the error, we square it. This prevents errors from canceling
+            out when used across the dataset and is extremely easy to
+            differentiate (we will get into why that's important later). For
+            example, let's say our network output is just a bunch of random
+            noise as our model isn't trained yet, and the label is 4. Let us
+            keep the labels \( y \) and \( \hat{y} \) $$ y = \begin{bmatrix}
+            0.00\\ 0.00\\ 0.00\\ 0.00\\ 1.00\\ 0.00\\ 0.00\\ 0.00\\ 0.00\\
+            0.00\\ \end{bmatrix}, \hspace{15px} \hat{y} = \begin{bmatrix} 0.95\\
+            0.58\\ 0.85\\ 0.91\\ 0.90\\ 0.30\\ 0.36\\ 0.88\\ 0.06\\ 0.32\\
+            \end{bmatrix} $$ And now we can square the difference $$ (y -
+            \hat{y})^2 = \begin{bmatrix} 0.90\\ 0.34\\ 0.72\\ 0.83\\ 0.10\\
+            0.09\\ 0.13\\ 0.77\\ 0.00\\ 0.10\\ \end{bmatrix} $$
+          </p>
+
+          <p class="paragraph">
+            Now that's the squared error, but where does the mean come in? Well
+            the cost function calculated for every example across the dataset,
+            and the loss is simply the mean of the error for each output neuron
+            (aka component of each loss vector) across the dataset. We can write
+            this out more mathematically as $$ \frac{1}{n}\sum_{i=1}^{n}(y_i -
+            \hat{y_i})^2 $$ where \( n \) is the size of the dataset, \( y_i \)
+            is the label, and \( \hat{y_i} \) is the output from the network.
+            Multiplying by \( \frac{1}{n} \) is the same as dividing the result
+            of the sum by \( n \) so it all still means taking the average. This
+            means the loss function isn't a function across a single training
+            example, but of the entire training dataset. If you want to compte
+            the loss of the network as a single number, you can just sum each
+            component in the loss vector. It is this final value that training
+            attempts to minimize.
+          </p>
+
+          <p class="paragraph">
+            Now this is where we get to training. The idea of training is often
+            treated in a nebulous manner, but in principle is is quite simple:
+            make the loss function as small as possible. The math of how we can
+            accomplish this task get fairly complicated (and we will get into
+            that later), but for now let's dive into a high level conceptual
+            explanation.
+          </p>
+
+          <p class="paragraph">
+            Imagine we have a function \( C(x) \) that uses all of the
+            parameters (weights and biases) and spits out the total cost of the
+            network as a single value over the entire dataset. This may be a bit
+            strange to think about since the parameters of the network are
+            stored separately in matrices and vectors, but we don't have to
+            implement this function exactly. Just think of this function as
+            performing feed-forward with the parameters you gave it and
+            calculates the loss. This function \( C(x) \) is the function we
+            would like to minimize as the lower it is, the better we can
+            identify our training data.
+          </p>
+          <p class="paragraph">
+            To help visualize, let's imagine a network with a single parameter
+            (let's call it \( x \)) and the loss function is \( C(x) = x^2 \).
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/single-parameter-loss-fn.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Now let choose a parameter randomly, say \( x = -1.83 \) and plot
+            its loss.
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/parameter-on-curve.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Now our goal here is to get that parameter to a point where the cost
+            is the lowest. In this case it is pretty easy to tell by looking at
+            the graph, but put yourself in the point's shoes; you only know that
+            function that you are plotted on and your current position. Those of
+            you who know some calculus may know we can take the derivative and
+            find \( x \) where \( C'(x) = 0 \). For reasons we will cover in the
+            next section, it is not feasible to solve for the entire derivative
+            the functions, but we can do something similar, we can get the
+            slope.
+          </p>
+          <p class="paragraph">
+            What I mean is that if we know the cost function, we know how to
+            solve for the slope of the point we are at. If it doesn't make sense
+            that we can calculate the slope of a curve at a point, don't worry I
+            will show why we can do this in the next section. The slope at point
+            -1.83 is -3.66. That means the <em>rise</em> of the function in the
+            y direction is -3.66 times the step you <em>run</em> in the x
+            direction at point \( x = -1.83 \). We can graph this as a line
+            segment \( A \) that shows the slope at point \( x \) along the cost
+            function.
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/slope-at-parameter.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            If you look as this slope, you will notice that it can approximate
+            the function to a reasonable degree of accuracy as long as you
+            remain close to \( x \). For example, if we add 0.1 to our parameter
+            (\( x \)), our slope approximation will tell us that \( \Delta{C}
+            \approx -0.366 \)<sup>1</sup>, while the true change in the function
+            is -0.376. As you get farther and farther away from \( x = -1.83 \)
+            on the linear approximation, the difference between the real
+            function (\( x^2 \)) and the linear approximation increases
+            exponentially
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/approximation-difference.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            You can see that our approximation is most accurate at the point on
+            the curve (since, well, that's where the slope intersects), but as
+            you go outward, the difference becomes great. Now back to our loss
+            function, the goal here is to reach the bottom of that parabola
+            since it is at that point where loss is the least, and we do that by
+            adjusting our parameter \( x \). Armed with the knowledge of the
+            slope at \( x \), we are able to adjust \( x \) in such a way that,
+            if we keep our adjustment small, we know it approximates the change
+            to the cost function. We can write this as \( \Delta{C} \approx
+            2x\Delta{x} \) for the cost function \( C(x) = x^2 \). Since we now
+            know the approximation, we can form a \( \Delta{x} \) such that the
+            change in the cost function \( C \) is negative. This is exactly
+            what we are looking for. Just knowing the slope at point \( x \) we
+            can adjust \( x \) in such a way that will
+            <em>probably</em> lower the cost function.
+          </p>
+
+          <p class="paragraph">
+            We can say we would like \( \Delta{C} \) to be negative. To form
+            this mathematical idea a bit more, we can say that, ideally, we want
+            \( C(x + \Delta{x}) &lt; C(x) \). Think about how we can traverse
+            this slope. Slope essentially tells us if we change an input
+            variable, how much will the resulting function change in terms of
+            the change in the input. Think of \( C(x) \) at \( x = -1.83 \); a
+            nudge at point \( x \) (let's call it \( \Delta{x} \)) will change
+            the function by
+            <em>approximately</em> \( 2 \times -1.83 \times \Delta{x} \). An
+            interesting property of this is that if you move in the direction of
+            the slope, the function will increase, at least for that point. This
+            means that if you took a small positive number and multiplied it by
+            the slope, the number will not only give you the approximate change
+            in the function, but also a distance you can increment the initial
+            \( x \) by in order to raise the result of the function, at least if
+            it is small enough. This also means that if you negate that initial
+            slope coefficient, the approximate change in the function will be
+            negative. You can think of this as the coefficient you apply to the
+            slope tells you the "direction" and magnitude (a cost function only
+            gives one value, so the direction is just a scalar) you want the
+            cost function to move in. This is exactly what we want! With only
+            the knowledge of the slope of a point on the cost function, we are
+            able to determine how to change the input \( x \) if we want to find
+            an \( x \) that lowers the result of the function. This coefficient
+            is known as \( \eta \hspace{5px} \) (the greek letter eta) and is
+            referred to as the learning rate since it determines how quickly the
+            network will traverse the "parameter space" (or the set of all
+            possible parameters) in order to find a set of parameters that can
+            most accurately approximate the desired function. This process is
+            known as gradient descent, and it is an extremely powerful tool to
+            find good solutions to problems, but it has its drawbacks.
+          </p>
+          <p class="paragraph">
+            One major problem with gradient descent is that it is only able to
+            find local minimums. To help explain what I mean, let's say our cost
+            function is \( C(x) = \frac{1}{4}(x + 1)(x - 1)(x + 2)(x - 2) \) and
+            we started with the parameter \( x = -1 \)
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/local-minimum.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            If we followed the slope, we would end up at a point where the cost
+            for that parameter is lower than the surroundings called the local
+            minimum (in this case where \( x = -1.57 \)), but still much higher
+            then the smallest minimum, called the global minimum (in this case
+            where \( x = 2.25 \)). Now you calculus students may think that we
+            could compute the third order derivative and solve for global
+            minimum, and you could do that on this simple cost function with
+            only one parameter, but when we have thousands (or sometimes
+            billions in the largest models) of parameters, this becomes way too
+            computationally complex to calculate. There are a lot of techniques
+            to mitigate this issue, and some of the most famous papers on
+            machine learning are aimed at solving this exact problem, but in our
+            case the local minimum will give us a small enough loss to
+            accurately classify our data most of the time.
+          </p>
+
+          <p class="paragraph">
+            So far, we have only examined how to perform gradient descent with a
+            single parameter, but in real models there are far more than only
+            two parameters. Once we go beyond 2 parameters, the process becomes
+            impossible to visualize on a graph. Luckily, all of the math from
+            two parameters carries over to 2 million, so if you understand this,
+            the reasoning is the same in any network.
+          </p>
+
+          <p class="paragraph">
+            First, let us define our cost function. In this case we will be
+            taking in two parameters, x and y, and our cost will be represented
+            on the z axis. We can write this function as \( C(x, y) \). You may
+            notice that we can't really find the slope at a given point since
+            now the function can change at a different rate for each variable.
+            This forces us to use something called a partial derivative. A
+            partial derivative tells us how much the function will change just
+            for a change in a single variable, holding the other constant. If
+            you do this for each variable, you can create a gradient vector
+            which tells you the direction in the input space that will most
+            quickly increase the function. This is kind of like a
+            multi-dimensions "slope" in a sense.
+          </p>
+          <p class="paragraph">
+            I did just ramble about a lot of theory, so let's get into some
+            concrete examples. For our purposes, can define our cost function as
+            \( C(x, y) = xy \) since this is really easy to reason about. First,
+            let's calculate see how much \( C \) changes with respect to \( x
+            \). Let us imagine we are holding \( y \) constant and just changing
+            \( x \). If we nudge \( x \) a tiny amount (let's call that nudge \(
+            \Delta{x} \)), \( \Delta{C} = y \times \Delta{x} \). The same idea
+            applies to the \( y \). If we hold \( x \) constant and just nudge
+            \( y \), \( \Delta{C} = x\Delta{y} \). To really understand this
+            idea, let's use finite values for \( \Delta{x} \) and \( \Delta{y}
+            \), say \( 0.1 \), and let's say we are sampling at point \( (3, 4)
+            \). If we nudge \( x \) by \( \Delta{x} \), we are essentially
+            figuring out \( \Delta{C} = C(x, y) - C(x + \Delta{x}, y) \). If we
+            expand the function, we get \( \Delta{C} = (3 + 0.1) \cdot 4 - 3
+            \cdot 4\) and we find \( \Delta{C} = 0.4 \). If we generalize for
+            our function, we can say \( \Delta{C} = (x + \Delta{x}) \cdot y - x
+            \cdot y \). Knowing y is in both terms, we can say \( \Delta{C} =
+            y(x + \Delta{x} - x) \). Both \(x\)'s cancel out, so we now know
+            that, with respect to a small nudge to \( x \), \( \Delta{C} =
+            y\Delta{x} \). This is exactly where we landed before! Putting this
+            in fraction form will yield us the ratio from a tiny nudge \(
+            \Delta{x} \) to \( \sim \Delta{C} \) which we can then multiply to
+            an arbitrary \( \Delta{x} \) to find \( \sim \Delta{C} \). If we
+            wanted to write the ratio of a change in each parameter to a change
+            in the overall function, you may expect we write something like \(
+            \frac{\Delta{C}}{\Delta{x}}, \hspace{7px}
+            \frac{\Delta{C}}{\Delta{y}} \) or, if you are familiar with single
+            variable calculus, something like \( \frac{dC}{dx}, \hspace{7px}
+            \frac{dC}{dy} \), but no, mathematicians have to feel smart and
+            special so we use this unique symbol \( \partial \) to indicate a
+            derivative (the slope of a function at a point for a single
+            parameter) is being taken on a multi variable function with respect
+            to a single variable. This means we would write out how each
+            parameter changes a function as \( \frac{\partial C}{\partial x},
+            \hspace{7px} \frac{\partial C}{\partial y} \) where each term is
+            essentially the ratio between a tiny nudge to a parameter to the
+            change in the resulting function.
+          </p>
+          <p class="paragraph">
+            To see how this looks visually, let's take a look at the graph for
+            \( C(x, y) = xy \) at \( x = 3 \)
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/video/3d-sample.gif"
+              width="256"
+              height="256"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Which on a 2d graph, the intersection looks like
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/graph-slice.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            This here only models the graph of \( y \)'s effect on \( C \) at \(
+            x = 3 \). If we were to change \( x \), \( y \)'s effect on \( C \)
+            would change
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/video/y-effect.gif"
+              width="256"
+              height="256"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            As you can see, the amount a parameter influence the function is
+            determined by the values of all the other parameters. In the case of
+            \( C \), we can assemble the influences of each parameter into the
+            gradient vector. A gradient vector is denoted by the symbol \(
+            \nabla \) (don't get it confused with \( \Delta \)). If we want to
+            denote the full gradient vector for \( C \), we can write $$
+            \nabla{C} = \begin{bmatrix} y\\ x \end{bmatrix} $$ This tells us
+            that the ratio between a nudge in \( x \) and the result of the
+            function is \( y \), and the ratio from a nudge in \( y \) to the
+            function is \( C \) is \( x \). Like in this example, in many
+            functions each component of the gradient vector is dependant on some
+            other parameter in some way. I understand I sound like a broken
+            record, but I hope you don't only internalize the syntax and
+            nomenclature, but fully understand why the partial derivative is
+            what it is. Now that we have this out of the way, we can tackle the
+            elephant in the room
+          </p>
+
+          <div class="footnotes">
+            <hr class="line" />
+            <sup id="scfgdfn1"
+              >1. I use the terms cost functions and loss functions essentially
+              interchangeably in this article which is technically incorrect but
+              I don't believe it takes away from the article. For those of you
+              who are curious, the loss of a model is the error (in our case the
+              squared error) for a single training example while cost is the
+              average cost across the entire dataset (in our case,
+              <em>mean</em> squared error.
+              <a href="#tscfgdfn1" class="hyperlink">Return to text</a>
+            </sup>
+          </div>
+
+          <br />
+
+          <h2 class="section-header" id="calculus">Calculus</h2>
+
+          <br />
+
+          <p class="paragraph">
+            As I mentioned in the introduction, this article involves a lot of
+            calculus. In fact, in the last chapter we covered some calculus with
+            linear functions, but rarely are the derivatives so simple. If you
+            are already comfortable with calculus, feel free to skip this
+            section, but for the rest of you, let's look at what a derivative
+            really means.
+          </p>
+
+          <p class="paragraph">
+            A derivative simply asks, "Given a function \( f(x) \), what
+            function can tell us what the slope is for \( f(x) \) at every \( x
+            \)?" You may be asking, "What exactly does it mean to get the slope
+            of a line at a single point? Doesn't slope require some finite
+            change in \( x \) to find the resulting change in \( y \)?" And you
+            would be kind of correct, but in the magical world of mathematics,
+            we can imagine a change in \( x \) as so tiny that it can be
+            measured at a single point. These values are often called
+            infinitesimals since the change is infinitely small, but I like to
+            think of them trying to see what smaller and smaller finite values
+            of change are trying to approach. To grasp this, I think it helps to
+            look at the definition of a derivative: $$ \lim_{dx \to 0} \frac{f(x
+            + dx) - f(x)}{dx} $$
+          </p>
+
+          <p class="paragraph">
+            Let's unpack this a little bit. \( dx \) is that tiny change, an we
+            are asking here what is the ratio for a tiny change \( dx \) to the
+            change of the resulting function. You may be confused by the \( dx
+            \to 0 \), and why we wouldn't use \( dx = 0 \), but if we make \( dx
+            = 0 \), the result of the expression would be undefined since \( 0
+            \) would be in the denominator. \( dx \to 0 \) is an odd
+            mathematical tool basically asking, "If we make \( dx \) smaller and
+            smaller, what does the change seem to get closer and closer to?" To
+            put it without the mathematical notation, we are asking what is the
+            change in the function if add a small \( dx \), and what does that
+            value approach as \( dx \) approaches \( 0 \) in terms of \( dx \).
+            If this doesn't make sense, I highly recommend checking out
+            3Blue1Brown's
+            <a
+              class="hyperlink"
+              href="https://www.youtube.com/watch?v=WUvTyaaNkzM&list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr"
+              >Essence of Calculus course</a
+            >
+            which covers this idea in much more depth than I do.
+          </p>
+
+          <p class="paragraph">
+            To circle back, the derivative gives us the slope for every point on
+            a function. The derivative tells us on any point of the function, if
+            I nudged the \( x \) coordinate smaller and smaller amounts, how
+            much will the function change in terms of the initial nudge, and
+            this idea is slope! To help motivate a geometric interpretation of
+            what I mean, let's look at the graph \( f(x) = x^2 \)
+            <sup id="tscfn1"
+              ><a href="#scfn1" class="footnote-navigation">1</a></sup
+            >
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/x-squared.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Sometimes graphs can be unhelpful at demonstrating what happens if
+            we nudge the parameter, so let's instead model the graph as a square
+            where the side lengths are parameter \( x \) and the area is \( f(x)
+            \)
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/square-area.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Now if we nudge that \( x \) by some finite \( dx \), our new area
+            will look something like
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/square-area-nudge.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Now if we wanted to see how much it changed the function, we can add
+            up the new side areas along with the little guy in the corner. The
+            bottom side would have area of \( x \cdot dx \), the left side would
+            also have an area of \( x \cdot dx \), and finally the square in the
+            corner will have area \( dx \cdot dx \). So \( df \), or the change
+            in the function caused by nudge \( dx \) to parameter \( x \), will
+            be \( 2xdx + dx^2 \). If we wanted to have this as slope, we know
+            the run is \( dx \), so the full expression is\( \hspace{7px}
+            \frac{2xdx + dx^2}{dx} \). But now let's think about this as \( dx
+            \) approaches \( 0 \). The \( 2xdx \) term will keep its ratio of
+            \( 2xdx \), but the \( dx^2 \) term will approach zero much faster
+            than \( dx \) and thus become negligible. Because of this, we can
+            drop the \( dx^2 \) term out of the derivative and just keep the \(
+            2xdx \)<sup id="tscfn2"
+              ><a href="#scfn2" class="footnote-navigation">2</a></sup
+            >
+            . Now if we divide out the denominator, we get the simplified
+            derivative of \( x^2 \) as \( f'(x) = 2x \) (that \('\) symbol is
+            said as "prime", and typically in calculus means we are referring to
+            the derivative of a function). So to recap, as the nudge \( dx \) to
+            our \( x \) parameter becomes smaller and smaller, the change to the
+            function approaches \( 2xdx \). This is what it means to be a
+            derivative, and is an extremely important idea in the world of
+            mathematics.
+          </p>
+
+          <p class="paragraph">
+            While it may be trivial to calculate the derivative on a simple
+            function like \( x^2 \), things start getting much more complicated
+            once we start composing functions. To first understand this more
+            abstractly, let's say we have two functions, \( f(x) \) and \( g(x)
+            \), and we would like to find \( h'(x) \) where \( h(x) = f(g(x))
+            \). Now let us think about that out function. We cannot simply nest
+            the derivatives since we still need to calculate \( f'(x) \) at \( x
+            \) in this case is \( g(x) \). If we calculated \( f'(g'(x)) \), we
+            would be calculating the derivative at the wrong spot! This means we
+            still have to keep \( g(x) \) inside of \( f'(x) \). If we construct
+            this expression we have made so far, we get \( f'(g(x)) \), but now
+            what do we do about the derivative for \( g(x) \)? Well this is
+            where we have to get creative. If we write out the expression as a
+            "full" derivative, we get \( \frac{f'(g(x))dx}{dx} \). Let's take a
+            second to understand what this means and why it is incorrect. Here
+            we are saying if we nudge the function \( dx \) amount, the change
+            to the function will be derivative of \( f(x) \), but instead of
+            being calculated as the change at \( x \), it will be calculated at
+            \( g(x) \). This only serves as a strange parameter shift before we
+            calculate \( f'(x) \), but we are still fundamentally finding the
+            derivative of only \( f(x) \), not \( h'(x) \) which is what we are
+            trying to do. This is where \( g'(x) \) comes in. Now this is the
+            fun part, we have to put \( f'(g(x)) \) in terms of \( g'(x) \)
+            since the nudge that occurs to the input isn't just a nudge to \( x
+            \), rather it's \( g(x) \)'s
+            <em>reaction</em> to \( dx \). This means the resulting expression
+            turns out to be \( f'(g(x))g'(x) \). To write this a bit more
+            symbolically, \( dh = f'(g(x))dg, \hspace{7px} dg = g'(x)dx \), so
+            \( dh = f'(g(x))g'(x) \). This is known as the chain rule, and is
+            essential to how neural networks record each parameter's effect on
+            the loss function.
+          </p>
+
+          <p class="paragraph">
+            To help really understand this, let's look at a really simple
+            example. Let's say \( f(x) = (2x)^2 \). Solving for the derivative
+            of each example is trivial. We already know that the derivative of
+            \( x^2 \) is \( 2x \), and it is fairly simple to reason that the
+            derivative of \( 2x \) is \( 2 \) (think how for any nudge \( dx \),
+            the resulting change to the function is \( 2dx \) since the function
+            is simply \( 2x \)). If we only calculate the derivative of the
+            outer expression at the inner function, we are still only recording
+            the derivative of \( x^2 \), just at a different \( x \) value. If
+            we think about this with the definition of a derivative (which is
+            often useful when trying to reason about a derivative you are unsure
+            how to solve), we only solve for $$ \lim_{x \to 0} \frac{(2x + dx)^2
+            - (2x)^2}{dx} $$ If you notice, we are doing nothing to see \( 2x
+            \)'s reaction to \( dx \) since we are applying \( dx \) after \( 2x
+            \). What we really want is $$ \lim_{x \to 0} \frac{(2(x + dx))^2 -
+            (2x)^2}{dx} $$ Here, we are applying \( dx \) to the \( x \)
+            directly instead of chucking it on the result of \( 2x \). This is
+            what we need to solve for a derivative; we don't want to see what
+            happens to the outer function at a transformed \( x \) input
+            parameter, rather we want to see what happens to the nested function
+            at the parameter directly.
+          </p>
+
+          <p class="paragraph">
+            The chain rule is put in multiplication form looks like $$
+            \frac{df}{dg} \cdot \frac{dg}{dx} $$ Often, you will hear that the
+            chain rule "cancels out" the intermediate terms to find the effect
+            of a parameter nested deep in functions to the outer function. While
+            this fractional process resembles that of algebraically cancelling
+            terms in fractions, I find that phrasing misleading. I prefer to
+            think of this multiplication as recording how much each nested
+            parameter influences it's own function. A kind of transformation
+            applied to the parameter according to the function it finds itself
+            within before it further transformed by outer functions. Remember, a
+            derivative gives you a set of slopes you can use to approximate a
+            function at any point, so these parts of the "chain" in the
+            derivative serves to form the slope at a each point according to
+            each nested function. I encourage you to stop and think about what
+            this means as this is an extremely important insight not only to the
+            notation we will use to show the chain rule later in the article,
+            but also a fundamental aspect of calculus.
+          </p>
+
+          <p class="paragraph">
+            Fundamentally, this is how back propagation works. We adjust every
+            single parameter according to its effect on the final loss function.
+            And to approximate how much of an effect each parameter has, we
+            calculate the "slope" (in multi-dimensional parameter space it is
+            called the gradient vector) on the point of the parameters in the
+            loss function, and move along that slope a distance according to \(
+            \eta \) (our learning rate). We must make sure \( \eta \) is small
+            since if it is too large, our approximation could be so far off
+            where the loss function actually increases. With all of this boring
+            math out of the way, we can now actually write some code.
+          </p>
+
+          <br />
+          <div class="footnotes">
+            <hr class="line" />
+            <sup id="scfn1">
+              1. If you are wondering, yes I did steal this explanation from
+              3Blue1Brown, but it is also my favorite explanation so cry about
+              it
+              <a
+                href="#tscfn1"
+                title="Return to text"
+                class="footnote-navigation"
+                >Return to text</a
+              ></sup
+            >
+            <sup id="scfn2">
+              2. This may seem like an odd move, since the \( dx^2 \)
+              contributes to a change in \( f \), but as you get into calculus,
+              things become a lot more about approximation than discrete, finite
+              steps, and you don't actually use a finite \( dx \) term in the
+              expression, rather you take the limit as the nudge approaches \( 0
+              \), so the \( dx^2 \) term becomes negligible and is ignored
+              (since it decreases much faster than the rest of the expression).
+              The derivative here just tells us that if we kept choosing a
+              smaller and smaller \( dx \), \( df \) will approach \( 2x \)
+              times the nudge \( dx \). This still feels weird even to me, but
+              welcome to calculus
+              <a
+                href="#tscfn2"
+                title="Return to text"
+                class="footnote-navigation"
+                >Return to text</a
+              ></sup
+            >
+          </div>
+
+          <br />
+
+          <h2 class="section-header" id="backpropagation">Backpropagation</h2>
+
+          <br />
+
+          <p class="paragraph">
+            Backpropagation is the method used by neural networks to update
+            their weights. In the last couple sections, we have talked at length
+            about the mathematics of how network descend the loss function, but
+            little have we talked about those mechanics. To start, let's clear
+            up what the gradient vector actually is in the context of neural
+            networks.
+          </p>
+          <p class="paragraph">
+            People often view the network in very different ways depending on
+            the mathematical context of a specific aspect of the network,
+            especially when it comes to gradient vectors. When viewing the
+            network as a whole, all of the weights and biases (aka the
+            parameters) of the network can be viewed as a single vector. Now
+            this vector could have thousands or millions or billions of
+            components, but when we think about the state of the network in
+            terms of its parameters, we are able to draw a parameter space in
+            which there exists a cost surface we can traverse. This isn't to be
+            confused with how applying the weights works however. In an earlier
+            section, I mentioned how weights are applied to activation functions
+            as matrices where each row represents the weights to be applied to
+            every input neuron, and every column represents the weights across
+            each output neuron respond to a single input neuron. Using matrices
+            allows for a useful way to encode the weights which allows computers
+            to apply the operations very quickly as there are many optimizations
+            for such operations.
+          </p>
+
+          <p class="paragraph">
+            Now that we have cleared up some misconceptions, let's get on to
+            imagining an extremely simple neural network. A tool commonly used
+            in problem solving is to find the simplest example of the problem of
+            which a general solution to the problem can be reasoned about. To
+            start, let's just have an extremely simple network with 3 neurons,
+            no non-linear activation functions, and no biases. This means we
+            will have two weights, and let's name them \( w_1 \) and \( w_2 \)
+          </p>
+
+          <div class="image-container">
+            <object data="/media/images/simple-network.svg"></object>
+          </div>
+
+          <p class="paragraph">
+            Before we begin diving into the semantics and visualization of the
+            network, let's also begin writing some code. Here, we will use type
+            hinting since I am used to static languages and it makes our LSP
+            server much smarter. To start, let's create a simple neuron class
+            <sup><a href="#sbpfn2" class="footnote-navigation">2</a></sup>
+          </p>
+
+          <pre><code class="language-python">
+class Neuron:
+  # If this is an input neuron, there are no input neurons to that
+  def __init__(self, weight: float = 0.0, prev_neuron = None, 
+                is_input: bool = False):
+                
+    self.is_input = True
+
+    self.weight = weight
+    self.prev = prev_neuron
+
+  def activate(self, x: float) -> float:
+    if self.is_input:
+      # Input neuron only returns the input, otherwise a fairly useless instance
+      return x
+
+    # To get the previous neuron's activation, we simple call 
+    # the activation function on the previous neuron
+    return self.prev.activate(x) * self.weight
+      </code></pre>
+
+          <p class="paragraph">
+            For a simple example, we want our network to approximate a very
+            simple function. For now, let's use the function \( f(x) = x \).
+            This function is so simple that it is trivial to determine ourselves
+            what the correct weights would be, but to demonstrate the point of
+            this article, let's let the computer learn for itself. Just like in
+            real neural networks classifier, we will use random weights
+            <sup
+              ><a class="footnote-navigation" href="#sbpfn1" id="tsbpfn1"
+                >1</a
+              ></sup
+            >
+            start, and allow the computer to learn the correct weights. Let's
+            just create instances of the network with weights \( w_1 = 0.4 \)
+            and \( w_2 = 0.7 \).
+          </p>
+
+          <pre><code class="language-python">
+        input_neuron = Neuron(is_input=True)
+
+        # Remember hidden layers from the earlier section? Well we only have 
+        # one neuron here, but it acts as a single neuron hidden layer
+        hidden_neuron = Neuron(0.4, input_neuron)
+
+        output_neuron = Neuron(0.7, hidden_neuron)
+      </code></pre>
+
+          <p class="paragraph">
+            Now we can get a really good understanding why each weight's effect
+            on the output is dictated by the layers in front of it. If the
+            output's weight shifts from 0.5 to 0.1, the hidden layer's weight
+            must increase 5x to keep the same influence on the output as it had
+            before. This is yet another way we can think about neural networks
+            that implies a biological resemblance (they are called neurons after
+            all). If we have classes where certain neurons will fire strong only
+            for that class, well we want those to have large weights on the
+            output corresponding to that class. Similarly, if some neurons fire
+            when the input is not some class, we want the weights from those
+            neurons to the output to be negative. This is often how the logic
+            behind neural networks is first introduced, and while I think it is
+            helpful to develop that understanding of a network, I think think it
+            is much more helpful to understand the core mathematics behind why a
+            neural network works so well as I have done earlier. This is a bit
+            harder to represent in such a simple neural network, but I think you
+            get the picture.
+          </p>
+
+          <p class="paragraph">
+            Now that we have the network, we can move on to training. To start,
+            let's generate a bunch of training examples. Remember, we want this
+            to be an identity network, therefore we can just generate a bunch of
+            random numbers with our input being the same as our output
+          </p>
+
+          <pre><code class="language-python">
+import random # You probably want to stick this at the top of the file
+
+# ...
+
+# Our amount of training examples
+training_count = 100
+
+training_data = []
+
+for _ in range(training_count):
+  # Let's keep our intended range of values to be [0, 1)
+  rand_num = random.random()
+
+  example = (rand_num, rand_num)
+  training_data.append(example)
+      </code></pre>
+
+          <p class="paragraph">
+            Now for the fun part, telling our network it's wrong. Like described
+            earlier, we will be using Mean Squared Error which, for those of you
+            who forgot, takes the form of $$ \frac{1}{n}\sum^{n}_{i = 1}(y_i -
+            \hat{y}_i)^2 $$ where \( \hat{y}_i \) is our prediction, and \( y_i
+            \) is the true value. This is a fairly trivial function
+          </p>
+
+          <pre><code class="language-python">
+def mean_squared_error(expected: list[float], observed: list[float]) -> float:
+
+  # If the length of the lists don't match, we can't
+  # compute the difference between all examples
+  assert len(expected) == len(observed)
+
+  n = len(expected)
+  sum = 0.0
+  for single_expected, single_observed in zip(expected, observed):
+    sum += (single_expected - single_observed) ** 2
+
+  mean = sum / n
+  return mean
+      </code></pre>
+
+          <p class="paragraph">
+            Here is where we can finally implement backpropagation. Let's first
+            think of the loss at a single training example, say \( (0.2, 0.2)
+            \), but, with the weights we lined out earlier, the output our
+            network gives is \( p = 0.2 \cdot 0.4 \cdot 0.7 = 0.056 \). Our
+            network is fairly wrong. The cost for this would be \( C = (0.2 -
+            0.056)^2 = 0.021 \). It's fairly small, but that's only because we
+            are only dealing with small numbers. In order to figure out how we
+            can lower this loss, we first must compute the last activation's
+            effect on the loss for that example. This means we are going to hold
+            the true output, \( y \), constant, and see how much \( \hat{y} \)
+            impacts the loss function. To make things a little easier, let's
+            swap \( y_i \) and \( \hat{y} \) in the loss function but keep the
+            operator order. The difference is squared so it actually doesn't
+            change the result of the loss function nor the derivative<sup
+              id="tsbpfn3"
+              ><a href="sbpfn3" class="footnote-navigation">3</a></sup
+            >. Our new expression becomes \( (\hat{y} - y)^2 \). Similar to our
+            \( x^2 \) example from earlier, we can write this as a square where
+            each side length is \( \hat{y} - y \)
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/mse-square.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            And, like last time, if we nudge \( \hat{y} \), we will get new side
+            rectangles with size \( \hat{y} - y \) and \( d\hat{y} \).
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/mse-dy-square.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            If we do the math, we find the corner of dimensions \( d\hat{y}
+            \times d\hat{y} \) vanishes much quicker than the rest of the
+            expression, so we can kick it out and we are left with the
+            derivative being \( 2 \cdot (\hat{y} - y) \). Let's take a quick
+            moment to understand what this means. If we nudge the activation of
+            the output by some tiny amount, let's call it \( d\hat{y} \), the
+            approximate change to the function, \( \Delta{C} \), will be \( 2
+            \cdot (\hat{y} - y) \cdot d\hat{y} \). Once again, this is a very
+            trivial function to make in code
+            <sup
+              ><a href="#sbpfn4" id="tsbpfn4" class="footnote-navigation"
+                >5</a
+              ></sup
+            >
+          </p>
+
+          <pre><code class="language-python">
+# The explicit mention of prime just indicates this function calculates a derivative
+def squared_error_prime(expected: float, observed: float):
+  return 2.0 * (observed - expected)
+      </code></pre>
+
+          <p class="paragraph">
+            Now that we know how much the output neuron's activation influences
+            the cost, we can calculate how much each other parameter influences
+            that activation and so on. This is the chain rule in action. We can
+            now find how much the hidden's neuron activation influences the
+            output neuron's activation, and then now that we know how much the
+            output neuron's activation influences the loss, we can easily
+            determine how much the hidden neuron's activation influences the
+            loss function (given we keep the other parameters the same). This
+            system of propagating influence allows us to build the gradient
+            vector across the entire network. In order to represent the gradient
+            vector, here we will just use a list where the first element is the
+            partial derivative to the loss function with respect to \( w_1 \),
+            and the second element is the partial derivative of the loss
+            function with respect to \( w_2 \). If we use the fancy mathematical
+            notation with an actual vector it looks something like $$ \nabla{C}
+            = \begin{bmatrix} \frac{\partial{C}}{\partial{w_1}}\\
+            \frac{\partial{C}}{\partial{w_2}} \end{bmatrix} $$ but we won't
+            bother representing faithfully according to the mathematic notation,
+            just a list. There is one more thing we must keep in mind however:
+            we need to adjust the parameters according to <em>all</em> the
+            training examples. If we adjust the network after just a single
+            training example, the network will keep attempting to correctly
+            identify each one individually and will then generalize poorly to
+            other training examples. Because of this, we must take the
+            derivative of the mean part of mean squared error.
+          </p>
+
+          <p class="paragraph">
+            Calculating the average of a derivative is pretty simple since it
+            involves dividing by a constant. When we divide a function by some
+            constant, the derivative is also divided by that constant. To
+            understand why this is, imagine a simple function \( f(x) = x \). If
+            we nudge this function by some \( dx \), the change of the function
+            will be the same as the nudge. In other words, \( dx \) = \( df \).
+            But what happens if we divide this function by 10? Well, the
+            function becomes \( f(x) = \frac{x}{10} \). Now nudging the function
+            only changes the function by a tenth of that nudge. This is because
+            when we divide the function by a constant, the slope of that
+            function is also divided by that constant. This means in order to
+            get the derivative according to the
+            <em>mean</em> of the squared loss across the entire training set, we
+            must find the sum of all the gradients and divide them, essentially
+            performing the same operations as we would on the loss function
+            since, after all, that is what we are trying to find the gradient
+            of. In other words, by summing and find the average of all the
+            gradient vectors, we are asking, "Given a slight nudge to a
+            parameter, on average, how much will the loss change for each
+            training example?" This is why averaging the loss is so important.
+            By doing so, we get a holistic view of how each parameter influences
+            the accuracy of our model over each one of our training examples,
+            and our learning rate, \( \eta \), tells us of what magnitude do we
+            want to change the loss function.
+            <sup
+              ><a href="#sbpfn5" id="tsbpfn5" class="footnote-navigation"
+                >5</a
+              ></sup
+            >
+            If this idea feels a little strange, I recommend checking out
+            chapter one of
+            <a
+              href="http://neuralnetworksanddeeplearning.com/chap1.html"
+              class="hyperlink"
+              >Neural Networks and Deep Learning</a
+            >. This is a much more dense but covers the topic in much more
+            mathematical precision which may be helpful to you.
+          </p>
+
+          <p class="paragraph">
+            Now that we know how to calculate the effect an activation has on
+            the loss, we can also calculate how much the weight influences the
+            loss. To do this, we can first see how much the weight influences
+            the neurons activation. This goes back to our old function \( C(x,
+            y) = xy \) since we are weighing the activation of the previous
+            neuron. Remember, the expression for a neuron's activation looks
+            like \( w_n \cdot a_{n - 1} \), so if we nudge the weight just a
+            little bit, the current neurons activation will change proportional
+            to the weight. We can write this more mathematically as $$
+            \frac{\partial{a_n}}{\partial{w_n}} = a_{n - 1} $$ We can do
+            something similar to the previous neuron's activation influence on
+            the loss. If we nudge the neurons previous activation, the loss will
+            change according to the weight. This should make intuitive sense
+            since the amount the previous neuron has influence over the current
+            neuron is determined by the weight; that's the point of weights! We
+            can also write this nice and mathematically as $$
+            \frac{\partial{a_n}}{\partial{a_{n-1}}} = w_n $$ Now, we can start
+            chaining these in order to propagate the effects of each weight and
+            bias. The reason the chain rule can apply is because the output of
+            the network can be thought of as a bunch of nested functions. In our
+            case, it looks something like \( O(x) = f_1(f_2(x)) \) where \( O \)
+            is referring to the output of the network, \( x \) as the input to
+            the network, and \( f_n \) just refers to the function each neuron
+            applies to the previous neuron. In our case this function simply
+            scales the previous activation by a weight, but in the near future
+            we will be using non-linear activations which will make things more
+            complicated.
+          </p>
+
+          <p class="paragraph">
+            Now we can finally write some code. Let's start with calculating the
+            gradient in the network.
+          </p>
+
+          <pre><code class="language-python">
+class Neuron:
+
+  # The other parts of the class ...
+
+  # x is our input and y is the expected output, neuron_index is the index counting backwards
+  def calculate_gradient(self, gradient: list[float], x: float, y: float, 
+                        neuron_index: int = 0, current_influence: float = 0.0) -> None:
+
+    # Base case of this recursion; we don't want to perform any logic if this is an input
+    if neuron_index == len(gradient):
+      return
+
+    # This doesn't have a previous neuron influence as it is the 
+    if neuron_index == 0:
+      prediction = self.activate(x)
+      current_influence = squared_error_prime(y, prediction)
+
+    prev_activation = self.prev.activate(x)
+
+    # Chain rule in action
+    weight_influence = prev_activation * current_influence
+    prev_activation_influence = self.weight * current_influence
+
+    # Starts at the back of the array
+    gradient[-1 - neuron_index] += weight_influence
+
+    # Recursing to the next neuron
+    self.calculate_gradient(gradient, x, y, neuron_index + 1, prev_activation_influence)
+      </code></pre>
+
+          <p class="paragraph">
+            Now with the calculation functions out of the way, we can finally
+            perform the calculation
+          </p>
+
+          <pre><code class="language-python">
+# Other stuff ...
+
+gradient = [0.0, 0.0]
+
+for x, y in training_data:
+  output_neuron.calculate_gradient(gradient, x, y)
+
+# Little bit of fun list builder
+gradient = [element / len(training_data) for element in gradient]
+      </code></pre>
+
+          <p class="paragraph">
+            Now that we have our gradient, performing backpropagation is a
+            fairly trivial task
+          </p>
+
+          <pre><code class="language-python">
+class Neuron:
+  # Other class functions ...
+
+  # neuron_index will also start at the back like with gradient calculation
+  def back_propagate(self, gradient: list[float], learning_rate: float,
+                      neuron_index: int = 0) -> None:
+
+    # Once again we have our base case since when this function hits the input,
+    # we don't really want anything to happen
+    if neuron_index == len(gradient):
+      return
+
+    self.weight += -learning_rate * gradient[-1 - neuron_index]
+
+    self.prev.back_propagate(gradient, learning_rate, neuron_index + 1)
+      </code></pre>
+
+          <p class="paragraph">Now we can finally perform backpropagation!</p>
+
+          <pre><code class="language-python">
+# Other stuff ...
+
+# Since the array is an array of tuples, we have to split it up 
+# for the loss function into two separate arrays
+
+training_inputs = [e[0] for e in training_data]
+expected_outputs = [e[1] for e in training_data]
+
+network_outputs = []
+
+for x in training_inputs:
+  network_outputs.append(output_neuron.activate(x))
+
+# Seeing our loss before the network trains
+loss = mean_squared_error(training_outputs, network_outputs)
+
+print(f"Loss before training: {loss}")
+
+# Choosing a learning rate somewhat arbitrarily. Typically you want
+# to start with learning rates fairly small so you don't overshoot,
+# though it may take a long time for the network to properly learn
+output_neuron.back_propagate(gradient, 1e-2)
+
+training_outputs = []
+
+for x in training_inputs:
+  network_outputs.append(output_neuron.activate(x))
+
+loss = mean_squared_error(expected_outputs, network_outputs)
+
+print(f"Loss after training: {loss}")
+
+      </code></pre>
+
+          <p class="paragraph">
+            While the losses are going to be different for each run, the output
+            to this script should look something like
+          </p>
+
+          <pre><code class="language-plaintext">
+Loss before training: 0.16572647137140817
+Loss after training: 0.16497179277887017
+      </code></pre>
+
+          <p class="paragraph">
+            You may notice that the loss doesn't actually change that much. It
+            does lower, but we would like it to be much closer to zero. We could
+            fix this by raising the learning rate, but that will only help us to
+            a point since if we raise it too high (or even just a little), we
+            run a high risk of overshooting the local minimum the network would
+            other settle into. The way we solve this is actually pretty simple:
+            we just backpropagate over the same training data multiple times.
+            Each run through the training set a network learns on is known as an
+            epoch (you may remember this in the animation for a network training
+            I did in an earlier chapter). In our network here, we are only
+            running through the training data once, but what if we ran through
+            it one thousand times?
+          </p>
+
+          <pre><code class="language-python">
+# Keep the other code the same up here ...
+
+epochs = 1000
+
+for _ in range(epochs):
+
+  # We have to clear this array after each epoch or else it will
+  # screw up backprop
+  gradient = [0.0, 0.0]
+
+  for x, y in training_data:
+    output_neuron.calculate_gradient(gradient, x, y)
+
+  gradient = [element / len(training_data) for element in gradient]
+  
+  for x in training_inputs:
+    output_neuron.back_propagate(gradient, 1e-2)
+
+# And keep the other stuff the same here too ...
+      </code></pre>
+
+          <p class="paragraph">Now the loss should be extremely small</p>
+
+          <pre><code class="language-plaintext">
+Loss before training: 0.18458776163907104
+Loss after training: 1.1555579684690514e-33
+      </code></pre>
+
+          <p class="paragraph">
+            You have done it! If you have followed along thus far, you have
+            implemented back-propagation in a real neural network and actually
+            understand how and why it works. While this is an incredibly simple
+            one, we have done the hard part. Now that we have this, we can begin
+            adding a bit more to it. Instead of trying to approximate a boring
+            line, let's try to approximate a sine wave within the range \( [-1,
+            1] \). To do this, we cannot simply use these linear transformations
+            since the best a line can do to approximate \( sin(x) \) isn't up to
+            our standards. However, as you may have already guessed, we can
+            start using the non-linear activation sigmoid. If you remember,
+            sigmoid is a fairly simple function so it isn't too difficult to
+            implement in code.
+          </p>
+
+          <pre><code class="language-python">
+import math
+
+# Other stuff...
+
+# You'll want to stick this above the Neuron class definition
+
+def sigmoid(x: float):
+  return 1 / (1 + math.exp(-x))
+      </code></pre>
+
+          <p class="paragraph">
+            And of course along with it, we must have the derivative to give us
+            the best linear approximation for the effect from a nudge to the
+            parameter. I won't show why the derivative is what it is, but it
+            isn't super difficult to prove to yourself with a pen and some paper
+            if you want
+          </p>
+
+          <pre><code class="language-python">
+
+# Other stuff...
+
+def sigmoid_prime(x: float):
+  return sigmoid(x) * (1.0 - sigmoid(x))
+      </code></pre>
+
+          <p class="paragraph">
+            Now let's actually use the sigmoid activation in our class
+          </p>
+
+          <pre><code class="language-python">
+class Neuron:
+
+  # Other methods and stuff ...
+
+  def activate(self, x: float) -> float:
+    if self.is_input:
+      # Input neuron only returns the input, otherwise a fairly useless instance
+      return x
+
+    # With the new activation
+    return sigmoid(self.prev.activate(x) * self.weight)
+      
+      </code></pre>
+
+          <p class="paragraph">
+            We now have to add the derivative of sigmoid to the gradient
+            calculation as well. Take a moment to think how this should be
+            implemented. The weighted sum is passed through the activation
+            function before it is sent out, so if we want to see how a nudge in
+            the parameter influences the sigmoid, we have to calculate it at the
+            point of the current parameter. This means we will be taking the
+            derivative of sigmoid at the point of our weighted sum. This is
+            added to to the "chain" of influence to the final loss function. I
+            may sound like a very broken record, but it's helpful to keep the
+            chain rule in mind when working with this sort of machine learning
+            logic.
+          </p>
+
+          <pre><code class="language-python">
+class Neuron:
+
+  # Other methods ...
+
+  # x is our input and y is the expected output, neuron_index is the index counting backwards
+  def calculate_gradient(self, gradient: list[float], x: float, y: float, 
+                        neuron_index: int = 0, current_influence: float = 0.0) -> None:
+
+    # Base case of this recursion; we don't want to perform any logic if this is an input
+    if neuron_index == len(gradient):
+      return
+
+    # This doesn't have a previous neuron influence as it is the 
+    if neuron_index == 0:
+      prediction = self.activate(x)
+      current_influence = squared_error_prime(y, prediction)
+
+    prev_activation = self.prev.activate(x)
+
+    activation_influence = sigmoid_prime(prev_activation * self.weight)
+
+    # Chain rule in action
+    weight_influence = prev_activation * activation_influence * current_influence
+    prev_activation_influence = self.weight * activation_influence * current_influence
+
+    # Starts at the back of the array
+    gradient[-1 - neuron_index] += weight_influence
+
+    # Recursing to the next neuron
+    self.calculate_gradient(gradient, x, y, neuron_index + 1, prev_activation_influence)
+      </code></pre>
+
+          <p class="paragraph">
+            Now we have to create new training data. We could generate random
+            numbers between -1 and 1 and then find the sin of that point, but to
+            be a little bit easier on the network, let's generate points at an
+            even interval to capture all of the shape of \( sin(x) \)
+          </p>
+
+          <pre><code class="language-python">
+# Other stuff up here
+
+# Replacing the random number generation
+
+for i in range(training_count):
+  # Loop excludes highest index (since it starts at zero), but we want to include it
+  x = i / ((training_count - 1) / 2) - 1
+  y = math.sin(x)
+
+  training_data.append((x, y))
+      </code></pre>
+
+          <p class="paragraph">
+            And our loss has decreased, but probably not as much as we would
+            have liked
+          </p>
+
+          <pre><code class="language-plaintext">
+Loss before training: 0.6109113598177749
+Loss after training: 0.5852568616860203
+      </code></pre>
+
+          <p class="paragraph">
+            Let's take a look at our graph to see how the network attempted to
+            approximate sin(x)
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/images/simple-approximation-of-sine.svg"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            As you can tell, the network (the orange line) isn't doing a
+            particularly good job approximating \( sin(x) \). First of all, \(
+            sin \) in the range \( [-1, 1] \) essentially looks like a straight
+            line, which is hard for such a curved activation function to
+            approximate. Second of all, we have a hidden layer. When a model has
+            a hidden layer with only a single neuron, you can't compound the
+            effect of multiply neurons by taking a weighted sum since there is
+            only one neuron to take the sum of! This limits us to only having
+            the function represent half of the output space it once did. More
+            specifically, this is because each output limits us to the range of
+            \( (0, 1) \). When the inner parameter is stuck at that narrow
+            range, the left side of the sigmoid function cannot be represented
+            since to be on that side, the parameter must be \( &lt; 0 \). This
+            forces the outer function to start at \( 0.5 \) when the parameter
+            is zero, and even if we apply a negative weight, the term that makes
+            up the inner parameter (\( w \cdot a_{n - 1}\)) will maintain the
+            same sign (meaning the same negative or positive state). To fix
+            this, we must create networks that have multiple neurons per layer
+            as well as biases since I kind of forgot to implement those here.
+          </p>
+
+          <p class="paragraph">
+            You thought this was going to be the end of a section, didn't you?
+            Well I tricked you, and now I have an excuse to talk about more
+            calculus. Let's quickly go over following the network and why these
+            derivatives are so darn important.
+          </p>
+
+          <p class="paragraph">
+            When calculating the gradient, what we are essentially asking is,
+            "For this very particular point in parameter space, what is the
+            ratio from a unit of change to the parameter to the change in the
+            loss?" This means the approximation will always be linear. To have
+            this knowledge, your current neuron must know how much of an effect
+            it has on the final output. We have already written this in the
+            aforementioned code, but let's also just take a second to understand
+            how it works. We already know that the amount of an effect a neuron
+            feeding into has by taking a look at the weight (as I said before,
+            that's kinda the point), so we can pass that value recursively up to
+            the next neuron to calculate, and when we propagate this influence
+            backwards, at any point in the network we know exactly how much of
+            an influence it has on the final loss. Let's a single training
+            example with out last network with the initial weights of \( 0.4 \)
+            and \( 0.7 \), say our input is \( 0.2 \) and we want our output to
+            be \( 0.1 \) (these are just random numbers I came up with). The
+            first step is we look at our loss. We know the expected output was
+            \( 0.1 \), but our network spit out \( 0.59 \), and our loss is \(
+            (0.1 - 0.59)^2 = 0.24 \). If we use our derivative to find the best
+            linear approximation for our loss function (for this single training
+            example), we get \( 2 \cdot (0.59 - 0.1) = 0.98 \). This means for a
+            nudge \( dx \) in the activation of the output neuron, the loss
+            function will change roughly \( 0.98 \cdot dx \). This means we have
+            assembled this part of the chain. Now that we know how much a nudge
+            in the activation of the output neuron influences the output, we can
+            move on to the weight's effect on the loss function. We know that we
+            weight's effect is determined by the previous activation, and we can
+            pretty easily calculate that the previous neuron's activation was \(
+            0.52 \). We have assembled the first part of the chain, meaning that
+            a slight nudge in the weight will change the weighted sum by \( 0.52
+            \). This weighted sum that is calculated before the activation
+            function is typically called \( z \), so if we put it in that
+            context, we can say that a slight nudge \( dw_2 \) (since it is the
+            second weight in the network) changes \( z \) by \( 0.52w_2 \). Now
+            we need to calculate the next part of the chain, \(z\)'s influence
+            on \( \sigma(z) \). I am not going to show the calculation for the
+            slope of \( \sigma \) at \( z \), but just know that for a slight
+            nudge \( dz \), \( \sigma \) (at point \( z \)) approximately
+            changes by \( 0.24dz \). Here, we now assemble the next part of the
+            chain. We know that a slight nudge to \( w_2 \) is going to change
+            \( z \) by \( 0.52dw_2 \). Now that we know how much \( z \) will
+            change for a given nudge to our weight, we can calculate how much
+            that change will affect the output of sigmoid. And that sigmoid is
+            the activation, so if we multiply everything together (essentially
+            assembling our chain), we get \( 0.52 \cdot 0.24 \cdot 0.98 = 0.12
+            \). This means that for a small nudge \( dw_2 \) to the weight, the
+            loss will roughly change by \( 0.12dw_2 \). To really help solidify
+            this idea, let's actually use a discrete nudge to the weight in
+            order to see how this works, let's say \( dw_2 = 0.1\). We know the
+            ratio from a small change in \( dw_2 \) to \( z \) is 0.52, so we
+            know that the change in \( z \approx 0.05 \). Now that we know how
+            much \( z \) will change, we can apply the next part of the chain.
+            We know that the ratio from a small change in \( dz \) to \(
+            \sigma(z) \) is \( 0.24 \), so we multiply that change in \( z \)
+            (namely \( 0.05 \)) to \( 0.24 \), and we get \( 0.012 \) (adding
+            the sig fig so we don't lose it in the last calculation). Knowing
+            that a change in \( w_2 \) will change the output activation by
+            approximately \( 0.012 \), we can use the ratio from a change in
+            that activation to the loss which is roughly \( 0.98 \). We can
+            multiply these together and we finally get \( 0.012 \cdot 0.98 =
+            0.01 \). This means if we nudge \( w_2 \) by \( 0.1 \), the loss
+            function will increase by \( 0.01 \). Knowing how to do this, we can
+            also calculate the effect the previous activation has on the loss
+            function. We can keep the derivative of sigmoid and to the loss
+            function, but instead of calculating for a nudge in \( w_2 \), we
+            can calculate for a nudge in \( a_{n - 1} \). Once again, we know
+            that \( a_{n - 1} \)'s influence on \( z \) is simply the weight,
+            which in this case is \( 0.7 \). This is going to be the influence
+            \( a_{n - 1} \) has on \( z \), and we can keep all the other parts
+            of the chain the same. This gives us \( 0.7 \cdot 0.24 \cdot 0.98 =
+            0.17 \). We can pass this influence up to the previous neuron
+            (previous meaning towards the input) for it to calculate its own
+            parameter's effect on the loss. We can do this for as many layers as
+            we want and will maintain an approximation for a change in the
+            parameter to a change in the loss function.
+          </p>
+
+          <p class="paragraph">
+            Just bear one more section of rambling and then we can finally get
+            on to writing our MNIST classification model.
+          </p>
+
+          <br />
+
+          <div class="footnotes">
+            <hr class="line" />
+            <sup id="sbpfn1">
+              1. Well in real networks, the weight initialization isn't
+              completely random. To reduce exploding and vanishing gradients
+              inside of weights, there exist a few methods to initialize the
+              weights to mitigate the problems. If you want to learn more, you
+              should check out
+              <a
+                class="hyperlink"
+                href="https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf"
+                >this paper</a
+              >.
+              <a
+                href="#tsbpfn1"
+                title="Return to text"
+                class="footnote-navigation"
+                >Return to text</a
+              ></sup
+            >
+            <sup id="sbpfn2">
+              2. If you are not familiar with python, there are about a million
+              tutorials on the internet teaching it. Here, the most complex
+              python-specific code we will write will involve classes and
+              constructors, so one only has to learn to that point to understand
+              the code in this article
+              <a
+                href="#tsbpfn2"
+                title="Return to text"
+                class="footnote-navigation"
+                >Return to text</a
+              ></sup
+            >
+            <sup id="sbpfn3">
+              3. This might seem weird, but we can prove the derivative is the
+              same fairly easily. If we keep the original \( (y - \hat{y})^2 \)
+              form and the the same square analogy, the area of the square will
+              decrease given a positive \( d\hat{y} \). This means the change in
+              the function (change in the area of the square) would approach \(
+              -2 \cdot (y - \hat{y}) \). Notice if we distribute the \( -1 \) to
+              the inner expression, we get \( 2 \cdot -(y - \hat{y}) \) which we
+              can incorporate the negative into the term as \( 2 \cdot (-y +
+              \hat{y}) \) which is just a different order of the derivative we
+              got which is \( 2 \cdot (\hat{y} - y) \).
+              <a
+                href="#tsbpfn3"
+                title="Return to text"
+                class="footnote-navigation"
+                >Return to text</a
+              ></sup
+            >
+            <sup id="sbpfn4">
+              4. I have been using a lot of notation here pretty loosely. The
+              derivative we are calculating isn't technically of mean squared
+              error, just of squared error. This is also why there is no
+              subscript \( i \) attached to \( \hat{y} \) or \( y \) in the
+              expressions I have presented. This is because I am showing the
+              loss over a single example instead of the entire dataset which
+              also means this isn't technically the derivative of mean squared
+              error, just squared error. I will show how to take it across the
+              dataset later, so don't you worry.
+              <a
+                href="#tsbpfn4"
+                title="Return to text"
+                class="footnote-navigation"
+                >Return to text</a
+              >
+            </sup>
+
+            <sup id="sbpfn5">
+              5. Well \( \eta \) doesn't really tell us the exact magnitude we
+              want to make the change in, rather it gives essentially a scalar
+              to the magnitude of the current slope our parameters are on in
+              parameter space. You could get the length one vector out of it or
+              something in order to change the cost function by the roughly the
+              same amount on each step, but it helps to keep the step size
+              proportional to the magnitude of the gradient vector in order for
+              the network to "slow down" when we approach the bottom of a local
+              minimum in order not to overshoot it.
+              <a
+                href="#tsbpfn5"
+                title="Return to text"
+                class="footnote-navigation"
+                >Return to text</a
+              >
+            </sup>
+          </div>
+
+          <br />
+
+          <h2 class="section-header" id="computational-graphs">
+            Computational Graphs
+          </h2>
+
+          <br />
+
+          <p class="paragraph">
+            I understand the name may sound very boring, but computational
+            graphs are an important concept in neural networks. In fact, many
+            libraries use computational graphs under the hood to represent the
+            networks and traverse the network for backpropagation. We will not
+            be doing anything so complex here, but it is important to understand
+            how partial derivatives are taken and how gradients are applied when
+            there are multiple paths from some neuron to another neuron. If you
+            want to learn more, I recommend checking out
+            <a
+              href="https://colah.github.io/posts/2015-08-Backprop/"
+              class="hyperlink"
+              >Colah's article on backpropagation</a
+            >. Colah also has a bunch of other really cool articles, so I highly
+            recommend checking some more of his stuff out. I also may have
+            learned about this concept in the blog post I am linking, so any
+            credit you give to my explanation you also owe to his.
+          </p>
+
+          <p class="paragraph">
+            There are a lot of ways we can represent a mathematical equation.
+            Let's look at the equation \( z = (x + 2) \cdot (x \cdot 7) \).
+            Instead of having the entire expression present, let's instead break
+            it up by treating each binary operator (like \( + \), \( \cdot \),
+            etc. Not operators that operate on binary data, but rather ones that
+            utilize two arguments) as an intermediate variable, so \( f = x + 2
+            \) and \( g = x \cdot 7 \). We can replace the terms in our earlier
+            expression with our new variables, so it looks like \( z = f \cdot g
+            \). We can represent this as a an interconnected graph where each
+            variable becomes its own node
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object data="/media/images/computational-graph.svg"></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            As you could tell, a nudge in the \( x \) variable will have more
+            than a single effect on the final output since there are
+            intermediate variables that change at separate rates according to a
+            change in \( x \). The trick is to track the influence through the
+            paths. Because the variables themselves are traveling through the
+            paths to undergo transformations, you can also track their influence
+            (aka their derivatives) on their destination through those same
+            connections. We can label those here as well
+          </p>
+
+          <br />
+
+          <div class="image-container">
+            <object
+              data="/media/images/computational-graph-partial-derivatives.svg"
+            ></object>
+          </div>
+
+          <br />
+
+          <p class="paragraph">
+            Similar to how we have seen the chain rule earlier, if you want to
+            find the partial derivative of a variable with respect to the
+            output, you simply follow the "chain" (or in this case more of a
+            path) multiplying by each partial derivative along the way since
+            each partial derivative is the reaction to a change in the previous
+            node, which may have also changed earlier due to other connections.
+            The interesting thing here is that if we want to solve for \(
+            \frac{\partial{z}}{\partial{x}} \), we must incorporate all of the
+            paths from \( x \) to \( z \). The way we incorporate it is
+            addition, which may seem weird given we don't even need to have any
+            explicit addition in our simple network, but this all comes back to
+            how derivatives are simply linear approximations (aka slope) at a
+            given point. To illustrate my point, let's walk through how each
+            variable reacts to a slight change in \( x \).
+          </p>
+
+          <p class="paragraph">
+            If we observe the left size of the graph for now, we can fairly
+            easily surmise that \( z \) changes \( 1 \cdot g \) or just \( g \)
+            times some initial nudge to \( x \). This doesn't make up the
+            entirety of the slope however. Remember, \( z \) does not get to
+            pick and choose which path gets to contribute to its result,
+            instead, all paths are executed together at the same time. This
+            means that the derivative along each path must also be somehow act
+            together in order to give a linear approximation at a given \( x \).
+            This is why we sum; we need a way to track the resulting change of
+            \( z \) for a nudge in \( x \), and when there exist multiple paths,
+            the change to \( z \) will involving finding the sum of how each
+            path contributes to the nudge. In the case of the above graph, the
+            calculation would look like \( 1 \cdot g + 7 \cdot f \). If we
+            expanded out the \( f \) and \( g \) variables, our derivative looks
+            like \( 1 \cdot (x \cdot 7) + 7 \cdot (x + 2) \).
+          </p>
+
+          <p class="paragraph">
+            In the case of a neural network, there are a lot of these
+            overlapping paths when there are several hidden layers. This means
+            when we traverse those paths, we add the gradient of the current
+            path we are traversing. Each parameter might have a different effect
+            on the loss depending on that path, and to get that total effect on
+            the loss you simply sum the effect on each parameter over each path.
+            What confused me as I was learning this topic was the fact that even
+            when there is no explicit addition in the equations themselves, you
+            still use addition to find the cumulative effect of each path. This
+            is because the partial derivatives on each connection already take
+            into account the operation being performed on the next node (that is
+            necessary to take any derivative), and addition is the way to find
+            how much each path affects the final output.
+          </p>
+
+          <p class="paragraph">
+            In this case, traversing each path explicitly is fairly performant
+            as most of the nodes in our small graph can only be reached via a
+            single path (with the exception of \( z \) and \( x \)), but in
+            useful neural networks there exist many, <em>many</em> paths to each
+            hidden node in such a network. This is because of how a network is
+            fundamentally structured as each neuron in a layer has a connection
+            to every neuron in the next layer, and calculating the gradient by
+            summing over every single path becomes way too computationally
+            expensive. Luckily, there exists a simple optimization which allows
+            us to only compute each node a single time.
+          </p>
+
+          <p class="paragraph">
+            To reason about how we may be able to perform this optimization,
+            let's remind ourselves how we compute the partial derivative with
+            respect to a previous activation $$
+            \frac{\partial{C}}{\partial{a_n}} = \frac{\partial{C}}{\partial{a_{n
+            - 1}}} \cdot \frac{\partial{a_{n - 1}}}{\partial{z}} \cdot
+            \frac{\partial{z}}{\partial{a_n}} $$ Each of these terms are trivial
+            to calculate, but this only gives us the partial derivative of the
+            cost to a single \( a_{n - 1} \). In actual networks, there are many
+            previous activations, so the math isn't quite this simple. In order
+            to get the full effect to the loss, we must take the sum of the
+            neuron's effect on all the neurons in the previous layer (this is
+            sort of what the path approach is doing, but it is much more
+            verbose). Let's put our thinking caps on for a moment. Remember when
+            I said the weight matrix was important? Well this is a very large
+            reason why as each column in the matrix tells us the weights across
+            all the output neurons for a single input neuron.
+            <sup><a href="#scgfn1" id="tscgfn1" class="hyperlink">1</a></sup> We
+            can sum across them along with each neuron's appropriate influence
+            on cost on each layer utilizing this matrix, and we get the total
+            influence of any neuron!
+          </p>
+
+          <p class="paragraph">
+            Before we move on to the next chapter, let's take a quick moment to
+            understand the pragmatics of this process. In calculating the
+            gradient, we will calculate a vector that corresponds to each
+            neuron's influence on the loss on whichever layer we are calculating
+            at that time. This is what \( \frac{\partial{C}}{\partial{a_n}} \)
+            is, and is what allows us to calculate the gradient accurately in a
+            network of any depth. In order to properly calculate these
+            influences, we must use some of our linear algebra knowledge. First,
+            we can construct a vector of the partial derivatives of \( C \) with
+            respect to \( z \) for each neuron (aka \(
+            \frac{\partial{C}}{\partial{z}} \)). This is called the delta, or \(
+            \delta \), and is very useful to calculate since it is reused
+            several times in the gradient calculation. We also know the effect
+            the previous neuron's activation has on the activation is, of
+            course, the weights, and the weights for a particular input neuron
+            across all output neurons is simply the column corresponding to
+            whichever input neuron you are processing. There is a really neat
+            operation we can perform if we have this knowledge. Imagine
+            swapping the rows and columns of our weight (called a transpose in
+            linear algebra speak) matrix such that each column represents the
+            weights from all the input neurons to a single output neuron instead
+            of the row. This means when we perform matrix multiplication with
+            this new transposed matrix, the linear combination gives the sum
+            across all output neurons for a single input neuron. This is exactly
+            what we want to determine the influence of the input (isn't linear
+            algebra cool?)! All we have to do then is perform the matrix
+            multiplication with the delta vector across the transposed weight
+            matrix, and the resulting vector gives us the influence of the next
+            layer.
+          </p>
+
+          <p class="paragraph">
+            With this boring math out of the way, we can <em>finally</em> move
+            on to the fun stuff.
+          </p>
+
+          <div class="footnotes">
+            <hr class="line" />
+            <sup id="scgfn1">
+              1. I am using the terms "input" and "output" a little ambiguously
+              here. I don't mean the inputs and output of the entire network,
+              rather I mean the input and output of any two layers in a network.
+              <a href="#tscgfn1" class="hyperlink">Return to text</a>
+            </sup>
+          </div>
+
+          <br />
+
+          <h2 class="section-header" id="classifying-mnist-data">
+            Classifying MNIST Data
+          </h2>
+
+          <br />
+
+          <p class="paragraph">
+            There are many ways we could go about designing the method we are
+            going to use, but I believe the most useful design would allow for
+            any particular shape of the network. This will just be a fully
+            connected network (so not a convolutional one for those of you who
+            know what that is), but its shape will be determined when creating
+            an instance of the network object rather than creating some
+            procedural code that is very difficult to modify. I also want you
+            readers to experiment with it and see if you can play around with
+            audio or other kinds of data to see how good this type of network is
+            at classification. If you are feeling especially curious, change
+            around activation functions or different kinds of weight
+            initialization if you really want. This network is intended to be a
+            starting point for a lot of fun projects, and it helps to understand
+            the underlying concepts behind a neural network before you tie
+            yourself to a specific library like tensorflow or pytorch.
+          </p>
+
+          <p class="paragraph">
+            Before we begin writing some actual code, let's go over how our
+            network is going to be represented. As mentioned in a section long
+            ago, we will be implementing a weight matrix for each layer. The
+            matrices will be written in numpy, so if you don't quite understand
+            some of the code related to the matrices and vectors, numpy has some
+            a really good introduction to their library
+            <a
+              href="https://numpy.org/doc/stable/user/absolute_beginners.html"
+              class="hyperlink"
+              >here</a
+            >.
+          </p>
+
+          <p class="paragraph">
+            To begin, let's simply start by figuring out a way for the user to
+            define the shape of the network. I think an easy way is for the user
+            to provide a list of integers where each element of the list
+            corresponds to the size of a layer in the network. This array will
+            include the size of the input layer, so we have to be careful not to
+            have some goofy off by one errors
+          </p>
+
+          <pre><code class="language-python">
+import numpy as np # The common alias for the numpy module
+
+class Network:
+
+  # The shape's first element will be the input layer
+  def __init__(self, shape: list[int], learning_rate):
+
+    assert len(shape) > 1, "Cannot have network of only one layer"
+    
+    self.weight_matrices = []
+
+    # Biases will be represented by vectors that we can simply add to the output
+    # of each weight transformed input
+    self.bias_vectors = []
+
+    for i in range(1, len(shape)):
+      # The each row represents an output neuron and each column represents an
+      # input neuron. Ordering it this way transforms the vector in a way we
+      # want
+      self.weight_matrices.append(np.random.randn(shape[i], shape[i - 1]))
+      self.bias_vectors.append(np.random.randn(shape[i]))
+
+    self.depth = len(shape)
+    self.learning_rate = learning_rate
+      </code></pre>
+
+          <p class="paragraph">
+            Before moving on to writing our mathematical functions, there is a
+            little optimization I neglected to mention. Remember how \(
+            \sigma{'} = \sigma(x) \cdot (1 - \sigma(x)) \)? Well there is an
+            interesting optimization we can make instead of tracking the \( z \)
+            values. Notice how the \( \sigma \) function appears in its own
+            derivative (this is because \( e \) is a really cool number)? Well
+            instead of tracking the \( z \) value only to reapply it in the
+            derivative, we can simply track the actual activations and compute
+            the derivative from the activation instead of dealing with \( z \)
+            at all. Now let's write our activations
+          </p>
+
+          <pre><code class="language-python">
+
+def sigmoid(x: float | np.ndarray) -> float | np.ndarray:
+  return 1 / (1 + np.exp(-x))
+
+def sigmoid_prime_from_activation(activation: float | np.ndarray) -> float | np.ndarray:
+  return activatoin * (1.0 - activation)
+
+      </code></pre>
+
+          <p class="paragraph">And our loss function and its derivative</p>
+
+          <pre><code class="language-python">
+def squared_error(expected: float, observed: float):
+  return (expected - observed) ** 2.0
+
+def squared_error_prime(expected: float | np.ndarray, observed: float | np.ndarray) -> float:
+  return 2.0 * (observed - expected)
+
+# Expects tuple to be formatted as (expected, observed)
+def mean_squared_error(data: list[tuple[np.ndarray, np.ndarray]]) -> float:
+  sum = 0.0
+
+  for ex, ob :
+    sum += ((ex - ob) ** 2.0).sum()
+
+  return sum / len(expected)
+
+      </code></pre>
+
+          <p class="paragraph">
+            Now we can implement the feed forward. Like mentioned in sections
+            before, we take the input, transform it with the weight matrix, and
+            apply the activation function before passing it along to the next
+            layer until we reach the output
+          </p>
+
+          <pre><code class="language-python">
+class Network:
+  # Other stuff...
+
+  def feed_forward(self, x: np.ndarray, index: int = 0) -> np.ndarray:
+
+    # Base case; no further transformations to perform
+    if index == self.depth - 1:
+      return x
+
+    # Weight transformation
+    x = np.matmul(self.weight_matrices[index], x)
+
+    # Applying the bias
+    x = x + self.bias_vectors[index]
+
+    # Applying activation function
+    x = sigmoid(x)
+
+    # Passing it on to the next layer
+    return self.feed_forward(x, index + 1)
+      </code></pre>
+
+          <p class="paragraph">
+            Now to the fun parts. How will we represent our gradient? There are
+            a bunch of ways to do it, but to keep our parameter representation
+            itself simple, let's store a gradient in the network object that has
+            the same shape as the parameters (since each parameter has a
+            corresponding gradient), but instead of storing the parameters
+            themselves, they will store the gradients for the loss function.
+            This will be somewhat similar to pytorch (though I think we are
+            being a little more clear on ownership) where we will define methods
+            in the class for the network to calculate the loss and gradient for
+            a given set of training set of parameters, telling the network to
+            "step" (apply the gradients to the parameters), and set the gradient
+            to zero before moving on to train either another set of data or the
+            data again but with a set of updated parameters. Before we implement
+            these methods however, we must first edit the constructor to add our
+            new gradients
+          </p>
+
+          <pre><code class="language-python">
+class Network:
+  def __init__(self, shape: list[int], learning_rate: float):
+    self.weight_matrices = []
+    self.weight_gradient = []
+
+    # Biases will be represented by vectors that we can simply add to the output
+    # of each weight transformed input
+    self.bias_vectors = []
+    self.bias_gradient = []
+
+    for i in range(1, len(shape)):
+      # The each row represents an output neuron and each column represents an
+      # input neuron. Ordering it this way transforms the vector in a way we
+      # want. Small range of values to ensure weights are on steeper slopes in
+      # the sigmoid function
+      self.weight_matrices.append(np.random.uniform(-0.1, 0.1, (shape[i], shape[i - 1])))
+      
+      # We want to start the gradient off with zeros
+      self.weight_gradient.append(np.zeros(shape[1], shape[i - 1]))
+
+      self.bias_vectors.append(np.zeros(shape[i]))
+      self.bias_gradient.append(np.zeros(shape[i]))
+    
+    self.depth = len(shape)
+    self.learning_rate = learning_rate
+      </code></pre>
+
+          <p class="paragraph">
+            Now we can define some methods for zeroing and applying the gradient
+          </p>
+
+          <pre><code class="language-python">
+class Network:
+  # Other methods...
+
+  def apply_gradient(self) -> None:
+    for i in range(self.depth - 1):
+      self.weight_matrices[i] += -self.learning_rate * self.weight_gradient[i]
+      self.bias_vectors[i] += -self.learning_rate * self.bias_gradient[i]
+
+  def zero_gradient(self) -> None:
+    for i in range(self.depth - 1):
+      self.weight_gradient[i] = np.zeros(self.weight_gradient[i].shape)
+      self.bias_gradient[i] = np.zeros(self.bias_gradient[i].shape)
+    
+      </code></pre>
+
+          <p class="paragraph">
+            Now for the hard part: actually calculating the gradient. Luckily, I
+            have already ran through all of the math for this process, so
+            articulating it in code should not be too difficult. Before actually
+            writing the method to calculate the gradient, we must have a method
+            to record the activations
+          </p>
+
+          <pre><code class="language-python">
+class Network:
+  # Other methods...
+
+  def record_activations(self, x: np.ndarray) -> list[np.ndarray]:
+
+    # List by default stores reference
+    activations = [x.copy()]
+
+    for weight, bias in zip(self.weight_matrices, self.bias_vectors):
+      x = np.matmul(weight, x)
+      x += bias
+      x = sigmoid(x)
+
+      activations.append(x.copy())
+
+    return activations
+
+</code></pre>
+
+          <p class="paragraph">Now let's calculate the gradient</p>
+
+          <pre><code class="language-python">
+class Network:
+  # Other methods...
+
+  def calculate_gradient(self, batch: list[tuple[np.ndarray, np.ndarray]]) -> None:
+    for x, y in batch:
+
+      activations = self.record_activations(x)
+
+      delta = squared_error_prime(y, activations[-1]) * sigmoid_prime_from_activation(activations[-1])
+      
+      # We start at the end of the gradient; stop is exclusive
+      for layer in range(self.depth - 2, -1, -1):
+      
+        # The derivative of z with respect to bias is 1, so no further
+        # calculations are needed
+        self.bias_gradient[layer] += delta
+
+        # The previous activations are at the current layer since there
+        # is one more activation layer than weight/bias transformation 
+        # layer
+        prev_activations = activations[layer]
+
+        self.weight_gradient[layer] += np.outer(delta, prev_activations)
+
+        delta = np.matmul(np.transpose(self.weight_matrices[layer]), delta)
+
+    for i in range(self.depth - 1):
+      self.bias_gradient[i] /= len(batch)
+      self.weight_gradient[i] /= len(batch)
+      </code></pre>
+
+          <p class="paragraph">
+            You may have notice an interesting way we calculate the gradient for
+            the weights. If you recall from our earlier section on single-width
+            hidden layers, the partial derivative with respect to the weight
+            comes out to be $$ \frac{\partial{C}}{\partial{w}} =
+            \frac{\partial{z}}{\partial{w}} \cdot
+            \frac{\partial{a_n}}{\partial{z}} \cdot
+            \frac{\partial{C}}{\partial{a_n}} $$ The last two terms in this
+            equation are already covered by the \( \delta \) vector, and we
+            already know that \( \frac{\partial{z}}{\partial{w}} = a_{n - 1} \),
+            but when we are dealing with matrix representations of our weights,
+            we have to be a little more mathematically precise if we want to
+            effectively calculate the gradient. Once again, let's put on our
+            thinking caps. If we were naive, we would simple loop over the
+            entire matrix and calculate each component by seeing which column
+            (previous neuron) and row (current neuron) we are at, but there is a
+            much simpler way to do this. In each component of the final matrix,
+            we want the product of the current neuron's delta and the previous
+            neuron's activation. Because we have both a vector of the previous
+            layer's activation and the delta, we can construct a matrix by
+            creating a sort of grid where the left contains the deltas, and the
+            top contains the previous activation, and every "cell" in that grid
+            is just the product of the corresponding delta and activation. To
+            make it a little more clear, let's image a delta with the influence
+            of two neurons, and feeding into our current layer are 3 activation
+            (these are unrealistic values, only here because integer math is
+            easy) $$ \delta = \begin{bmatrix} 1\\ 2 \end{bmatrix}, \hspace{15px}
+            a_{n - 1} = \begin{bmatrix} 3\\ 4\\ 5 \end{bmatrix} $$ And how let's
+            construct our weight gradient for that layer $$ \nabla{C_n} =
+            \begin{bmatrix} 1 \cdot 3 & 1 \cdot 4 & 1 \cdot 5\\ 2 \cdot 3 & 2
+            \cdot 4 & 2 \cdot 5 \end{bmatrix} $$ This is precisely what the
+            np.outer function is doing.
+          </p>
+
+          <p class="paragraph">
+            With all that out of the way, we finally have a functional general
+            neural network that we can use to identify images! Let's save this
+            as its own file and call it
+            <code>network.py</code> so we can wrap it as a module to keep our
+            code clean.
+          </p>
+
+          <p class="paragraph">
+            Next, let's take a look at actually processing the MNIST data.
+            Processing binary data in python is not my expertise, so I apologize
+            in advance. First, let's actually download the dataset. The original
+            source seems to not work (at least as of writing this), so we will
+            source the data from the kaggle page
+            <a
+              href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset?resource=download-directory"
+              class="hyperlink"
+            ></a
+            >. You simply click the
+            <code> Download dataset as zip </code> button, extract file file,
+            and stick it in your root directory. Make a directory named
+            <code> data/ </code> and stick all the files inside of that
+            directory so the structure looks like
+          </p>
+
+          <pre><code class="language-plaintext">
+data/
+├─ t10k-images-idx3-ubyte
+├─ t10k-images.idx3-ubyte
+├─ t10k-labels-idx1-ubyte
+├─ t10k-labels.idx1-ubyte
+├─ train-images-idx3-ubyte
+├─ train-images.idx3-ubyte
+├─ train-labels-idx1-ubyte
+├─ train-labels.idx1-ubyte
+      </code></pre>
+
+          <p class="paragraph">
+            To keep things a bit simpler, let's delete all the files without
+            extensions. To my knowledge,
+            <code> t10k-images-idx3-ubyte </code> and
+            <code> t10k-images.idx3-ubyte </code> are the same files, so let's
+            simply get rid of <code> t10k-images-idx3-ubyte </code> and all the
+            other files that don't have extensions so the data directory looks
+            like
+          </p>
+
+          <pre><code class="language-plaintext">
+data/
+├─ t10k-images.idx3-ubyte
+├─ t10k-labels.idx1-ubyte
+├─ train-images.idx3-ubyte
+├─ train-labels.idx1-ubyte
+      </code></pre>
+
+          <p class="paragraph">
+            How these files work is essentially the files beginning with
+            <code> t10k </code> are intended to be testing images. Testing
+            images are images used to evaluate the performance of model on data
+            that it has not seen (meaning trained on) before. We don't simply
+            want to limit ourselves to processing data that we already know the
+            labels to, so testing the model's performance on unseen data is
+            critical. In this dataset, there are 10,000 such test images, so
+            that's why the filenames are prefixed with t10k. The files prefixed
+            with train don't need much explanation as it is, well, the training
+            data. There are 60,000 such training images, so we have a lot of
+            data to go off of when training. The filenames also contain the
+            terms <code> image </code> or <code> label </code> which, as the
+            name suggests, tells us whether the file stores images or labels.
+          </p>
+
+          <p class="paragraph">
+            For those of you who have only dealt with text-based ways of storing
+            data like JSON or YAML, binary formats may seem a little scary.
+            Don't fret, for there are many tools to read such enigmatic data
+            that are readily available. Like any good engineer, let's start by
+            observing the file through a hex editor which essentially shows the
+            binary file in discrete bytes as hexadecimal values. I will simply
+            be using hexdump (since I am a linux user), but there are also
+            extensions to view it in VSCode or any of your favorite editors. For
+            my fellow linux users, I will use hexdump with the flag
+            <code> -n 16 </code> which essentially tells the program to only
+            show the first 16 bytes of the files since these files are quite
+            large. I will also use the flag <code> -C </code> in order to
+            display the file as a stream of bytes instead of 16 bit words which
+            screws up the endian-ness. Let's first observe the file
+            <code> t10k-images.idx3-ubyte </code>
+          </p>
+
+          <pre><code class="language-plaintext">
+0000000 00 00 08 03 00 00 27 10  00 00 00 1c 00 00 00 1c  |......'.........|
+0000010
+      </code></pre>
+
+          <p class="paragraph">
+            The first value there (0000000) doesn't actually tell us the data
+            stored within the file, it just tells us the index in hexadecimal,
+            and each "word" contains two bytes (4 hexadecimal digits) with 16
+            bytes per line, so each line should increment the index by 16, which
+            is what we are seeing (since 10 is 16 in hexadecimal). Another
+            important thing to note is that the MNIST data is stored in big
+            endian format. This means that the largest or most significant byte
+            is stored first. For example, let's say we had the word
+            <code> 0x00f0</code>. If we were to read this in big-endian, the
+            more significant byte would be first which in this case is
+            <code> 0x00</code>, and the least significant byte,
+            <code> 0xf0</code>, would be last. This means the value of
+            <code> 0x00f0 </code> in decimal would simply be 15. This differs
+            from little-endian where the least significant byte comes first, and
+            the most significant would come last. This means
+            <code> 0x00f0 </code> would be <code> 0xf000 </code> if we used the
+            traditional interpretation of the left-most digit is the largest. To
+            be clear, this does not mean that the bit order within the byte is
+            any different, within the byte the data remains in the typical order
+            of left-most bit being the largest or most significant. However, in
+            little endian with numbers involving several bytes, the least
+            significant byte (the 8s place you could say) comes first.
+          </p>
+
+          <p class="paragraph">
+            With all this endian-ness hell out of the way, we can move on to
+            reading the bytes as big endian. The first couple bytes,
+            <code> 00 00</code>, are just padding, so it's not really all that
+            important to the data and we can ignore it when reading this file.
+            The second pair of bytes, <code> 08 03</code>, are slightly more
+            important. The <code> 03 </code> byte indicates that there are three
+            dimensions to the data. This makes sense as we are reading a file
+            full of a bunch of images. All of these images are of the same
+            dimensions, and they are stored in 3 dimensions where the first two
+            are the x and y planes that the image rests on, and the third
+            dimensions is the dimension that each image is stored along. Think
+            of this like a stack of photos, where the first two axes represent
+            the data for an individual picture, while the third axis (or depth)
+            is the axis the photos are stacked upon. The next byte,
+            <code> 08</code>, represents the datatype of the pixel data itself.
+            In this case, the
+            <code> 08 </code>
+            tells us that the data is stored in unsigned 8 bit integers (8 is
+            the same in typical decimal as it is in hexadecimal, and there are 8
+            bits in the integer format).
+          </p>
+
+          <p class="paragraph">
+            Now the data is being stored in 4 byte (32 bit) big-endian integers.
+            This means we have to read <code> 00 00 27 10 </code> as a single
+            number. This first number tells us how big the first dimensions is,
+            and in this case <code> 00 00 27 10 </code> is 10,000 in decimal.
+            This is the axis that the image data is "stacked" along. The next
+            number, <code> 00 00 00 1c</code>, tells us how big the second axis
+            is. <code> 00 00 00 1c </code> is 28 in decimal, which is one axis
+            of the individual images, and the third axis is the same since the
+            images are square. After this sort of "metadata," the files store
+            the data of the images themselves. Armed with this knowledge
+            however, we can tackle the data.
+          </p>
+
+          <p class="paragraph">
+            Even though the data itself is only stored in a single dimensions,
+            knowing how big each dimension is allows to encode (or in our case,
+            decode) the file how it was intended. For the image dimensions, the
+            creators of the file simply flattened each image by putting each row
+            of pixels next to each other along a single dimension, and then
+            taking the "stack" of images which is now only in 2d as we have just
+            reduced the individual images to a single dimension, and stick each
+            image (aka row) next to each other. This squishes everything to a
+            single dimensions, but, as I said earlier, knowing the dimensions we
+            are able to decode the images and return them to their desired
+            state.
+          </p>
+
+          <p class="paragraph">
+            Next, let's hexdump the label file
+            <code> t10k-labels.idx1-ubyte </code> to see how it works
+          </p>
+
+          <pre><code class="language-plaintext">
+00000000  00 00 08 01 00 00 27 10  07 02 01 00 04 01 04 09  |......'.........|
+00000010
+      </code></pre>
+
+          <p class="paragraph">
+            Already, I think we can start noticing differences. Since the file
+            is in the same format, we can read the metadata in the same way.
+            Here, what was <code> 03 </code> last time has changed to a
+            <code> 01 </code>. This is because the labels are simply 8 bit
+            numbers stored along a single dimension. We only need a single
+            dimension to store the labels along since the "stack" of images is
+            also only along a single dimension as there is only one label per
+            image (duh). This also means that there is only a single size,
+            <code> 00 00 27 10</code>, which is the same as the amount of images
+            we had since we need one label per image. After this, you can
+            actually see the labels for each image, and snce the digits in the
+            images cannot exceed 9, the labels can be read in hexadecimal just
+            as they would in typical decimal format.
+          </p>
+
+          <p class="paragraph">
+            The same format is also used for the training data (if you paid
+            attention to the file names, you would notice we were hexdumping the
+            testing data), so we can create a method that takes in a string of
+            bytes and turns it into a multi dimensional numpy array that can
+            properly encode our images for training. Before we do that however,
+            we must actually
+            <em>read</em> the file as a binary file first. Let's create a method
+            that turns a file name into a numpy array with the dimensions as
+            specified in the read file. To begin, let's simply extract the
+            dimensions out of the file. Let's call this module
+            <code> loader.py </code>
+          </p>
+
+          <pre><code class="language-python">
+import numpy as np
+import struct # For interpreting the binary data
+
+def load_data(filename: str) -> np.ndarray:
+
+    raw_bin = None
+
+    with open(filename, "rb") as file:
+        raw_bin = file.read()
+
+    # Excludes padding bytes
+    raw_bin = raw_bin[2:]
+
+    # We will ignore the type since all of our data will use unsigned 8 bit
+    # ints. ndim is the amount of dimensions in the data
+    ndim = struct.unpack('>BB', raw_bin[:2])[1]
+      </code></pre>
+
+          <p class="paragraph">
+            You may notice the strange <code> '>BB' </code> argument inside of
+            the function for unpacking the binary data. The &gt; indicates that
+            we want to read the data as big endian (I think it serves a visual
+            representation of how significant the bytes should be along the
+            number; little endian is &lt;). The BB indicates that we want to
+            read in an unsigned char, which is only one byte (a useful table for
+            all of the types can be found
+            <a
+              href="https://docs.python.org/3/library/struct.html"
+              class="hyperlink"
+              >here</a
+            >). Multiple of these letters indicates that we would like to read
+            multiple bytes. So to put it all together, we want to read two
+            unsigned chars in big-endian format. Next, let's read the sizes
+            across each dimension now that we know how many dimensions there are
+          </p>
+
+          <pre><code class="language-python">
+def load_data(filename: str) -> np.ndarray:
+  # Other stuff...
+
+  dim_sizes = []
+
+  for i in range(ndim):
+      # A little cursed. struct.unpack gives a goofy array-like thingy, so 
+      # I have to index it to get the underlying value
+      size = struct.unpack('>I', raw_bin[2 + i * 4:2 + (i + 1) * 4])[0]
+      dim_sizes.append(size)
+      </code></pre>
+
+          <p class="paragraph">
+            You may be a little confused by how we index the array, but
+            fundamentally it's pretty simple. We start at index 2 at the
+            beginning since we want to skip the bytes we have already read.
+            Next, the start index of the integer is going to be our current
+            index * 4 since the size of an integer is 4 bytes and
+            <code> raw_bin </code> is essentially an array of individual bytes.
+            To end the slice, all we do is take the first index of the next byte
+            since python slicing is exclusive on the end of the slice. This
+            gives us the raw integer in bytes which we then process with
+            <code> struct.unpack </code>, which gives us the length of the
+            dimension. Now all we have to do is normalize the data from 0-1 and
+            reshape it into its proper dimensions and add an extra flag
+            parameter to the function to indicate whether this we are processing
+            labels or not since if we are, the labels are integers but the
+            images are floats in the range of 0-1.
+          </p>
+
+          <pre><code class="language-python">
+def load_data(filename: str) -> np.ndarray:
+  # Other stuff...
+
+  array = None
+
+  if is_label:
+      # Multiplying the amound of dimensions by the byte-size of the size of the dimensions skips 
+      # size data that we don't want
+      array = np.array(list(raw_bin[2 + ndim * 4:]), dtype=np.uint8)
+  else:
+      array = np.array((list(raw_bin[2 + ndim * 4:]), dtype=np.float32) / 255).reshape(dim_sizes)
+
+  return array
+      </code></pre>
+
+          <p class="paragraph">
+            Here, we cast the raw binary data to a list where each character in
+            the string becomes an iterable item in the list. NumPy is then able
+            to turn that into a proper numpy array that we can reshape in order
+            to make our "stack" of images the proper shape. Now we can finally
+            assemble our final network. To start, let's finally create a
+            <code> main.py </code>
+            file and import our modules
+          </p>
+
+          <pre><code class="language-python">
+import network
+import loader
+      </code></pre>
+
+          <p class="paragraph">
+            Befeore we begin loading our data, let's create a quick helper
+            method to turn a number into a one-hot encoded list
+          </p>
+
+          <pre><code class="language-python">
+def to_one_hot(n: int, length: int) -> np.ndarray:
+  assert n &lt; length and n >= 0
+
+  arr = np.zeros(length)
+  arr[n] = 1.0
+
+  return arr
+      </code></pre>
+
+          <p class="paragraph">Now let's load the data</p>
+
+          <pre><code class="language-python">
+train_imgs = loader.load_data('./data/train-images.idx3-ubyte', False)
+# Not in one-hot-encoded form
+raw_train_labels = loader.load_data('./data/train-labels.idx1-ubyte', True)
+train_labels = [to_one_hot(n, 10) for n in raw_train_labels]
+
+test_imgs = loader.load_data('./data/t10k-images.idx3-ubyte', False)
+raw_test_labels = loader.load_data('./data/t10k-labels.idx1-ubyte', True)
+train_labels = [to_one_hot(n, 10) for n in raw_test_labels]
+
+print("Data loaded!")
+      </code></pre>
+
+          <p class="paragraph">
+            Now we can create our constants and (finally) create an instance of
+            the network
+          </p>
+
+          <pre><code class="language-python">
+learning_rate = 1e-2
+
+network = network.Network([28 * 28, 16, 16, 10], learning_rate)
+      </code></pre>
+
+          <p class="paragraph">
+            Before we move onto training the model, let's discuss one more
+            optimization commonly made to speed up training: stochastic gradient
+            descent. What that means is that instead of finding the average of
+            the gradients across the entire dataset, let's instead find it on a
+            much smaller subset (called a mini-batch) of the dataset that is
+            somewhat representative of the entire dataset and then apply the
+            gradient. This allows us to move much faster instead of having to
+            wait for the entire network to train, however, this also means that
+            that we are adjusting based off of a less accurate loss landscape,
+            so the steps we take will not be perfect, but we will likely move
+            much faster as we can take many more steps in a single epoch. Let's
+            define a helper method that trains the network in mini-batches
+          </p>
+
+          <pre><code class="language-python">
+def train(model: network.Network, batch_size: int, images: np.ndarray, labels: np.ndarray):
+  assert len(images) == len(labels)
+  size = len(images)
+
+  index = 0
+
+  while index + batch_size &lt; size:
+    
+    batch = list(zip(images[index:index + batch_size], labels[index:index + batch_size]))
+
+    model.calculate_gradient(batch)
+    model.apply_gradient()
+    model.zero_gradient()
+
+    preds = []
+    expected = []
+
+    for x, y in batch:
+      preds.append(model.feed_forward(x))
+      expected.append(y)
+
+    if math.floor(index / batch_size) % 5 == 0:
+      print(f"Loss after batch {int(index / batch_size)} / {int(len(images) / batch_size) + 1}: {network.mean_squared_error(expected, preds).sum()}")
+
+    index += batch_size
+
+  batch = list(zip(images[index:], labels[index:]))
+  model.calculate_gradient(batch)
+  model.apply_gradient()
+  model.zero_gradient()
+
+  network_outputs = []
+  expected_outputs = list(labels)
+
+  for image in images:
+    image = image.flatten()
+
+    network_outputs.append(model.feed_forward(image))
+
+  print("Loss after training:", network.mean_squared_error(expected_outputs, network_outputs).sum())
+      </code></pre>
+
+          <p class="paragraph">
+            And we can define our testing function like so
+          </p>
+
+          <pre><code class="language-python">
+def test(model: network.Network, images: np.ndarray, labels: np.ndarray):
+  assert len(images) == len(labels)
+
+  correct = 0.0
+
+  for x, y in zip(images, labels):
+    y = np.argmax(y)
+    pred = np.argmax(model.feed_forward(x))
+
+    if y == pred:
+      correct += 1.0
+
+  print(f"Total Accuracy: {correct / len(images) * 100.0:.4}%")
+      </code></pre>
+
+          <p class="paragraph">
+            Now all we have to do is define our model. I chose the learning rate
+            and architecture fairly arbitrarily, but it seems to train well
+            enough and it isn't too computationally expensive
+          </p>
+
+          <pre><code class="language-python">
+model = network.Network([28 * 28, 16, 10], 0.1)
+      </code></pre>
+
+          <p class="paragraph">
+            Now all we have to do is create a loop so the model can train over
+            several epochs, and we also want to test the model on both testing
+            and training datasets to ensure the model is overfitting (when a
+            model "memorizes" the labels so the training accuracy is really
+            high, but the testing accuracy is not)
+          </p>
+
+          <pre><code class="language-python">
+epochs = 8
+
+for epoch in range(epochs):
+  print(f"Epoch {epoch}\n---------------------")
+  train(model, 64, train_imgs, train_labels)
+  print("Training Data")
+  test(model, train_imgs, train_labels)
+  print("Testing Data")
+  test(model, test_imgs, test_labels)
+      </code></pre>
+
+          <p class="paragraph">
+            And there we have done it! If your computer isn't the fastest, this
+            may take a little while to run, but my results are pretty good
+          </p>
+
+          <pre><code class="language-plaintext">
+Training Data
+Total Accuracy: 80.73%
+Testing Data
+Total Accuracy: 81.25%
+      </code></pre>
+
+          <p class="paragraph">
+            Your results will almost certainly differ somewhat (remember, the
+            initial weight initialization is random), but this model is pretty
+            good! Now you could probably push these numbers up to around 90-95%
+            if you had some time to tweak the program, but I am happy with these
+            results.
+          </p>
+
+          <p class="paragraph">
+            I encourage you to take a moment to appreciate what you have done!
+            You have wrote a program that allows a computer to actually
+            <em>learn</em>, and a program that you are completely free to modify
+            and fit to whatever simple ML ideas you may have. You are now in a
+            place to learn about all sorts of libraries like PyTorch or
+            TensorFlow and do some really neat stuff (I highly recommend
+            compteting in some kaggle challenges with these more advanced
+            libraries). Another fun idea would be to read some seminal papers in
+            the field and apply those idea to this network you have created. Or
+            do something completely different; I don't care (though if you do
+            something really cool, please reach out to me as I would love to
+            see)! Anywho, thank you for reading and send any feedback to
+            nolanthw8s@gmail.com.
+          </p>
+        </div>
+          <ul class="article-toc">
+            <h2 class="toc-header">Table of Contents</h2>
+            <a href="#introduction" class="toc-text">Introduction</a>
+            <a href="#perceptrons-and-decision-boundaries" class="toc-text"
+              >Perceptrons and Decision Boundaries</a
+            >
+            <a href="#hidden-layers-and-feed-forward" class="toc-text"
+              >Hidden Layers and Feed-Forward</a
+            >
+            <a href="#the-universal-approximation-theorem" class="toc-text"
+              >The Universal Approximation Theorem</a
+            >
+            <a href="#regression-vs-one-hot-encoding" class="toc-text"
+              >Regression vs One-Hot Encoding</a
+            >
+            <a href="#cost-functions-and-gradient-descent" class="toc-text"
+              >Cost Functions and Gradient Descent</a
+            >
+            <a href="#calculus" class="toc-text"> Calculus </a>
+            <a href="#backpropagation" class="toc-text">Backpropagation</a>
+            <a href="#computational-graphs" class="toc-text"
+              >Computational Graphs</a
+            >
+            <a href="#classifying-mnist-data" class="toc-text"
+              >Classifying MNIST Data</a
+            >
+          </ul>
+        </div>
+    </div>
+    <div class="bottom"></div>
+  </body>
+</html>
