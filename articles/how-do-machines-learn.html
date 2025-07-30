@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Article on how machines learn" />
     <title>Home</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="stylesheet" href="/css/common.css" />
@@ -38,11 +39,23 @@
   <body>
     <div class="navbar">
       <div class="nav-container-left">
-        <a href="/" class="navigation">Nolan Thwaits</a>
+        <a href="/" class="navigation" aria-label="Visit the homepage"
+          >Nolan Thwaits</a
+        >
       </div>
       <div class="nav-container-right">
-        <a href="/about.html" class="navigation">About</a>
-        <a href="/contact.html" class="navigation">Contact</a>
+        <a
+          href="/about.html"
+          class="navigation"
+          aria-label="Visit the about page"
+          >About</a
+        >
+        <a
+          href="/contact.html"
+          class="navigation"
+          aria-label="Visit the contact me page"
+          >Contact</a
+        >
       </div>
     </div>
 
@@ -78,8 +91,8 @@
           </p>
 
           <p class="paragraph">
-            This article is geared towards the motivated. You don't have to be
-            a math genius to understand this material, but you must be motivated
+            This article is geared towards the motivated. You don't have to be a
+            math genius to understand this material, but you must be motivated
             to look on other resources (such as those which I have provided) and
             have some ability to slow down to work at a problem for a little
             while (it took me several months to grasp this material!). This is
@@ -108,12 +121,14 @@
             <a
               href="https://www.youtube.com/watch?v=WUvTyaaNkzM&list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr"
               class="hyperlink"
+              aria-label="Visit 3Blue1Brown's calculus course"
               >calculus</a
             >
             or
             <a
               href="https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab&pp=0gcJCV8EOCosWNin"
               class="hyperlink"
+              aria-label="Visit 3Blue1Brown's linear algebra course"
               >linear algebra</a
             >
             courses. They have incredible animations paired with great
@@ -122,6 +137,7 @@
             <a
               href="https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
               class="hyperlink"
+              aria-label="Visit 3Blue1Brown's course on neural networks"
               >neural networks</a
             >, so that may also be a useful resource if you ever feel stuck. I
             gained much of my knowledge on the topic from 3Blue1Brown as well as
@@ -129,6 +145,7 @@
             <a
               href="https://neuralnetworksanddeeplearning.com/"
               class="hyperlink"
+              aria-label="Visit the book Neural Networks and Deep Learning"
               >Neural Networks and Deep Learning</a
             >. Anywho, enough of the blabbering, let's jump in!
           </p>
@@ -146,7 +163,13 @@
             will be easier to visually represent later): the amount of hours per
             week you would put into the instrument, and how much you enjoy the
             piccolo.<sup
-              ><a href="#fn1" id="tfn1" class="footnote-navigation">1</a></sup
+              ><a
+                aria-label="Visit first footnote in this chapter"
+                href="#fn1"
+                id="tfn1"
+                class="footnote-navigation"
+                >1</a
+              ></sup
             >
             We can represent these factors as the "activation" of two input
             neurons, and they both lead into another neuron known as the output
@@ -156,11 +179,12 @@
           </p>
 
           <div class="image-container">
-            <object
-              data="/media/images/simple-perceptron.svg"
+            <img
+              src="/media/images/simple-perceptron.svg"
               width="250"
               height="250"
-            ></object>
+              alt="An example of a simple perceptron with inputs of practice and enjoyment"
+            />
           </div>
 
           <p class="paragraph">
@@ -176,10 +200,10 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/images/untransformed-decision-boundary.svg"
-              class="image"
-            ></object>
+            <img
+              src="/media/images/untransformed-decision-boundary.svg"
+              alt="The graph of the sum of each input (practice and enjoyment)"
+            />
           </div>
 
           <br />
@@ -190,7 +214,13 @@
             enjoyment is required for us to decide that we would like to play
             the piccolo!
             <sup
-              ><a href="#fn2" class="footnote-navigation" id="tfn2">2</a></sup
+              ><a
+                href="#fn2"
+                class="footnote-navigation"
+                id="tfn2"
+                aria-label="Visit second footnote in this chapter"
+                >2</a
+              ></sup
             >
             This is where weights and biases come in. We need some way to
             transform those input parameters in a way that represents our
@@ -200,7 +230,10 @@
           </p>
 
           <div class="image-container">
-            <object data="/media/images/weight-network.svg"></object>
+            <img
+              src="/media/images/weight-network.svg"
+              alt="Neural network with edges labeled as weights"
+            />
           </div>
 
           <p class="paragraph">
@@ -219,9 +252,10 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/images/transformed-decision-boundary.svg"
-            ></object>
+            <img
+              src="/media/images/transformed-decision-boundary.svg"
+              alt="Small Network Transformation"
+            />
           </div>
 
           <br />
@@ -239,7 +273,13 @@
             simply act as the minimum enjoyment it will take to make the
             decision to get an instrument with some small amount of
             practice.<sup
-              ><a href="#fn3" class="footnote-navigation" id="tfn3">3</a></sup
+              ><a
+                aria-label="Visit third footnote in this chapter"
+                href="#fn3"
+                class="footnote-navigation"
+                id="tfn3"
+                >3</a
+              ></sup
             >
             Let's say the minimum enjoyment is two units which would mean a bias
             of -2.
@@ -248,9 +288,10 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/images/transformed-biased-decision-boundary.svg"
-            ></object>
+            <img
+              src="/media/images/transformed-biased-decision-boundary.svg"
+              alt="Biased Decision Boundary"
+            />
           </div>
 
           <br />
@@ -299,7 +340,11 @@
               weights. I am taking a slightly different approach to help
               motivate a more geometric interpretation of how neural networks
               truly function since it will soon become much more complex.
-              <a href="#tfn1" title="Return to text" class="footnote-navigation"
+              <a
+                href="#tfn1"
+                title="Return to text"
+                class="footnote-navigation"
+                aria-label="Return to text for first footnote in this chapter"
                 >Return to text</a
               ></sup
             >
@@ -309,7 +354,11 @@
               skills at piccolo somehow? Though it may not be realistic, this
               gives us a more holistic view of the possible activations of other
               kinds of parameters beyond perfect piccolo predictions.
-              <a href="#tfn2" title="Return to text" class="footnote-navigation"
+              <a
+                href="#tfn2"
+                title="Return to text"
+                class="footnote-navigation"
+                aria-label="Return to text for second footnote in this chapter"
                 >Return to text</a
               ></sup
             >
@@ -317,7 +366,11 @@
               3. Okay well technically the bias will not be the minimum
               enjoyment since at x = -bias the practice time will be zero as the
               terms cancel out, but bear with me.
-              <a href="#tfn3" title="Return to text" class="footnote-navigation"
+              <a
+                href="#tfn3"
+                title="Return to text"
+                class="footnote-navigation"
+                aria-label="Return to text for third footnote in this chapter"
                 >Return to text</a
               ></sup
             >
@@ -361,7 +414,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/simple-vector.svg"></object>
+            <img
+              src="/media/images/simple-vector.svg"
+              alt="Simple Vector at (1, 2)"
+            />
           </div>
 
           <br />
@@ -400,7 +456,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/vector-addition.svg"></object>
+            <img
+              src="/media/images/vector-addition.svg"
+              alt="Add vector v and u, result at (-4, 3)"
+            />
           </div>
 
           <br />
@@ -416,9 +475,10 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/images/commutative-vector-addition.svg"
-            ></object>
+            <img
+              src="/media/images/commutative-vector-addition.svg"
+              alt="Example of commutative vector addition"
+            />
           </div>
 
           <br />
@@ -441,7 +501,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/scaled-vector.svg"></object>
+            <img
+              src="/media/images/scaled-vector.svg"
+              alt="Vector v scaled by 2"
+            />
           </div>
 
           <br />
@@ -527,7 +590,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/linear-combination.svg"></object>
+            <img
+              src="/media/images/linear-combination.svg"
+              alt="Linear combination of v and u"
+            />
           </div>
 
           <br />
@@ -552,7 +618,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/linearly-dependent.svg"></object>
+            <img
+              src="/media/images/linearly-dependent.svg"
+              alt="Two linearly dependant vectors"
+            />
           </div>
 
           <br />
@@ -616,6 +685,7 @@
             <a
               href="https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
               class="hyperlink"
+              aria-label="A link to 3Blue1Brown's course on linear algebra"
               >3Blue1Brown's course on linear algebra</a
             >
             to help fully understand this process as the purpose of this article
@@ -647,11 +717,12 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/video/perceptron-transformation.gif"
+            <img
+              src="/media/video/perceptron-transformation.gif"
+              alt="The transformation performed by the perceptron"
               width="360"
               height="280"
-            ></object>
+            />
           </div>
 
           <br />
@@ -686,9 +757,10 @@
           </p>
 
           <div class="image-container">
-            <object
-              data="/media/images/neural-network-vector-graphic.svg"
-            ></object>
+            <img
+              src="/media/images/neural-network-vector-graphic.svg"
+              alt="Neural network with two hidden layers"
+            />
           </div>
 
           <br />
@@ -776,9 +848,10 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/images/function-to-be-approximated.svg"
-            ></object>
+            <img
+              src="/media/images/function-to-be-approximated.svg"
+              alt="Simple function to be approximated"
+            />
           </div>
 
           <br />
@@ -794,9 +867,10 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/images/approximation-neural-network.svg"
-            ></object>
+            <img
+              src="/media/images/approximation-neural-network.svg"
+              alt="1 to 4 to 1 neural network"
+            />
           </div>
 
           <br />
@@ -817,11 +891,12 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/video/sigmoid-approximation.gif"
+            <img
+              src="/media/video/sigmoid-approximation.gif"
+              alt="Heavy weight approximates a step function at x = 0"
               width="256"
               height="256"
-            ></object>
+            />
           </div>
 
           <br />
@@ -834,11 +909,12 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/video/bias-step-transformation.gif"
+            <img
+              src="/media/video/bias-step-transformation.gif"
+              alt="Bias moves approximated step function left and right"
               width="256"
               height="256"
-            ></object>
+            />
           </div>
 
           <br />
@@ -860,11 +936,12 @@
             step function here, but I hope I have justified why I can use a step
             function and retain the validity of my proof for a sigmoid function.
             If you want to learn more about this, I recommend you check out
-            Chapter 4 of Neural Networks and Deep Learning
+
             <a
               href="http://neuralnetworksanddeeplearning.com/chap4.html"
               class="hyperlink"
-              >here</a
+              aria-label="A link to chapter 4 of Neural Networks and Deep Learning"
+              >Chapter 4 of Neural Networks and Deep Learning</a
             >.
           </p>
 
@@ -888,7 +965,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/first-neuron-effect.svg"></object>
+            <img
+              src="/media/images/first-neuron-effect.svg"
+              alt="Step function at x = -2"
+            />
           </div>
 
           <br />
@@ -901,7 +981,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/hidden-output-weighted.svg"></object>
+            <img
+              src="/media/images/hidden-output-weighted.svg"
+              alt="Previous function multiplied by two"
+            />
           </div>
 
           <br />
@@ -914,7 +997,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/second-neuron-effect.svg"></object>
+            <img
+              src="/media/images/second-neuron-effect.svg"
+              alt="Step function from y = 1 to y = 0 at x = 2"
+            />
           </div>
 
           <br />
@@ -927,7 +1013,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/weighted-second-neuron.svg"></object>
+            <img
+              src="/media/images/weighted-second-neuron.svg"
+              alt="Multiply second step function by 2"
+            />
           </div>
 
           <br />
@@ -940,9 +1029,10 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/images/first-two-neuron-cumulative-effect.svg"
-            ></object>
+            <img
+              src="/media/images/first-two-neuron-cumulative-effect.svg"
+              alt="Sum of the two step functions"
+            />
           </div>
 
           <br />
@@ -961,7 +1051,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/output-neuron-bias.svg"></object>
+            <img
+              src="/media/images/output-neuron-bias.svg"
+              alt="Full sum of step functions offset down"
+            />
           </div>
 
           <br />
@@ -976,7 +1069,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/third-neuron-effect.svg"></object>
+            <img
+              src="/media/images/third-neuron-effect.svg"
+              alt="New step function that pushes y up by 2 at x = -1"
+            />
           </div>
 
           <br />
@@ -989,7 +1085,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/fourth-neuron-effect.svg"></object>
+            <img
+              src="/media/images/fourth-neuron-effect.svg"
+              alt="Correction of last step function on right side"
+            />
           </div>
 
           <br />
@@ -1010,11 +1109,12 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/video/fit-to-line.gif"
+            <img
+              src="/media/video/fit-to-line.gif"
               width="256"
               height="256"
-            ></object>
+              alt="Proper neural network with same architecture fitting to function"
+            />
           </div>
 
           <br />
@@ -1128,7 +1228,13 @@
             quantify how wrong it is, and just as important, we need some way to
             tell the network how to adjust itself in order to be less wrong. To
             do this, we use cost functions.<sup
-              ><a href="#scfgdfn1" id="tscfgdfn1" class="hyperlink">1</a></sup
+              ><a
+                href="#scfgdfn1"
+                id="tscfgdfn1"
+                class="hyperlink"
+                aria-label="Return to text for first footnote in this chapter"
+                >1</a
+              ></sup
             >
             There exist many cost functions out there. For softmax outputs, you
             would typically use something called cross-entropy loss for the
@@ -1199,7 +1305,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/single-parameter-loss-fn.svg"></object>
+            <img
+              src="/media/images/single-parameter-loss-fn.svg"
+              alt="Example loss function"
+            />
           </div>
 
           <br />
@@ -1212,7 +1321,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/parameter-on-curve.svg"></object>
+            <img
+              src="/media/images/parameter-on-curve.svg"
+              alt="The network's parameter state on the loss function"
+            />
           </div>
 
           <br />
@@ -1243,7 +1355,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/slope-at-parameter.svg"></object>
+            <img
+              src="/media/images/slope-at-parameter.svg"
+              alt="Slope of loss function at the parameter"
+            />
           </div>
 
           <br />
@@ -1263,7 +1378,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/approximation-difference.svg"></object>
+            <img
+              src="/media/images/approximation-difference.svg"
+              alt="How wrong the linear approximation gets as you go farther from the parameter"
+            />
           </div>
 
           <br />
@@ -1329,7 +1447,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/local-minimum.svg"></object>
+            <img
+              src="/media/images/local-minimum.svg"
+              alt="Function will multiply valleys where parameter is nearest the largest valley"
+            />
           </div>
 
           <br />
@@ -1421,11 +1542,12 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/video/3d-sample.gif"
+            <img
+              src="/media/video/3d-sample.gif"
               width="256"
               height="256"
-            ></object>
+              alt="splicing function with a plane"
+            />
           </div>
 
           <br />
@@ -1437,7 +1559,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/graph-slice.svg"></object>
+            <img
+              src="/media/images/graph-slice.svg"
+              alt="Intersection between plane and function on a 2d graph"
+            />
           </div>
 
           <br />
@@ -1451,11 +1576,12 @@
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/video/y-effect.gif"
+            <img
+              src="/media/video/y-effect.gif"
               width="256"
               height="256"
-            ></object>
+              alt="Splicing the 3d graph at different x coordinates and seeing how y's effect on z changes"
+            />
           </div>
 
           <br />
@@ -1489,7 +1615,12 @@
               squared error) for a single training example while cost is the
               average cost across the entire dataset (in our case,
               <em>mean</em> squared error.
-              <a href="#tscfgdfn1" class="hyperlink">Return to text</a>
+              <a
+                href="#tscfgdfn1"
+                class="hyperlink"
+                aria-label="Return to text for second footnote in this chapter"
+                >Return to text</a
+              >
             </sup>
           </div>
 
@@ -1541,6 +1672,7 @@
             <a
               class="hyperlink"
               href="https://www.youtube.com/watch?v=WUvTyaaNkzM&list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr"
+              aria-label="A link to 3Blue1Brown's course on linear algebra"
               >Essence of Calculus course</a
             >
             which covers this idea in much more depth than I do.
@@ -1554,14 +1686,19 @@
             this idea is slope! To help motivate a geometric interpretation of
             what I mean, let's look at the graph \( f(x) = x^2 \)
             <sup id="tscfn1"
-              ><a href="#scfn1" class="footnote-navigation">1</a></sup
+              ><a
+                href="#scfn1"
+                class="footnote-navigation"
+                aria-label="Return to text for first footnote in this chapter"
+                >1</a
+              ></sup
             >
           </p>
 
           <br />
 
           <div class="image-container">
-            <object data="/media/images/x-squared.svg"></object>
+            <img src="/media/images/x-squared.svg" alt="A graph of x squared" />
           </div>
 
           <br />
@@ -1576,7 +1713,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/square-area.svg"></object>
+            <img
+              src="/media/images/square-area.svg"
+              alt="Square with sides of x and area of x squared"
+            />
           </div>
 
           <br />
@@ -1589,7 +1729,10 @@
           <br />
 
           <div class="image-container">
-            <object data="/media/images/square-area-nudge.svg"></object>
+            <img
+              src="/media/images/square-area-nudge.svg"
+              alt="Raising x by dx created new edges of previous square"
+            />
           </div>
 
           <br />
@@ -1604,12 +1747,17 @@
             be \( 2xdx + dx^2 \). If we wanted to have this as slope, we know
             the run is \( dx \), so the full expression is\( \hspace{7px}
             \frac{2xdx + dx^2}{dx} \). But now let's think about this as \( dx
-            \) approaches \( 0 \). The \( 2xdx \) term will keep its ratio of
-            \( 2xdx \), but the \( dx^2 \) term will approach zero much faster
-            than \( dx \) and thus become negligible. Because of this, we can
-            drop the \( dx^2 \) term out of the derivative and just keep the \(
-            2xdx \)<sup id="tscfn2"
-              ><a href="#scfn2" class="footnote-navigation">2</a></sup
+            \) approaches \( 0 \). The \( 2xdx \) term will keep its ratio of \(
+            2xdx \), but the \( dx^2 \) term will approach zero much faster than
+            \( dx \) and thus become negligible. Because of this, we can drop
+            the \( dx^2 \) term out of the derivative and just keep the \( 2xdx
+            \)<sup id="tscfn2"
+              ><a
+                href="#scfn2"
+                class="footnote-navigation"
+                aria-label="Return to text for second footnote in this chapter"
+                >2</a
+              ></sup
             >
             . Now if we divide out the denominator, we get the simplified
             derivative of \( x^2 \) as \( f'(x) = 2x \) (that \('\) symbol is
@@ -1723,6 +1871,7 @@
                 href="#tscfn1"
                 title="Return to text"
                 class="footnote-navigation"
+                aria-label="Return to text for first footnote in this chapter"
                 >Return to text</a
               ></sup
             >
@@ -1742,6 +1891,7 @@
                 href="#tscfn2"
                 title="Return to text"
                 class="footnote-navigation"
+                aria-label="Return to text for second footnote in this chapter"
                 >Return to text</a
               ></sup
             >
@@ -1792,7 +1942,10 @@
           </p>
 
           <div class="image-container">
-            <object data="/media/images/simple-network.svg"></object>
+            <img
+              src="/media/images/simple-network.svg"
+              alt="A simple network with one neuron per layer with one hidden neuron"
+            />
           </div>
 
           <p class="paragraph">
@@ -1800,7 +1953,15 @@
             network, let's also begin writing some code. Here, we will use type
             hinting since I am used to static languages and it makes our LSP
             server much smarter. To start, let's create a simple neuron class
-            <sup><a href="#sbpfn2" class="footnote-navigation">2</a></sup>
+            <sup
+              ><a
+                href="#sbpfn1"
+                id="tsbpfn1"
+                class="footnote-navigation"
+                aria-label="Visit first footnote in this chapter"
+                >1</a
+              ></sup
+            >
           </p>
 
           <pre><code class="language-python">
@@ -1832,8 +1993,12 @@ class Neuron:
             this article, let's let the computer learn for itself. Just like in
             real neural networks classifier, we will use random weights
             <sup
-              ><a class="footnote-navigation" href="#sbpfn1" id="tsbpfn1"
-                >1</a
+              ><a
+                class="footnote-navigation"
+                href="#sbpfn2"
+                id="tsbpfn2"
+                aria-label="Visit second footnote in this chapter"
+                >2</a
               ></sup
             >
             start, and allow the computer to learn the correct weights. Let's
@@ -1936,7 +2101,12 @@ def mean_squared_error(expected: list[float], observed: list[float]) -> float:
             operator order. The difference is squared so it actually doesn't
             change the result of the loss function nor the derivative<sup
               id="tsbpfn3"
-              ><a href="sbpfn3" class="footnote-navigation">3</a></sup
+              ><a
+                href="sbpfn3"
+                class="footnote-navigation"
+                aria-label="Visit third footnote in this chapter"
+                >3</a
+              ></sup
             >. Our new expression becomes \( (\hat{y} - y)^2 \). Similar to our
             \( x^2 \) example from earlier, we can write this as a square where
             each side length is \( \hat{y} - y \)
@@ -1945,7 +2115,10 @@ def mean_squared_error(expected: list[float], observed: list[float]) -> float:
           <br />
 
           <div class="image-container">
-            <object data="/media/images/mse-square.svg"></object>
+            <img
+              src="/media/images/mse-square.svg"
+              alt="A square with sides y hat - y"
+            />
           </div>
 
           <br />
@@ -1958,7 +2131,10 @@ def mean_squared_error(expected: list[float], observed: list[float]) -> float:
           <br />
 
           <div class="image-container">
-            <object data="/media/images/mse-dy-square.svg"></object>
+            <img
+              src="/media/images/mse-dy-square.svg"
+              alt="Increasing y hat by d y hat creates new edges on the square"
+            />
           </div>
 
           <br />
@@ -1974,8 +2150,12 @@ def mean_squared_error(expected: list[float], observed: list[float]) -> float:
             \cdot (\hat{y} - y) \cdot d\hat{y} \). Once again, this is a very
             trivial function to make in code
             <sup
-              ><a href="#sbpfn4" id="tsbpfn4" class="footnote-navigation"
-                >5</a
+              ><a
+                href="#sbpfn4"
+                id="tsbpfn4"
+                class="footnote-navigation"
+                aria-label="Visit forth footnote in this chapter"
+                >4</a
               ></sup
             >
           </p>
@@ -2040,7 +2220,11 @@ def squared_error_prime(expected: float, observed: float):
             and our learning rate, \( \eta \), tells us of what magnitude do we
             want to change the loss function.
             <sup
-              ><a href="#sbpfn5" id="tsbpfn5" class="footnote-navigation"
+              ><a
+                href="#sbpfn5"
+                id="tsbpfn5"
+                class="footnote-navigation"
+                aria-label="Visit fifth footnote in this chapter"
                 >5</a
               ></sup
             >
@@ -2049,6 +2233,7 @@ def squared_error_prime(expected: float, observed: float):
             <a
               href="http://neuralnetworksanddeeplearning.com/chap1.html"
               class="hyperlink"
+              aria-label="Visit Neural Networks and Deep Learning"
               >Neural Networks and Deep Learning</a
             >. This is a much more dense but covers the topic in much more
             mathematical precision which may be helpful to you.
@@ -2397,9 +2582,10 @@ Loss after training: 0.5852568616860203
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/images/simple-approximation-of-sine.svg"
-            ></object>
+            <img
+              src="/media/images/simple-approximation-of-sine.svg"
+              alt="Our simple network's poor attempt at approximated sine"
+            />
           </div>
 
           <br />
@@ -2521,7 +2707,21 @@ Loss after training: 0.5852568616860203
           <div class="footnotes">
             <hr class="line" />
             <sup id="sbpfn1">
-              1. Well in real networks, the weight initialization isn't
+              1. If you are not familiar with python, there are about a million
+              tutorials on the internet teaching it. Here, the most complex
+              python-specific code we will write will involve classes and
+              constructors, so one only has to learn to that point to understand
+              the code in this article
+              <a
+                href="#tsbpfn1"
+                title="Return to text"
+                class="footnote-navigation"
+                aria-label="Return to text for first footnote in this chapter"
+                >Return to text</a
+              ></sup
+            >
+            <sup id="sbpfn2">
+              2. Well in real networks, the weight initialization isn't
               completely random. To reduce exploding and vanishing gradients
               inside of weights, there exist a few methods to initialize the
               weights to mitigate the problems. If you want to learn more, you
@@ -2529,25 +2729,14 @@ Loss after training: 0.5852568616860203
               <a
                 class="hyperlink"
                 href="https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf"
+                aria-label="A paper about effective weight initialization"
                 >this paper</a
               >.
-              <a
-                href="#tsbpfn1"
-                title="Return to text"
-                class="footnote-navigation"
-                >Return to text</a
-              ></sup
-            >
-            <sup id="sbpfn2">
-              2. If you are not familiar with python, there are about a million
-              tutorials on the internet teaching it. Here, the most complex
-              python-specific code we will write will involve classes and
-              constructors, so one only has to learn to that point to understand
-              the code in this article
               <a
                 href="#tsbpfn2"
                 title="Return to text"
                 class="footnote-navigation"
+                aria-label="Return to text for second footnote in this chapter"
                 >Return to text</a
               ></sup
             >
@@ -2566,6 +2755,7 @@ Loss after training: 0.5852568616860203
                 href="#tsbpfn3"
                 title="Return to text"
                 class="footnote-navigation"
+                aria-label="Return to text for third footnote in this chapter"
                 >Return to text</a
               ></sup
             >
@@ -2583,6 +2773,7 @@ Loss after training: 0.5852568616860203
                 href="#tsbpfn4"
                 title="Return to text"
                 class="footnote-navigation"
+                aria-label="Return to text for forth footnote in this chapter"
                 >Return to text</a
               >
             </sup>
@@ -2601,6 +2792,7 @@ Loss after training: 0.5852568616860203
                 href="#tsbpfn5"
                 title="Return to text"
                 class="footnote-navigation"
+                aria-label="Return to text for fifth footnote in this chapter"
                 >Return to text</a
               >
             </sup>
@@ -2626,6 +2818,7 @@ Loss after training: 0.5852568616860203
             <a
               href="https://colah.github.io/posts/2015-08-Backprop/"
               class="hyperlink"
+              aria-label="A link to Colah's article on backpropagation"
               >Colah's article on backpropagation</a
             >. Colah also has a bunch of other really cool articles, so I highly
             recommend checking some more of his stuff out. I also may have
@@ -2649,7 +2842,10 @@ Loss after training: 0.5852568616860203
           <br />
 
           <div class="image-container">
-            <object data="/media/images/computational-graph.svg"></object>
+            <img
+              src="/media/images/computational-graph.svg"
+              alt="A graph with bottom node x, a new layer with left side f = x + 2, right side g = 7x, and final node at the top of z = f times g"
+            />
           </div>
 
           <br />
@@ -2668,9 +2864,10 @@ Loss after training: 0.5852568616860203
           <br />
 
           <div class="image-container">
-            <object
-              data="/media/images/computational-graph-partial-derivatives.svg"
-            ></object>
+            <img
+              src="/media/images/computational-graph-partial-derivatives.svg"
+              alt="A display of each of the partial derivatives on the edges of the graph"
+            />
           </div>
 
           <br />
@@ -2756,10 +2953,18 @@ Loss after training: 0.5852568616860203
             I said the weight matrix was important? Well this is a very large
             reason why as each column in the matrix tells us the weights across
             all the output neurons for a single input neuron.
-            <sup><a href="#scgfn1" id="tscgfn1" class="hyperlink">1</a></sup> We
-            can sum across them along with each neuron's appropriate influence
-            on cost on each layer utilizing this matrix, and we get the total
-            influence of any neuron!
+            <sup
+              ><a
+                href="#scgfn1"
+                id="tscgfn1"
+                class="hyperlink"
+                aria-label="Visit first footnote in this chapter"
+                >1</a
+              ></sup
+            >
+            We can sum across them along with each neuron's appropriate
+            influence on cost on each layer utilizing this matrix, and we get
+            the total influence of any neuron!
           </p>
 
           <p class="paragraph">
@@ -2780,18 +2985,17 @@ Loss after training: 0.5852568616860203
             course, the weights, and the weights for a particular input neuron
             across all output neurons is simply the column corresponding to
             whichever input neuron you are processing. There is a really neat
-            operation we can perform if we have this knowledge. Imagine
-            swapping the rows and columns of our weight (called a transpose in
-            linear algebra speak) matrix such that each column represents the
-            weights from all the input neurons to a single output neuron instead
-            of the row. This means when we perform matrix multiplication with
-            this new transposed matrix, the linear combination gives the sum
-            across all output neurons for a single input neuron. This is exactly
-            what we want to determine the influence of the input (isn't linear
-            algebra cool?)! All we have to do then is perform the matrix
-            multiplication with the delta vector across the transposed weight
-            matrix, and the resulting vector gives us the influence of the next
-            layer.
+            operation we can perform if we have this knowledge. Imagine swapping
+            the rows and columns of our weight (called a transpose in linear
+            algebra speak) matrix such that each column represents the weights
+            from all the input neurons to a single output neuron instead of the
+            row. This means when we perform matrix multiplication with this new
+            transposed matrix, the linear combination gives the sum across all
+            output neurons for a single input neuron. This is exactly what we
+            want to determine the influence of the input (isn't linear algebra
+            cool?)! All we have to do then is perform the matrix multiplication
+            with the delta vector across the transposed weight matrix, and the
+            resulting vector gives us the influence of the next layer.
           </p>
 
           <p class="paragraph">
@@ -2805,7 +3009,12 @@ Loss after training: 0.5852568616860203
               1. I am using the terms "input" and "output" a little ambiguously
               here. I don't mean the inputs and output of the entire network,
               rather I mean the input and output of any two layers in a network.
-              <a href="#tscgfn1" class="hyperlink">Return to text</a>
+              <a
+                href="#tscgfn1"
+                class="hyperlink"
+                aria-label="Return to text for first footnote in this chapter"
+                >Return to text</a
+              >
             </sup>
           </div>
 
@@ -2841,11 +3050,12 @@ Loss after training: 0.5852568616860203
             ago, we will be implementing a weight matrix for each layer. The
             matrices will be written in numpy, so if you don't quite understand
             some of the code related to the matrices and vectors, numpy has some
-            a really good introduction to their library
+            a really good
             <a
               href="https://numpy.org/doc/stable/user/absolute_beginners.html"
               class="hyperlink"
-              >here</a
+              aria-label="A link to numpy documentation"
+              >introduction to their library</a
             >.
           </p>
 
@@ -3137,6 +3347,7 @@ class Network:
             <a
               href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset?resource=download-directory"
               class="hyperlink"
+              aria-label="A link to the kaggle page contained the relevant training and testing data"
             ></a
             >. You simply click the
             <code> Download dataset as zip </code> button, extract file file,
@@ -3356,11 +3567,12 @@ def load_data(filename: str) -> np.ndarray:
             representation of how significant the bytes should be along the
             number; little endian is &lt;). The BB indicates that we want to
             read in an unsigned char, which is only one byte (a useful table for
-            all of the types can be found
+            all of the types can be found on
             <a
               href="https://docs.python.org/3/library/struct.html"
               class="hyperlink"
-              >here</a
+              aria-label="Python's struct page containing a table with relevant format characters for reading bytes"
+              >python's relevant documentation</a
             >). Multiple of these letters indicates that we would like to read
             multiple bytes. So to put it all together, we want to read two
             unsigned chars in big-endian format. Next, let's read the sizes
@@ -3614,34 +3826,71 @@ Total Accuracy: 81.25%
             nolanthw8s@gmail.com.
           </p>
         </div>
-          <ul class="article-toc">
-            <h2 class="toc-header">Table of Contents</h2>
-            <a href="#introduction" class="toc-text">Introduction</a>
-            <a href="#perceptrons-and-decision-boundaries" class="toc-text"
-              >Perceptrons and Decision Boundaries</a
-            >
-            <a href="#hidden-layers-and-feed-forward" class="toc-text"
-              >Hidden Layers and Feed-Forward</a
-            >
-            <a href="#the-universal-approximation-theorem" class="toc-text"
-              >The Universal Approximation Theorem</a
-            >
-            <a href="#regression-vs-one-hot-encoding" class="toc-text"
-              >Regression vs One-Hot Encoding</a
-            >
-            <a href="#cost-functions-and-gradient-descent" class="toc-text"
-              >Cost Functions and Gradient Descent</a
-            >
-            <a href="#calculus" class="toc-text"> Calculus </a>
-            <a href="#backpropagation" class="toc-text">Backpropagation</a>
-            <a href="#computational-graphs" class="toc-text"
-              >Computational Graphs</a
-            >
-            <a href="#classifying-mnist-data" class="toc-text"
-              >Classifying MNIST Data</a
-            >
-          </ul>
+        <div class="article-toc">
+          <h2 class="toc-header">Table of Contents</h2>
+          <a
+            href="#introduction"
+            class="toc-text"
+            aria-label="Link to introduction chapter"
+            >Introduction</a
+          >
+          <a
+            href="#perceptrons-and-decision-boundaries"
+            class="toc-text"
+            aria-label="Link to Perceptron and Decision Boundaries chapter"
+            >Perceptrons and Decision Boundaries</a
+          >
+          <a
+            href="#hidden-layers-and-feed-forward"
+            class="toc-text"
+            aria-label="Link to Hidden Layers and Feed Forward chapter"
+            >Hidden Layers and Feed-Forward</a
+          >
+          <a
+            href="#the-universal-approximation-theorem"
+            class="toc-text"
+            aria-label="Link to The Universal Approximation Theorem chapter"
+            >The Universal Approximation Theorem</a
+          >
+          <a
+            href="#regression-vs-one-hot-encoding"
+            class="toc-text"
+            aria-label="Link to Regression vs One-Hot Encoding chapter"
+            >Regression vs One-Hot Encoding</a
+          >
+          <a
+            href="#cost-functions-and-gradient-descent"
+            class="toc-text"
+            aria-label="Link to Cost Functions and Gradient Descent chapter"
+            >Cost Functions and Gradient Descent</a
+          >
+          <a
+            href="#calculus"
+            class="toc-text"
+            aria-label="Link to Calculus chapter"
+          >
+            Calculus
+          </a>
+          <a
+            href="#backpropagation"
+            class="toc-text"
+            aria-label="Link to Backpropagation chapter"
+            >Backpropagation</a
+          >
+          <a
+            href="#computational-graphs"
+            class="toc-text"
+            aria-label="Link to Computational Graphs chapter"
+            >Computational Graphs</a
+          >
+          <a
+            href="#classifying-mnist-data"
+            class="toc-text"
+            aria-label="Link to Classifying MNIST Data chapter"
+            >Classifying MNIST Data</a
+          >
         </div>
+      </div>
     </div>
     <div class="bottom"></div>
   </body>
