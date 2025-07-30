@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Home page" />
     <title>Home</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="stylesheet" href="/css/common.css" />
@@ -18,11 +19,23 @@
   <body>
     <div class="navbar">
       <div class="nav-container-left">
-        <a href="/" class="navigation">Nolan Thwaits</a>
+        <a href="/" class="navigation" aria-label="Visit the homepage"
+          >Nolan Thwaits</a
+        >
       </div>
       <div class="nav-container-right">
-        <a href="/about.html" class="navigation">About</a>
-        <a href="/contact.html" class="navigation">Contact</a>
+        <a
+          href="/about.html"
+          class="navigation"
+          aria-label="Visit the about page"
+          >About</a
+        >
+        <a
+          href="/contact.html"
+          class="navigation"
+          aria-label="Visit the contact me page"
+          >Contact</a
+        >
       </div>
     </div>
 
@@ -35,7 +48,6 @@
       <div class="article article-1" onclick="firstArticleRedirect()">
         <object
           data="/media/images/neural-network-vector-graphic.svg"
-          type=""
           width="180"
           height="180"
           class="article-1-image"
