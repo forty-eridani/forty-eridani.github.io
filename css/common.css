@@ -104,6 +104,16 @@ sup {
   width: 70%;
 }
 
+.simple-article-text {
+  width: 50%;
+}
+
+@media screen and (max-width: 1300px) {
+  .simple-article-text {
+    width: 80%;
+  }
+}
+
 .article-toc {
   justify-self: right;
   margin-right: 30px;

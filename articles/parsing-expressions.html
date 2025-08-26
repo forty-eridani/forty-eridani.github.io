@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Article about parsing expressions" />
+    <title>Parsing Expressions</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/css/common.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-light.min.css"
+    />
+    <script type="module">
+      import hljs from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js";
+      import py from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/python.min.js";
+      import plaintext from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/plaintext.min.js";
+
+      hljs.registerLanguage("python", py);
+      hljs.highlightAll();
+    </script>
+
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="nav-container-left">
+        <a href="/" class="navigation" aria-label="Visit the homepage"
+          >Nolan Thwaits</a
+        >
+      </div>
+      <div class="nav-container-right">
+        <a
+          href="/about.html"
+          class="navigation"
+          aria-label="Visit the about page"
+          >About</a
+        >
+        <a
+          href="/contact.html"
+          class="navigation"
+          aria-label="Visit the contact me page"
+          >Contact</a
+        >
+      </div>
+    </div>
+
+    <div class="page-title">
+      <h1 class="">Parsing Expressions</h1>
+      <p>Unpublished</p>
+      <hr class="line" />
+    </div>
+
+    <div class="article-container">
+      <div class="simple-article-text">
+        <h2 class="section-header">Introduction</h2>
+        <p class="paragraph">
+          Since we were young lads, we have all known how to evaluate simple
+          expressions in our heads like \( 2 + 2 \) or \( 10 / 5 \), but has it
+          ever occurred to you how your calculator performs such operations? It
+          seems trivial at first; one could write a program to consume a number,
+          then the operator, then the other number and perform the operation on
+          the two numbers dictated by the operator previously consumed. This
+          solution however does not generalize to other valid expressions.
+          Instead of explaining why it doesn't, I encourage you to come up with
+          a general expression solving algorithm that can compute \( 15 / (2 +
+          7) + 8 \). Isn't quite so easy now is it? There are quite a few
+          algorithms for solving this problem (in fact one of my favorite
+          algorithms--the shunting yard algorithm--was designed to solve this
+          very problem), but for our purposes we will solve this using arguably
+          the simplest method: recursive descent.
+        </p>
+        <p class="paragraph">
+          Recursive descent may sound like a very complex algorithm, but at its
+          heart it is an extremely simple, extremely powerful algorithm which
+          implements recursion to "descend" into expression, solving highest
+          precedence operations first and ascending once that has been computed.
+          In fact, this algorithm is so powerful I used it to parse
+          <a
+            href="https://github.com/forty-eridani/custom-lang"
+            class="hyperlink"
+            aria-label="A link to the source code of my own programming language"
+            >my own programming language</a
+          >. What introduced me to this concept was an incredible book by Robert
+          Nystrom titled
+          <a
+            href="https://craftinginterpreters.com/"
+            aria-label="A link to the book Crafting Interpreters"
+            class="hyperlink"
+            >Crafting Interpreters</a
+          >
+          of which I owe a debt of gratitude to and a book you should definitely
+          read if you have any interest in creating your own programming
+          language. Anywho, we are not going to get straight away to parsing the
+          expressions because it's quite difficult and inefficient to write a
+          parser that understands raw text (and hurts my object-oriented soul),
+          so instead let us begin with
+        </p>
+
+        <h2 class="section">Tokenizing the Input</h2>
+
+        <p class="paragraph">
+          To begin, let's simply enumerate the tokens we would like to have. We
+          would like the addition operator \(+\), subtraction operator \(-\),
+          division operator \(/\), and the multiplication operator \(*\). The
+          enumerated names will not be of the operation they perform (addition,
+          subtraction, etc), rather the names will represent the symbol itself
+          since the tokenizer has no knowledge of their function, and in a real
+          programming language, a symbol may have multiple jobs. We also need to
+          enumerate for tokens for numbers, opening and closing parenthesis, as
+          well as an end token to help the parser know when its job is done
+        </p>
+
+        <pre><code class="language-python">
+            import Enum
+
+            class TokenType(Enum):
+                PLUS_TOKEN = 0
+                HYPHEN_TOKEN = 1
+                STAR_TOKEN = 2
+                SLASH_TOKEN = 3
+                NUMBER_TOKEN = 4
+                OPEN_PAREN = 5
+                CLOSED_PAREN = 6
+                END_TOKEN = 7
+        </code></pre>
+
+        <p class="paragraph">
+          With our enumeration out of the way, we can move onto deciding how we
+          should represent a token. This doesn't have to be complicated at all,
+          there just has to be an object containing both the type of the token
+          and the numerical value if the token happens to be a number. We could
+          write our own class for this, but that seems too little state to
+          encapsulate in a class and by default class string representations are
+          quite ugly. Instead, we will simply use a tuple to hold the type of
+          the token as well as its value if it's a number.
+        </p>
+      </div>
+    </div>
+
+    <div class="bottom"></div>
+  </body>
+</html>
