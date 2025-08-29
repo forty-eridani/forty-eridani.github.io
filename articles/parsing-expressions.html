@@ -25,6 +25,7 @@
       import plaintext from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/plaintext.min.js";
 
       hljs.registerLanguage("python", py);
+      hljs.registerLanguage("plaintext", plaintext);
       hljs.highlightAll();
     </script>
 
@@ -109,7 +110,7 @@
           so instead let us begin with
         </p>
 
-        <h2 class="section">Tokenizing the Input</h2>
+        <h2 class="section-header">Tokenizing the Input</h2>
 
         <p class="paragraph">
           To begin, let's simply enumerate the tokens we would like to have. We
@@ -124,17 +125,17 @@
         </p>
 
         <pre><code class="language-python">
-            import Enum
+from enum import Enum
 
-            class TokenType(Enum):
-                PLUS_TOKEN = 0
-                HYPHEN_TOKEN = 1
-                STAR_TOKEN = 2
-                SLASH_TOKEN = 3
-                NUMBER_TOKEN = 4
-                OPEN_PAREN = 5
-                CLOSED_PAREN = 6
-                END_TOKEN = 7
+class TokenType(Enum):
+    PLUS_TOKEN = 0
+    HYPHEN_TOKEN = 1
+    STAR_TOKEN = 2
+    SLASH_TOKEN = 3
+    NUMBER_TOKEN = 4
+    OPEN_PAREN = 5
+    CLOSED_PAREN = 6
+    END_TOKEN = 7
         </code></pre>
 
         <p class="paragraph">
@@ -147,6 +148,220 @@
           quite ugly. Instead, we will simply use a tuple to hold the type of
           the token as well as its value if it's a number.
         </p>
+
+        <p class="paragraph">
+          There are likely more clever ways to tokenize a string in python,
+          however I am no expert in python and using a less python specific
+          method to tokenize will generalize to other programming languages. To
+          start, let's simply iterate over the string and push the tokens
+          corresponding to the characters of the string to an array of tokens.
+          For now, let's start with operators
+        </p>
+
+        <pre><code class="language-python">
+def tokenize(src):
+  cur_index = 0
+  tokens = []
+
+  while cur_index &lt; len(src):
+      if src[cur_index] == '+':
+          tokens.append((TokenType.PLUS_TOKEN, 0))
+          cur_index += 1
+      elif src[cur_index] == '-':
+          tokens.append((TokenType.HYPHEN_TOKEN, 0))
+          cur_index += 1
+      elif src[cur_index] == '*':
+          tokens.append((TokenType.STAR_TOKEN, 0))
+          cur_index += 1
+      elif src[cur_index] == '/':
+          tokens.append((TokenType.SLASH_TOKEN, 0))
+          cur_index += 1
+      elif src[cur_index] == '&#40;':
+          tokens.append((TokenType.OPEN_PAREN, 0))
+          cur_index += 1
+      elif src[cur_index] == '&#41;':
+          tokens.append((TokenType.CLOSED_PAREN, 0))
+          cur_index += 1
+        </code></pre>
+
+        <p class="paragraph">
+          Tokenizing numbers is slightly more complicated. We will only bother
+          with integers in our parser in order to simplify things a little,
+          though when the expression is evaluated we will keep the decimal to
+          maintain precision in the answer. We will take the first index of the
+          numbers and increment cur_index until we have reached the end of the
+          number in the string. We can slice this section of the string and
+          using python type conversions to turn it into an integer
+        </p>
+
+        <pre><code class="language-python">
+def tokenize(src):
+  # Other stuff ...
+
+  while cur_index &lt; len(src):
+     # Other stuff ...
+
+      elif src[cur_index].isnumeric():
+        start = cur_index
+
+        while src[cur_index].isnumeric():
+          cur_index += 1
+
+        tokens.append((TokenType.NUMBER_TOKEN, int(src[start:cur_index])))
+        </code></pre>
+
+        <p class="paragraph">
+          Now all that's left to do is increment cur_index when a space
+          character is encountered, some very basic error handling, and return
+          the list of tokens
+        </p>
+
+        <pre><code class="language-python">
+def tokenize(src):
+  # Other stuff ...
+
+  while cur_index &lt; len(src):
+     # Other stuff ...
+
+    elif src[cur_index] == ' ':
+      cur_index += 1
+    else:
+      raise Exception(f"Unknown character '{src[cur_index]}'.")
+
+  return tokens
+        </code></pre>
+
+        <p class="paragraph">
+          And there we have it! A very simple function that takes a raw string
+          as input and spits out tokens. To test it out, let's write a simple
+          mathematical expression and have our little tokenizer, well, tokenize
+          that expression
+        </p>
+
+        <pre><code class="language-python">
+print(tokenize("2 + 2 / (4 - 8)"))
+        </code></pre>
+
+        <p class="paragraph">And it should output something like</p>
+
+        <pre><code class="language-plaintext">
+[(&lt;TokenType.NUMBER_TOKEN: 4&gt;, 2), (&lt;TokenType.PLUS_TOKEN: 0&gt;, 0), (&lt;TokenType.NUMBER_TOKEN: 4&gt;, 2), 
+(&lt;TokenType.SLASH_TOKEN: 3&gt;, 0), (&lt;TokenType.OPEN_PAREN: 5&gt;, 0), (&lt;TokenType.NUMBER_TOKEN: 4&gt;, 4), 
+(&lt;TokenType.HYPHEN_TOKEN: 1&gt;, 0), (&lt;TokenType.NUMBER_TOKEN: 4&gt;, 8), (&lt;TokenType.CLOSED_PAREN: 6&gt;, 0)]
+        </code></pre>
+
+        <p class="paragraph">
+          Perfect! You may think we can move straight onto parsing this
+          tokenized expression, but before we can do that we must understand
+        </p>
+
+        <h2 class="section-header">Reverse Polish Notation</h2>
+
+        <p class="paragraph">
+          You may be wondering what reverse polish notation is, and it has a
+          quite an odd named considering the prevalence of the notation. To
+          understand why, let's take a quick detour to learn the grammar and
+          history of polish notation.
+        </p>
+
+        <p class="paragraph">
+          Our typical representation of mathematical operations like addition
+          and subtraction are what is called <em>infix</em>. This means the
+          operators are fixed between the operands. I don't think many of us
+          question this method of representing expressions. There are a few
+          problems with this however. First of all, we have to assign precedence
+          arbitrarily to certain operators meaning their result must be computed
+          before the rest of the expression can be evaluated. If you want to
+          perform an operation of high precedence where one of the operands is
+          its own expression involving operators of lower precedence, you are
+          forced to used parenthesis. This is a major pain that a specific
+          Polish logician of the name Jan Łukasiewicz really wanted to solve.
+        </p>
+
+        <p class="paragraph">
+          The idea he came up with is quite simple really, it merely involved
+          moving the operators from the middle of the operators to the front. As
+          you could probably guess, this is a <em>prefix</em> notation instead
+          of an infix one. To get an idea of how this works, let's look at a
+          simple expression \( 2 + 2 \). If we were to write this in Polish
+          notation it would look something like \( + \hspace{5px} 2 \hspace{5px}
+          2 \). Let's look at an even more complex expression, like \( 1 - 2 + 3
+          \). Before we write the Polish notation for this expression, we have
+          to understand something real quick. With most infix operators, the
+          left side is evaluated before the right side meaning it has
+          <em>left associativity</em>. We can represent this by using
+          parenthesis to make explicit in what order the expression is
+          evaluated. Both multiplication and addition have the associative
+          property meaning that \( (1 + 2) + 3 = 1 + (2 + 3) \), but when we are
+          dealing with operators of the same precedence where the associativity
+          can change the value of the expression, we typically evaluated the
+          left side as an operand to the rightmost operator. For example, \( 1 -
+          2 + 3 \) is typically evaluated as \( (1 - 2) + 3 \). If we evaluated
+          the right side first, we would get \( 1 - (2 + 3) \) which gives us a
+          completely different answer. A huge advantage of Polish notation is
+          that that associativity isn't implicit, rather it is made clear in the
+          expression. If we turned this expression into Polish notation, it
+          would appear as \( + \hspace{5px} - \hspace{5px} 1 \hspace{5px} 2
+          \hspace{5px} 3 \). To understand the expression, it helps to evaluate
+          operators right to left, so our first subexpression is \( -
+          \hspace{5px} 1 \hspace{5px} 2 \) which translates the infix expression
+          \( 1 - 2 \). The difference is \( -1 \), and we can stick it right
+          back in our original expression yielding us \( + \hspace{5px} (-1)
+          \hspace{5px} 3 \). Now we can simply evaluate this as \( -1 + 3 = 2\).
+          Notice how the associativity is encoded explicitly within the
+          notation? This makes the notation extremely unambiguous; no need for
+          order of operation or explicitly defining associativity beyond the
+          order an operator evaluates just two operands, which makes it quite
+          easy to write a computer program for.
+        </p>
+
+        <p class="paragraph">
+          You may have noticed the title of this section is
+          <em>reverse</em> Polish notation, and as the name implies, it's simply
+          Polish notation, just backwards. Instead of \( + \hspace{5px} 2
+          \hspace{5px} 2 \), we would write \( 2 \hspace{5px} 2 \hspace{5px} +
+          \). The advantage of this method is that we can evaluate this very
+          simply with a data structure known as a stack. A stack is a data
+          structure meant to contain individual elements. Elements can only be
+          placed at the end of the stack in a process known as <em>pushing</em>.
+          Elements can also only be retrieved from the end of stack, and this
+          retrieval is known as <em>popping</em>. This makes the stack a LIFO
+          (short for Last In First Out) data structure, or the last element
+          pushed in (Last In) the stack is first element retrieved (First Out).
+          The reason <em>Reverse</em> Polish Notation is so powerful is because
+          we can process it with a stack. Let's use the previous example of \( 2
+          \hspace{5px} 2 \hspace{5px} + \). First, we push \(2\) to the stack,
+          next we push the other \(2\) to the stand, but now we encounter the
+          operator \(+\). All we have to do here is pop both of our numbers from
+          the stack and apply the corresponding operator, in this case \(+\), to
+          the popped operands, and finally push the result on the stack. At the
+          end we simply take the only remaining number on the stack which is the
+          answer to the expression. To prove this works with larger expressions,
+          let's take a look at the example we used previously (just in reverse
+          polish notation), \( 1 \hspace{5px} 2 \hspace{5px} - \hspace{5px} 3 +
+          \hspace{5px} \). First we push \(1\) and \(2\) to the stack. We then
+          encounter the \(-\) operator. This is where we have to be a little
+          careful. Because the notation is in reverse, the second number we
+          popped on the stack is going to be the <em>first</em> number in the
+          expression. In our case, the last number we pushed to the stack was
+          \(2\), but \(2\) is the right operand in the expression and to get the
+          left one we must pop off the stack. Now that we have this, we can push
+          \(-1\) to the stack. Next, we encounter \(3\) in our expression and so
+          we push it onto the stack. Finally, we run into the \(+\) operator
+          which means we pop \(-1\) and \(3\) off the stack, add them, and push
+          the sum, \(2\) back on the stack. Since that's the end of the
+          expression, \(2\) is the answer to the expression \( 1 \hspace{5px} 2
+          \hspace{5px} - \hspace{5px} 3 + \hspace{5px} \). Here is my crude
+          animation to demonstrate this concept
+        </p>
+
+        <div class="image-container">
+          <img
+            src="/media/video/rpn-animation.gif"
+            width="256px"
+            height="256px"
+          />
+        </div>
       </div>
     </div>
 

@@ -199,3 +199,27 @@ sup {
 .footnote-navigation:hover {
   text-decoration: underline;
 }
+
+.section {
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    width: 50%;
+}
+
+.section-header {
+    margin-top: 1rem;
+}
+
+.image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.image {
+    align-self: center;
+    justify-self: center;
+    z-index: -1;
+}
