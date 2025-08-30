@@ -128,14 +128,14 @@
 from enum import Enum
 
 class TokenType(Enum):
-    PLUS_TOKEN = 0
-    HYPHEN_TOKEN = 1
-    STAR_TOKEN = 2
-    SLASH_TOKEN = 3
-    NUMBER_TOKEN = 4
+    PLUS = 0
+    HYPHEN = 1
+    STAR = 2
+    SLASH = 3
+    NUMBER = 4
     OPEN_PAREN = 5
     CLOSED_PAREN = 6
-    END_TOKEN = 7
+    END = 7
         </code></pre>
 
         <p class="paragraph">
@@ -165,16 +165,16 @@ def tokenize(src):
 
   while cur_index &lt; len(src):
       if src[cur_index] == '+':
-          tokens.append((TokenType.PLUS_TOKEN, 0))
+          tokens.append((TokenType.PLUS, 0))
           cur_index += 1
       elif src[cur_index] == '-':
-          tokens.append((TokenType.HYPHEN_TOKEN, 0))
+          tokens.append((TokenType.HYPHEN, 0))
           cur_index += 1
       elif src[cur_index] == '*':
-          tokens.append((TokenType.STAR_TOKEN, 0))
+          tokens.append((TokenType.STAR, 0))
           cur_index += 1
       elif src[cur_index] == '/':
-          tokens.append((TokenType.SLASH_TOKEN, 0))
+          tokens.append((TokenType.SLASH, 0))
           cur_index += 1
       elif src[cur_index] == '&#40;':
           tokens.append((TokenType.OPEN_PAREN, 0))
@@ -207,7 +207,7 @@ def tokenize(src):
         while src[cur_index].isnumeric():
           cur_index += 1
 
-        tokens.append((TokenType.NUMBER_TOKEN, int(src[start:cur_index])))
+        tokens.append((TokenType.NUMBER, int(src[start:cur_index])))
         </code></pre>
 
         <p class="paragraph">
@@ -245,9 +245,9 @@ print(tokenize("2 + 2 / (4 - 8)"))
         <p class="paragraph">And it should output something like</p>
 
         <pre><code class="language-plaintext">
-[(&lt;TokenType.NUMBER_TOKEN: 4&gt;, 2), (&lt;TokenType.PLUS_TOKEN: 0&gt;, 0), (&lt;TokenType.NUMBER_TOKEN: 4&gt;, 2), 
-(&lt;TokenType.SLASH_TOKEN: 3&gt;, 0), (&lt;TokenType.OPEN_PAREN: 5&gt;, 0), (&lt;TokenType.NUMBER_TOKEN: 4&gt;, 4), 
-(&lt;TokenType.HYPHEN_TOKEN: 1&gt;, 0), (&lt;TokenType.NUMBER_TOKEN: 4&gt;, 8), (&lt;TokenType.CLOSED_PAREN: 6&gt;, 0)]
+[(&lt;TokenType.NUMBER: 4&gt;, 2), (&lt;TokenType.PLUS: 0&gt;, 0), (&lt;TokenType.NUMBER: 4&gt;, 2), 
+(&lt;TokenType.SLASH: 3&gt;, 0), (&lt;TokenType.OPEN_PAREN: 5&gt;, 0), (&lt;TokenType.NUMBER: 4&gt;, 4), 
+(&lt;TokenType.HYPHEN: 1&gt;, 0), (&lt;TokenType.NUMBER: 4&gt;, 8), (&lt;TokenType.CLOSED_PAREN: 6&gt;, 0)]
         </code></pre>
 
         <p class="paragraph">
@@ -258,7 +258,7 @@ print(tokenize("2 + 2 / (4 - 8)"))
         <h2 class="section-header">Reverse Polish Notation</h2>
 
         <p class="paragraph">
-          You may be wondering what reverse polish notation is, and it has a
+          You may be wondering what Reverse Polish Notation is, and it has a
           quite an odd named considering the prevalence of the notation. To
           understand why, let's take a quick detour to learn the grammar and
           history of polish notation.
@@ -360,8 +360,133 @@ print(tokenize("2 + 2 / (4 - 8)"))
             src="/media/video/rpn-animation.gif"
             width="256px"
             height="256px"
+            alt="Gif demonstrating how Reverse Polish Notation is evaluated"
           />
         </div>
+
+        <p class="paragraph">
+          Now we have to finally deal with the job of actually programming it.
+          We could come up for a whole new representation of the numbers and
+          operators, but since we already have a perfectly usable method of
+          representation via our tokens, so all our evaluator will do is process
+          an array of tokens arranged in Reverse Polish Notation. Let's start by
+          creating a method to turn an array of tokens to a single numerical
+          answer
+        </p>
+
+        <pre><code class="language-python">
+def evaluate(tokens):
+  stack = []
+
+  for token in tokens:
+    if token[0] == TokenType.NUMBER:
+      # Appending is pushing to python lists
+      stack.append(token[1])
+    elif token[0] == TokenType.PLUS:
+      # The left operand is the first one pushed so is the last one popped
+      b = stack.pop()
+      a = stack.pop()
+      stack.push(a + b)
+    elif token[0] == TokenType.HYPHEN:
+      # The left operand is the first one pushed so is the last one popped
+      b = stack.pop()
+      a = stack.pop()
+      stack.push(a - b)
+    elif token[0] == TokenType.STAR:
+      # The left operand is the first one pushed so is the last one popped
+      b = stack.pop()
+      a = stack.pop()
+      stack.push(a * b)
+    elif token[0] == TokenType.SLASH:
+      # The left operand is the first one pushed so is the last one popped
+      b = stack.pop()
+      a = stack.pop()
+      stack.push(a / b)
+  
+  return stack.pop()
+        </code></pre>
+
+        <p class="paragraph">
+          With this out of the way we only have one task to complete: our
+          parser. Since the evaluator uses the same kind of tokens that our
+          tokenizer spits out, all the parser has to do is rearrange the tokens
+          from infix to Reverse Polish Notation without changing the
+          representation of the numbers and operators. Isolating the problem and
+          solving it in its simplest form is a good problem solving technique in
+          general, so reusing and keeping the scope of the parser small will
+          adhere to this principle thus allowing us to solving the problem in
+          its essence.
+        </p>
+
+        <h2 class="section-header">Parsing (finally)</h2>
+
+        <p class="paragraph">
+          We have finally arrived at the true point of this article: parsing.
+          With all the scaffolding complete, all we need is a parser to bridge
+          the gap from the raw tokens to something legible to the evaluator, and
+          to do this we get to learn a new algorithm: recursive descent! For
+          those of you not too familiar with recursion, I recommend taking a
+          peek at
+          <a
+            href="https://developer.mozilla.org/en-US/docs/Glossary/Recursion"
+            class="hyperlink"
+            aria-label="A link to a Mozilla article on recursion"
+            >this article</a
+          >
+          from Mozilla (it is in javascript however, but the concept is
+          universal).
+        </p>
+
+        <p class="paragraph">
+          The idea of recursive descent is remarkably similar to how we humans
+          solve these infix expressions. The algorithm traverses the expression,
+          dealing with the highest precedence operations before moving on to
+          process lower-precedence operations (often involving operands that
+          include those higher-precedence operations). For example, let's take a
+          peek at the expression \( 1 - 2 * 3 \). If we simply kept every
+          operation left associative, we would end up with \((1 - 2) * 3\) which
+          is not what we want. Instead we want our algorithm to handle \( 2 * 3
+          \) as its own subexpression before moving on to the \( - \) operator.
+          To do this, we exploit the call stack (in fact, most algorithms
+          solving this problem use stacks, whether implicitly through calling
+          functions or explicitly using a stack with an iterative algorithm like
+          the shunting yard algorithm). Let's just imagine 3 levels of the call
+          stack to solve this expression. The first layer is going to handle the
+          lowest precedence operators \(+\) and \(-\). The second layer is going
+          to handle the higher precedence operators \(*\) and \(/\), and the
+          very highest level of precedence are the numbers themselves as there
+          isn't anything to process within a number. In our expression we first
+          hit \(1\) which doesn't match the operators in the first two
+          precedence levels. Once \(1\) is pushed to the stack, our index is
+          incremented so the current character is \(-\), the function exits, and
+          we return to the second level of precedence which processes \(*\) and
+          \(/\). Of course, \(-\) doesn't match either \(*\) or \(/\), so we
+          exit and return to the lowest level of precedence involving the
+          operators \(+\) and \(-\) which finally <em>can</em> be processed by
+          the current level of precedence. When dealing with reverse polish
+          notation, we have to process both operands before pushing the operator
+          to the stack, so we store \(-\) and move on to the right operand. The
+          first character encountered is \(2\), which the lowest precedence
+          can't match, so once again it calls up to the second highest
+          precedence function which also cannot handle it, so we call up at the
+          very highest precedence-handling function which handles \(2\) by
+          pushing it to the stack. Once again, the index is incremented and we
+          encounter \(*\). Here is where the magic comes in. The function of
+          second highest precedence is able to handle \(*\), so it goes and
+          processes \(3\) just by calling up the precedence chain once again
+          (which is only one call deep at this point) and pushes \(3\) to the
+          stack. Now that both of the operands to the \(*\) operation have been
+          pushed to the stack, we can finally push \(*\) to the stack. The
+          function exits and returns to the lowest precedence which is now done
+          processing the right operand, and so can push \(-\) to the stack.
+          Isn't this absolutely gorgeous? By exploiting layers the call stack
+          provides us, we can process higher precedence operands entirely before
+          moving onto those of lower precedence. Even if there is no low
+          precedence operation, by treating it has the left operand to some
+          expected low precedence operations and then never computing a right
+          operand, we can ensure expressions made up of entirely high precedence
+          operations can be computed.
+        </p>
       </div>
     </div>
 
