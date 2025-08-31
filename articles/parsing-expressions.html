@@ -60,7 +60,7 @@
 
     <div class="page-title">
       <h1 class="">Parsing Expressions</h1>
-      <p>Unpublished</p>
+      <p>Posted August 31, 2025</p>
       <hr class="line" />
     </div>
 
@@ -81,14 +81,15 @@
           algorithms for solving this problem (in fact one of my favorite
           algorithms--the shunting yard algorithm--was designed to solve this
           very problem), but for our purposes we will solve this using arguably
-          the simplest method: recursive descent.
+          the most intuitive method: recursive descent.
         </p>
         <p class="paragraph">
           Recursive descent may sound like a very complex algorithm, but at its
           heart it is an extremely simple, extremely powerful algorithm which
           implements recursion to "descend" into expression, solving highest
-          precedence operations first and ascending once that has been computed.
-          In fact, this algorithm is so powerful I used it to parse
+          precedence operations first, then ascending up to lower precedence
+          operations once those have been computed. In fact, this algorithm is
+          so powerful I used it to parse
           <a
             href="https://github.com/forty-eridani/custom-lang"
             class="hyperlink"
@@ -102,25 +103,25 @@
             class="hyperlink"
             >Crafting Interpreters</a
           >
-          of which I owe a debt of gratitude to and a book you should definitely
-          read if you have any interest in creating your own programming
-          language. Anywho, we are not going to get straight away to parsing the
-          expressions because it's quite difficult and inefficient to write a
-          parser that understands raw text (and hurts my object-oriented soul),
-          so instead let us begin with
+          of which I owe a great debt of gratitude, and a book you should
+          definitely read if you have any interest in creating your own
+          programming language. Anywho, we are not going to get straight away to
+          parsing the expressions because it's quite difficult and inefficient
+          to write a parser that understands raw text (and hurts my
+          object-oriented soul), so instead let us begin with
         </p>
 
         <h2 class="section-header">Tokenizing the Input</h2>
 
         <p class="paragraph">
-          To begin, let's simply enumerate the tokens we would like to have. We
-          would like the addition operator \(+\), subtraction operator \(-\),
-          division operator \(/\), and the multiplication operator \(*\). The
-          enumerated names will not be of the operation they perform (addition,
-          subtraction, etc), rather the names will represent the symbol itself
-          since the tokenizer has no knowledge of their function, and in a real
-          programming language, a symbol may have multiple jobs. We also need to
-          enumerate for tokens for numbers and opening/closing parenthesis.
+          To begin, let's simply enumerate the tokens we would like to have.
+          This would include addition (\(+\)), subtraction (\(-\)), division
+          (\(/\)), and multiplication (\(*\)). The enumerated names will not be
+          of the operation they perform (addition, subtraction, etc), rather the
+          names will represent the symbol itself. This is because the tokenizer
+          has no knowledge of their function, and in a real programming
+          language, a symbol may have multiple jobs. We also need to enumerate
+          for tokens for numbers and opening/closing parenthesis.
         </p>
 
         <pre><code class="language-python">
@@ -141,10 +142,10 @@ class TokenType(Enum):
           should represent a token. This doesn't have to be complicated at all,
           there just has to be an object containing both the type of the token
           and the numerical value if the token happens to be a number. We could
-          write our own class for this, but that seems too little state to
-          encapsulate in a class and by default class string representations are
-          quite ugly. Instead, we will simply use a tuple to hold the type of
-          the token as well as its value if it's a number.
+          write our own class for this, but I don't think we have enough state
+          to justify writing a class to encapsulate it, and printing classes in
+          arrays can get ugly. Instead, we will simply use a tuple to hold the
+          type of the token as well as its value if it's a number.
         </p>
 
         <p class="paragraph">
@@ -250,7 +251,7 @@ print(tokenize("2 + 2 / (4 - 8)"))
 
         <p class="paragraph">
           Perfect! You may think we can move straight onto parsing this
-          tokenized expression, but before we can do that we must understand
+          tokenized expression, but before we can do that we should understand
         </p>
 
         <h2 class="section-header">Reverse Polish Notation</h2>
@@ -258,8 +259,8 @@ print(tokenize("2 + 2 / (4 - 8)"))
         <p class="paragraph">
           You may be wondering what Reverse Polish Notation is, and it has a
           quite an odd named considering the prevalence of the notation. To
-          understand why, let's take a quick detour to learn the grammar and
-          history of polish notation.
+          understand why, let's take a quick detour to learn the grammar of
+          polish notation.
         </p>
 
         <p class="paragraph">
@@ -284,10 +285,10 @@ print(tokenize("2 + 2 / (4 - 8)"))
           simple expression \( 2 + 2 \). If we were to write this in Polish
           notation it would look something like \( + \hspace{5px} 2 \hspace{5px}
           2 \). Let's look at an even more complex expression, like \( 1 - 2 + 3
-          \). Before we write the Polish notation for this expression, we have
-          to understand something real quick. With most infix operators, the
-          left side is evaluated before the right side meaning it has
-          <em>left associativity</em>. We can represent this by using
+          \). Before we write the Polish notation for this expression, let's
+          take a quick detour to understand associativity. With most infix
+          operators, the left side is evaluated before the right side meaning it
+          has <em>left associativity</em>. We can represent this by using
           parenthesis to make explicit in what order the expression is
           evaluated. Both multiplication and addition have the associative
           property meaning that \( (1 + 2) + 3 = 1 + (2 + 3) \), but when we are
@@ -363,6 +364,15 @@ print(tokenize("2 + 2 / (4 - 8)"))
         </div>
 
         <p class="paragraph">
+          On a quick note, you may be wondering why we are using this esoteric
+          notation instead of just a tree, and the answer is I think trees are
+          boring, and RPN is tree-like in the sense that subexpressions nest in
+          the same way that nodes of a tree nest. In fact, recursive descent is
+          a very common method to turn infix expressions into trees instead of
+          Reverse Polish Notation like we have.
+        </p>
+
+        <p class="paragraph">
           Now we have to finally deal with the job of actually programming it.
           We could come up for a whole new representation of the numbers and
           operators, but since we already have a perfectly usable method of
@@ -428,60 +438,58 @@ def evaluate(tokens):
             aria-label="A link to a Mozilla article on recursion"
             >this article</a
           >
-          from Mozilla (it is in javascript however, but the concept is
-          universal).
+          from Mozilla (it is in javascript, but the concept is universal).
         </p>
 
         <p class="paragraph">
           The idea of recursive descent is remarkably similar to how we humans
           solve these infix expressions. The algorithm traverses the expression,
-          dealing with the highest precedence operations before moving on to
-          process lower-precedence operations (often involving operands that
-          include those higher-precedence operations). For example, let's take a
-          peek at the expression \( 1 - 2 * 3 \). If we simply kept every
-          operation left associative, we would end up with \((1 - 2) * 3\) which
-          is not what we want. Instead we want our algorithm to handle \( 2 * 3
-          \) as its own subexpression before moving on to the \( - \) operator.
-          To do this, we exploit the call stack (in fact, most algorithms
-          solving this problem use stacks, whether implicitly through calling
-          functions or explicitly using a stack with an iterative algorithm like
-          the shunting yard algorithm). Let's just imagine 3 levels of the call
-          stack to solve this expression. The first layer is going to handle the
-          lowest precedence operators \(+\) and \(-\). The second layer is going
-          to handle the higher precedence operators \(*\) and \(/\), and the
-          very highest level of precedence are the numbers themselves as there
-          isn't anything to process within a number. In our expression we first
-          hit \(1\) which doesn't match the operators in the first two
-          precedence levels. Once \(1\) is pushed to the stack, our index is
-          incremented so the current character is \(-\), the function exits, and
-          we return to the second level of precedence which processes \(*\) and
-          \(/\). Of course, \(-\) doesn't match either \(*\) or \(/\), so we
-          exit and return to the lowest level of precedence involving the
-          operators \(+\) and \(-\) which finally <em>can</em> be processed by
-          the current level of precedence. When dealing with reverse polish
-          notation, we have to process both operands before pushing the operator
-          to the stack, so we store \(-\) and move on to the right operand. The
-          first character encountered is \(2\), which the lowest precedence
-          can't match, so once again it calls up to the second highest
-          precedence function which also cannot handle it, so we call up at the
-          very highest precedence-handling function which handles \(2\) by
-          pushing it to the stack. Once again, the index is incremented and we
-          encounter \(*\). Here is where the magic comes in. The function of
-          second highest precedence is able to handle \(*\), so it goes and
-          processes \(3\) just by calling up the precedence chain once again
-          (which is only one call deep at this point) and pushes \(3\) to the
-          stack. Now that both of the operands to the \(*\) operation have been
-          pushed to the stack, we can finally push \(*\) to the stack. The
-          function exits and returns to the lowest precedence which is now done
-          processing the right operand, and so can push \(-\) to the stack.
-          Isn't this absolutely gorgeous? By exploiting layers the call stack
-          provides us, we can process higher precedence operands entirely before
-          moving onto those of lower precedence. Even if there are no low
-          precedence operations, by first processing a left operand and then
-          never process a low precedence operator and a right operand you can
-          parse an expression made up entirely of low precedence operations.
-          This will make more sense once we start writing code, but once again
-          here is another crude attempt at animating this concept
+          dealing with the highest precedence operations before moving onto
+          process lower-precedence operations. For example, let's take a peek at
+          the expression \( 1 - 2 * 3 \). If we simply kept every operation left
+          associative, we would end up with \((1 - 2) * 3\) which is not what we
+          want. Instead, we want our algorithm to handle \( 2 * 3 \) as its own
+          subexpression before moving on to the \( - \) operator. To do this, we
+          exploit the call stack (in fact, most algorithms solving this problem
+          use stacks, whether implicitly through calling functions or explicitly
+          using a stack with an iterative algorithm like the shunting yard
+          algorithm). Let's just imagine 3 levels of the call stack to solve
+          this expression. The first layer is going to handle the lowest
+          precedence operators \(+\) and \(-\), the second layer is going to
+          handle the higher precedence operators \(*\) and \(/\), and the very
+          highest level of precedence are the numbers themselves as there isn't
+          anything to process within a number. In our expression we first hit
+          \(1\) which doesn't match the operators in the first two precedence
+          levels. Once \(1\) is pushed to the stack, our index is incremented so
+          the current character is \(-\), the function exits, and we return to
+          the second level of precedence which processes \(*\) and \(/\). Of
+          course, \(-\) doesn't match either \(*\) or \(/\), so we exit and
+          return to the lowest level of precedence involving the operators \(+\)
+          and \(-\) which finally <em>can</em> be processed by the current level
+          of precedence. When dealing with reverse polish notation, we have to
+          process both operands before pushing the operator to the stack, so we
+          store \(-\) and move on to the right operand. The first character
+          encountered is \(2\), which the lowest precedence can't match, so once
+          again it calls up to the second highest precedence function which also
+          cannot handle it, so we call up at the very highest
+          precedence-handling function which handles \(2\) by pushing it to the
+          stack. Once again, the index is incremented and we encounter \(*\).
+          Here is where the magic comes in. The function of second highest
+          precedence is able to handle \(*\), so it goes and processes \(3\)
+          just by calling up the precedence chain once again (which is only one
+          call deep at this point) and pushes \(3\) to the stack. Now that both
+          of the operands to the \(*\) operation have been pushed to the stack,
+          we can finally push \(*\) to the stack. The function exits and returns
+          to the lowest precedence which is now done processing the right
+          operand, and so can push the stored \(-\) to the RPN expression. Isn't
+          this absolutely gorgeous? By exploiting layers the call stack provides
+          us, we can process higher precedence operands entirely before moving
+          onto those of lower precedence. Even if there are no low precedence
+          operations, by first treating the entire expression as the left
+          operand to a low precedence operator, and then never process an
+          operator or right operand, we are able to process an expression made
+          up entirely of low precedence operations. It even be an individual
+          number!
         </p>
 
         <div class="image-container">
@@ -506,17 +514,18 @@ def evaluate(tokens):
           is to have a single method with a couple of cases carved out for
           numbers and grouped expressions. This is a really effective technique
           since we can simply reuse the code for all left-associative binary
-          operators (operators with two operands). Another way is to keep all
-          the operators of each precedence in their own function. This does
-          force us to write a function for each level of precedence, but it can
-          be easier to read and understand. Since we are not implementing more
-          complex operators (like logical operators evaluating to true or
-          false), we will simply write different functions for each level of
-          precedence. Since we are only rewriting code twice for each pair of
-          binary operators of different precedence, we adhere to the
+          operators (a binary operator is an operator with two operands).
+          Another way is to keep all the operators of each precedence in their
+          own function. This does force us to write a function for each level of
+          precedence, but it can be easier to read and understand. Since we are
+          not implementing more complex operators (like logical operators
+          evaluating to true or false), we will simply write different functions
+          for each level of precedence. Since we are only rewriting code twice
+          for each pair of binary operators of different precedence, we adhere
+          to the
           <em>rule of three</em> which states one should only refactor code if
-          duplicated three times. One thing to note is that since each call has
-          to have a reference to the same list and index, they must be defined
+          duplicated three times. It's worth noting that since each call has to
+          have a reference to the same list and index, they must be defined
           externally (making this mutable external state, a great sin in
           functional programming) unless we wanna be some real haskell
           programmers.
@@ -591,7 +600,7 @@ def parse(tokens):
           with the digits in the <code>parse_primary()</code> function. These
           can be pushed as their own entirely independent expressions as RPN
           doesn't care as long as it can pop two numbers when it encounters an
-          operator. This means the operation with the group as an operand will
+          operator. This means the operation using the group as an operand will
           only be evaluated once the entire group has already been evaluated. In
           practice, this means if we encounter an open parenthesis we can simply
           call the lowest precedence function like we do in the initial parsing
@@ -623,7 +632,7 @@ def parse_primary(index, rpn, src):
         </p>
 
         <pre><code class="language-python">
-expression = "6 * (7- 4) + 3"
+expression = "6 * (7 - 4) + 3"
 tokens = tokenize(expression)
 parsed_tokens = parse(tokens)
 value = evaluate(parsed_tokens)
@@ -636,7 +645,9 @@ print(f"The value of {expression} is {value}.")
           implement: negative numbers and decimals. However, I leave it as a
           exercise to the reader to implement those in this program. Armed with
           the knowledge provided and a bit of creativity, it shouldn't be an
-          extremely difficult task. I hope this article has
+          extremely difficult task. I hope you have learned something new from
+          this article and feel free to provide suggestions to any mistakes in
+          this articles. Toodles!
         </p>
       </div>
     </div>
