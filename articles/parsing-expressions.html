@@ -120,8 +120,7 @@
           subtraction, etc), rather the names will represent the symbol itself
           since the tokenizer has no knowledge of their function, and in a real
           programming language, a symbol may have multiple jobs. We also need to
-          enumerate for tokens for numbers, opening and closing parenthesis, as
-          well as an end token to help the parser know when its job is done
+          enumerate for tokens for numbers and opening/closing parenthesis.
         </p>
 
         <pre><code class="language-python">
@@ -135,7 +134,6 @@ class TokenType(Enum):
     NUMBER = 4
     OPEN_PAREN = 5
     CLOSED_PAREN = 6
-    END = 7
         </code></pre>
 
         <p class="paragraph">
@@ -204,7 +202,7 @@ def tokenize(src):
       elif src[cur_index].isnumeric():
         start = cur_index
 
-        while src[cur_index].isnumeric():
+        while cur_index &lt; len(src) and src[cur_index].isnumeric():
           cur_index += 1
 
         tokens.append((TokenType.NUMBER, int(src[start:cur_index])))
@@ -386,22 +384,19 @@ def evaluate(tokens):
       # The left operand is the first one pushed so is the last one popped
       b = stack.pop()
       a = stack.pop()
-      stack.push(a + b)
+      stack.append(a + b)
     elif token[0] == TokenType.HYPHEN:
-      # The left operand is the first one pushed so is the last one popped
       b = stack.pop()
       a = stack.pop()
-      stack.push(a - b)
+      stack.append(a - b)
     elif token[0] == TokenType.STAR:
-      # The left operand is the first one pushed so is the last one popped
       b = stack.pop()
       a = stack.pop()
-      stack.push(a * b)
+      stack.append(a * b)
     elif token[0] == TokenType.SLASH:
-      # The left operand is the first one pushed so is the last one popped
       b = stack.pop()
       a = stack.pop()
-      stack.push(a / b)
+      stack.append(a / b)
   
   return stack.pop()
         </code></pre>
@@ -481,11 +476,167 @@ def evaluate(tokens):
           processing the right operand, and so can push \(-\) to the stack.
           Isn't this absolutely gorgeous? By exploiting layers the call stack
           provides us, we can process higher precedence operands entirely before
-          moving onto those of lower precedence. Even if there is no low
-          precedence operation, by treating it has the left operand to some
-          expected low precedence operations and then never computing a right
-          operand, we can ensure expressions made up of entirely high precedence
-          operations can be computed.
+          moving onto those of lower precedence. Even if there are no low
+          precedence operations, by first processing a left operand and then
+          never process a low precedence operator and a right operand you can
+          parse an expression made up entirely of low precedence operations.
+          This will make more sense once we start writing code, but once again
+          here is another crude attempt at animating this concept
+        </p>
+
+        <div class="image-container">
+          <img
+            src="/media/video/recurive-descent.gif"
+            alt="A gif demonstrating recursive descent with a stack pointer"
+            width="300px"
+          />
+        </div>
+
+        <p class="paragraph">
+          The little "SP" is short for stack pointer. We won't go into the
+          details of the stack pointer and the underlying mechanics of the call
+          stack, but just know the stack pointer indicates which method we are
+          currently inside of. Our little explanation here has remained fairly
+          decoupled from implementation. There remain several details excluded
+          from the overview, so let's finally get to implementing our parser.
+        </p>
+
+        <p class="paragraph">
+          There are a couple of ways we can go about implementing this. One way
+          is to have a single method with a couple of cases carved out for
+          numbers and grouped expressions. This is a really effective technique
+          since we can simply reuse the code for all left-associative binary
+          operators (operators with two operands). Another way is to keep all
+          the operators of each precedence in their own function. This does
+          force us to write a function for each level of precedence, but it can
+          be easier to read and understand. Since we are not implementing more
+          complex operators (like logical operators evaluating to true or
+          false), we will simply write different functions for each level of
+          precedence. Since we are only rewriting code twice for each pair of
+          binary operators of different precedence, we adhere to the
+          <em>rule of three</em> which states one should only refactor code if
+          duplicated three times. One thing to note is that since each call has
+          to have a reference to the same list and index, they must be defined
+          externally (making this mutable external state, a great sin in
+          functional programming) unless we wanna be some real haskell
+          programmers.
+        </p>
+
+        <pre><code class="language-python">
+def parse_add_sub(index, rpn, src):
+  parse_mult_div(index, rpn, src)
+  
+  while index[0] &lt; len(src) and (src[index[0]][0] == TokenType.PLUS or src[index[0]][0] == TokenType.HYPHEN):
+    op = src[index[0]]
+    index[0] += 1
+
+    # Parsing the right operand
+    parse_mult_div(index, rpn, src)
+
+    rpn.append(op)
+
+def parse_mult_div(index, rpn, src):
+  parse_primary(index, rpn, src)
+  
+  while index[0] &lt; len(src) and (src[index[0]][0] == TokenType.STAR or src[index[0]][0] == TokenType.SLASH):
+    op = src[index[0]]
+    index[0] += 1
+
+    # Parsing the right operand
+    parse_primary(index, rpn, src)
+
+    rpn.append(op)
+
+def parse_primary(index, rpn, src):
+    if src[index[0]][0] == TokenType.NUMBER:
+      rpn.append(src[index[0]])
+      index[0] += 1
+    else:
+      raise Exception(f"Unexpected token '{src[index[0]][0]}'")
+  
+def parse(tokens):
+  rpn = []
+  # Python doesn't allow numbers to be passed by reference, but the index 
+  # must be modified by each call. This is a little workaround to pass a 
+  # list which is essentially passed by reference
+  index = [0]
+
+  parse_add_sub(index, rpn, tokens)
+
+  return rpn
+        </code></pre>
+
+        <p class="paragraph">
+          You may have also noticed the little <code>while</code> statement
+          within the parsing methods. This is to ensure that each operator can
+          occur an indefinite amount of times. For example, let's look at the
+          expression \( 2 * 3 + 3 * 7 + 2 * 8 \). This expression includes two
+          \(+\) operations. Once our code processes the right operand of the
+          first \(+\), we continue processing further right operands and consume
+          the operator likewise. If we didn't include <code>while</code>, the
+          program would only parse \( 2 * 3 + 3 * 7 \) and ignore the rest of
+          the expression.
+        </p>
+
+        <p class="paragraph">
+          There is one element we have neglected to consider however: grouped
+          expressions. Sometimes we want to use operands of lower precedence as
+          operands for higher precedence, and this is where grouped expressions
+          come in which simply use parenthesis to ensure the expression within
+          the parenthesis is evaluated first. We don't have to worry about the
+          RPN representation of parenthesis since RPN has no concept of operator
+          precedence, but we do have to worry about this inside of the parser.
+          Luckily, it's a very easy task. We want the grouped expressions to
+          have the utmost precedence, so we can lump in their processing along
+          with the digits in the <code>parse_primary()</code> function. These
+          can be pushed as their own entirely independent expressions as RPN
+          doesn't care as long as it can pop two numbers when it encounters an
+          operator. This means the operation with the group as an operand will
+          only be evaluated once the entire group has already been evaluated. In
+          practice, this means if we encounter an open parenthesis we can simply
+          call the lowest precedence function like we do in the initial parsing
+          function.
+        </p>
+
+        <pre><code class="language-python">
+def parse_primary(index, rpn, src):
+  if src[index[0]][0] == TokenType.NUMBER:
+    rpn.append(src[index[0]])
+    index[0] += 1
+  elif src[index[0]][0] == TokenType.OPEN_PAREN:
+    index[0] += 1
+    parse_add_sub(index, rpn, src)
+
+    if src[index[0]][0] != TokenType.CLOSED_PAREN:
+      raise Exception("Expected closing parenthesis after group.")
+
+    index[0] += 1
+  else:
+    raise Exception(f"Unexpected token '{src[index[0]][0]}'")
+        </code></pre>
+
+        <p class="paragraph">
+          All we must do at this point is assemble the various parts of our
+          program (which feels very satisfying). We will start by tokenizing a
+          string, then will will parse those tokens, and finally we will send
+          the parsed tokens to the evaluator to get our final answer.
+        </p>
+
+        <pre><code class="language-python">
+expression = "6 * (7- 4) + 3"
+tokens = tokenize(expression)
+parsed_tokens = parse(tokens)
+value = evaluate(parsed_tokens)
+print(f"The value of {expression} is {value}.")
+        </code></pre>
+
+        <p class="paragraph">
+          And there we have it! A simple program to evaluate expressions
+          involving integers. There are however a couple of things I didn't
+          implement: negative numbers and decimals. However, I leave it as a
+          exercise to the reader to implement those in this program. Armed with
+          the knowledge provided and a bit of creativity, it shouldn't be an
+          extremely difficult task. I hope this article has
         </p>
       </div>
     </div>
