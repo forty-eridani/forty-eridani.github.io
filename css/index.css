@@ -39,6 +39,7 @@
     justify-self: center;
     border-style: solid;
     background-color: white;
+    height: 250px;
 }
 
 .article-1-text {
@@ -55,4 +56,29 @@
 
 .article-1:hover {
     cursor: pointer;
+}
+
+.article-2 {
+    border-style: solid;
+    background-color: white;
+    display: flex;
+    justify-self: center;
+    border-style: solid;
+    background-color: white;
+}
+
+.article-2:hover {
+    cursor: pointer;
+}
+
+.article-2-image {
+    pointer-events: none;
+    scale: 90%;
+}
+
+.article-2-text {
+    transform: translateY(60px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Article about parsing expressions" />
+    <title>Parsing Expressions</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/css/common.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-light.min.css"
+    />
+    <script type="module">
+      import hljs from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js";
+      import py from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/python.min.js";
+      import plaintext from "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/plaintext.min.js";
+
+      hljs.registerLanguage("python", py);
+      hljs.registerLanguage("plaintext", plaintext);
+      hljs.highlightAll();
+    </script>
+
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="nav-container-left">
+        <a href="/" class="navigation" aria-label="Visit the homepage"
+          >Nolan Thwaits</a
+        >
+      </div>
+      <div class="nav-container-right">
+        <a
+          href="/about.html"
+          class="navigation"
+          aria-label="Visit the about page"
+          >About</a
+        >
+        <a
+          href="/contact.html"
+          class="navigation"
+          aria-label="Visit the contact me page"
+          >Contact</a
+        >
+      </div>
+    </div>
+
+    <div class="page-title">
+      <h1 class="">Parsing Expressions</h1>
+      <p>Posted August 31, 2025</p>
+      <hr class="line" />
+    </div>
+
+    <div class="article-container">
+      <div class="simple-article-text">
+        <h2 class="section-header">Introduction</h2>
+        <p class="paragraph">
+          Since we were young lads, we have all known how to evaluate simple
+          expressions in our heads like \( 2 + 2 \) or \( 10 / 5 \), but has it
+          ever occurred to you how your calculator performs such operations? It
+          seems trivial at first; one could write a program to consume a number,
+          then the operator, then the other number and perform the operation on
+          the two numbers dictated by the operator previously consumed. This
+          solution however does not generalize to other valid expressions.
+          Instead of explaining why it doesn't, I encourage you to come up with
+          a general expression solving algorithm that can compute \( 15 / (2 +
+          7) + 8 \). Isn't quite so easy now is it? There are quite a few
+          algorithms for solving this problem (in fact one of my favorite
+          algorithms--the shunting yard algorithm--was designed to solve this
+          very problem), but for our purposes we will solve this using arguably
+          the most intuitive method: recursive descent.
+        </p>
+        <p class="paragraph">
+          Recursive descent may sound like a very complex algorithm, but at its
+          heart it is an extremely simple, extremely powerful algorithm which
+          implements recursion to "descend" into expression, solving highest
+          precedence operations first, then ascending up to lower precedence
+          operations once those have been computed. In fact, this algorithm is
+          so powerful I used it to parse
+          <a
+            href="https://github.com/forty-eridani/custom-lang"
+            class="hyperlink"
+            aria-label="A link to the source code of my own programming language"
+            >my own programming language</a
+          >. What introduced me to this concept was an incredible book by Robert
+          Nystrom titled
+          <a
+            href="https://craftinginterpreters.com/"
+            aria-label="A link to the book Crafting Interpreters"
+            class="hyperlink"
+            >Crafting Interpreters</a
+          >
+          of which I owe a great debt of gratitude, and a book you should
+          definitely read if you have any interest in creating your own
+          programming language. Anywho, we are not going to get straight away to
+          parsing the expressions because it's quite difficult and inefficient
+          to write a parser that understands raw text (and hurts my
+          object-oriented soul), so instead let us begin with
+        </p>
+
+        <h2 class="section-header">Tokenizing the Input</h2>
+
+        <p class="paragraph">
+          To begin, let's simply enumerate the tokens we would like to have.
+          This would include addition (\(+\)), subtraction (\(-\)), division
+          (\(/\)), and multiplication (\(*\)). The enumerated names will not be
+          of the operation they perform (addition, subtraction, etc), rather the
+          names will represent the symbol itself. This is because the tokenizer
+          has no knowledge of their function, and in a real programming
+          language, a symbol may have multiple jobs. We also need to enumerate
+          for tokens for numbers and opening/closing parenthesis.
+        </p>
+
+        <pre><code class="language-python">
+from enum import Enum
+
+class TokenType(Enum):
+    PLUS = 0
+    HYPHEN = 1
+    STAR = 2
+    SLASH = 3
+    NUMBER = 4
+    OPEN_PAREN = 5
+    CLOSED_PAREN = 6
+        </code></pre>
+
+        <p class="paragraph">
+          With our enumeration out of the way, we can move onto deciding how we
+          should represent a token. This doesn't have to be complicated at all,
+          there just has to be an object containing both the type of the token
+          and the numerical value if the token happens to be a number. We could
+          write our own class for this, but I don't think we have enough state
+          to justify writing a class to encapsulate it, and printing classes in
+          arrays can get ugly. Instead, we will simply use a tuple to hold the
+          type of the token as well as its value if it's a number.
+        </p>
+
+        <p class="paragraph">
+          There are likely more clever ways to tokenize a string in python,
+          however I am no expert in python and using a less python specific
+          method to tokenize will generalize to other programming languages. To
+          start, let's simply iterate over the string and push the tokens
+          corresponding to the characters of the string to an array of tokens.
+          For now, let's start with operators
+        </p>
+
+        <pre><code class="language-python">
+def tokenize(src):
+  cur_index = 0
+  tokens = []
+
+  while cur_index &lt; len(src):
+      if src[cur_index] == '+':
+          tokens.append((TokenType.PLUS, 0))
+          cur_index += 1
+      elif src[cur_index] == '-':
+          tokens.append((TokenType.HYPHEN, 0))
+          cur_index += 1
+      elif src[cur_index] == '*':
+          tokens.append((TokenType.STAR, 0))
+          cur_index += 1
+      elif src[cur_index] == '/':
+          tokens.append((TokenType.SLASH, 0))
+          cur_index += 1
+      elif src[cur_index] == '&#40;':
+          tokens.append((TokenType.OPEN_PAREN, 0))
+          cur_index += 1
+      elif src[cur_index] == '&#41;':
+          tokens.append((TokenType.CLOSED_PAREN, 0))
+          cur_index += 1
+        </code></pre>
+
+        <p class="paragraph">
+          Tokenizing numbers is slightly more complicated. We will only bother
+          with integers in our parser in order to simplify things a little,
+          though when the expression is evaluated we will keep the decimal to
+          maintain precision in the answer. We will take the first index of the
+          numbers and increment cur_index until we have reached the end of the
+          number in the string. We can slice this section of the string and
+          using python type conversions to turn it into an integer
+        </p>
+
+        <pre><code class="language-python">
+def tokenize(src):
+  # Other stuff ...
+
+  while cur_index &lt; len(src):
+     # Other stuff ...
+
+      elif src[cur_index].isnumeric():
+        start = cur_index
+
+        while cur_index &lt; len(src) and src[cur_index].isnumeric():
+          cur_index += 1
+
+        tokens.append((TokenType.NUMBER, int(src[start:cur_index])))
+        </code></pre>
+
+        <p class="paragraph">
+          Now all that's left to do is increment cur_index when a space
+          character is encountered, some very basic error handling, and return
+          the list of tokens
+        </p>
+
+        <pre><code class="language-python">
+def tokenize(src):
+  # Other stuff ...
+
+  while cur_index &lt; len(src):
+     # Other stuff ...
+
+    elif src[cur_index] == ' ':
+      cur_index += 1
+    else:
+      raise Exception(f"Unknown character '{src[cur_index]}'.")
+
+  return tokens
+        </code></pre>
+
+        <p class="paragraph">
+          And there we have it! A very simple function that takes a raw string
+          as input and spits out tokens. To test it out, let's write a simple
+          mathematical expression and have our little tokenizer, well, tokenize
+          that expression
+        </p>
+
+        <pre><code class="language-python">
+print(tokenize("2 + 2 / (4 - 8)"))
+        </code></pre>
+
+        <p class="paragraph">And it should output something like</p>
+
+        <pre><code class="language-plaintext">
+[(&lt;TokenType.NUMBER: 4&gt;, 2), (&lt;TokenType.PLUS: 0&gt;, 0), (&lt;TokenType.NUMBER: 4&gt;, 2), 
+(&lt;TokenType.SLASH: 3&gt;, 0), (&lt;TokenType.OPEN_PAREN: 5&gt;, 0), (&lt;TokenType.NUMBER: 4&gt;, 4), 
+(&lt;TokenType.HYPHEN: 1&gt;, 0), (&lt;TokenType.NUMBER: 4&gt;, 8), (&lt;TokenType.CLOSED_PAREN: 6&gt;, 0)]
+        </code></pre>
+
+        <p class="paragraph">
+          Perfect! You may think we can move straight onto parsing this
+          tokenized expression, but before we can do that we should understand
+        </p>
+
+        <h2 class="section-header">Reverse Polish Notation</h2>
+
+        <p class="paragraph">
+          You may be wondering what Reverse Polish Notation is, and it has a
+          quite an odd named considering the prevalence of the notation. To
+          understand why, let's take a quick detour to learn the grammar of
+          polish notation.
+        </p>
+
+        <p class="paragraph">
+          Our typical representation of mathematical operations like addition
+          and subtraction are what is called <em>infix</em>. This means the
+          operators are fixed between the operands. I don't think many of us
+          question this method of representing expressions. There are a few
+          problems with this however. First of all, we have to assign precedence
+          arbitrarily to certain operators meaning their result must be computed
+          before the rest of the expression can be evaluated. If you want to
+          perform an operation of high precedence where one of the operands is
+          its own expression involving operators of lower precedence, you are
+          forced to used parenthesis. This is a major pain that a specific
+          Polish logician of the name Jan Łukasiewicz really wanted to solve.
+        </p>
+
+        <p class="paragraph">
+          The idea he came up with is quite simple really, it merely involved
+          moving the operators from the middle of the operators to the front. As
+          you could probably guess, this is a <em>prefix</em> notation instead
+          of an infix one. To get an idea of how this works, let's look at a
+          simple expression \( 2 + 2 \). If we were to write this in Polish
+          notation it would look something like \( + \hspace{5px} 2 \hspace{5px}
+          2 \). Let's look at an even more complex expression, like \( 1 - 2 + 3
+          \). Before we write the Polish notation for this expression, let's
+          take a quick detour to understand associativity. With most infix
+          operators, the left side is evaluated before the right side meaning it
+          has <em>left associativity</em>. We can represent this by using
+          parenthesis to make explicit in what order the expression is
+          evaluated. Both multiplication and addition have the associative
+          property meaning that \( (1 + 2) + 3 = 1 + (2 + 3) \), but when we are
+          dealing with operators of the same precedence where the associativity
+          can change the value of the expression, we typically evaluated the
+          left side as an operand to the rightmost operator. For example, \( 1 -
+          2 + 3 \) is typically evaluated as \( (1 - 2) + 3 \). If we evaluated
+          the right side first, we would get \( 1 - (2 + 3) \) which gives us a
+          completely different answer. A huge advantage of Polish notation is
+          that that associativity isn't implicit, rather it is made clear in the
+          expression. If we turned this expression into Polish notation, it
+          would appear as \( + \hspace{5px} - \hspace{5px} 1 \hspace{5px} 2
+          \hspace{5px} 3 \). To understand the expression, it helps to evaluate
+          operators right to left, so our first subexpression is \( -
+          \hspace{5px} 1 \hspace{5px} 2 \) which translates the infix expression
+          \( 1 - 2 \). The difference is \( -1 \), and we can stick it right
+          back in our original expression yielding us \( + \hspace{5px} (-1)
+          \hspace{5px} 3 \). Now we can simply evaluate this as \( -1 + 3 = 2\).
+          Notice how the associativity is encoded explicitly within the
+          notation? This makes the notation extremely unambiguous; no need for
+          order of operation or explicitly defining associativity beyond the
+          order an operator evaluates just two operands, which makes it quite
+          easy to write a computer program for.
+        </p>
+
+        <p class="paragraph">
+          You may have noticed the title of this section is
+          <em>reverse</em> Polish notation, and as the name implies, it's simply
+          Polish notation, just backwards. Instead of \( + \hspace{5px} 2
+          \hspace{5px} 2 \), we would write \( 2 \hspace{5px} 2 \hspace{5px} +
+          \). The advantage of this method is that we can evaluate this very
+          simply with a data structure known as a stack. A stack is a data
+          structure meant to contain individual elements. Elements can only be
+          placed at the end of the stack in a process known as <em>pushing</em>.
+          Elements can also only be retrieved from the end of stack, and this
+          retrieval is known as <em>popping</em>. This makes the stack a LIFO
+          (short for Last In First Out) data structure, or the last element
+          pushed in (Last In) the stack is first element retrieved (First Out).
+          The reason <em>Reverse</em> Polish Notation is so powerful is because
+          we can process it with a stack. Let's use the previous example of \( 2
+          \hspace{5px} 2 \hspace{5px} + \). First, we push \(2\) to the stack,
+          next we push the other \(2\) to the stand, but now we encounter the
+          operator \(+\). All we have to do here is pop both of our numbers from
+          the stack and apply the corresponding operator, in this case \(+\), to
+          the popped operands, and finally push the result on the stack. At the
+          end we simply take the only remaining number on the stack which is the
+          answer to the expression. To prove this works with larger expressions,
+          let's take a look at the example we used previously (just in reverse
+          polish notation), \( 1 \hspace{5px} 2 \hspace{5px} - \hspace{5px} 3 +
+          \hspace{5px} \). First we push \(1\) and \(2\) to the stack. We then
+          encounter the \(-\) operator. This is where we have to be a little
+          careful. Because the notation is in reverse, the second number we
+          popped on the stack is going to be the <em>first</em> number in the
+          expression. In our case, the last number we pushed to the stack was
+          \(2\), but \(2\) is the right operand in the expression and to get the
+          left one we must pop off the stack. Now that we have this, we can push
+          \(-1\) to the stack. Next, we encounter \(3\) in our expression and so
+          we push it onto the stack. Finally, we run into the \(+\) operator
+          which means we pop \(-1\) and \(3\) off the stack, add them, and push
+          the sum, \(2\) back on the stack. Since that's the end of the
+          expression, \(2\) is the answer to the expression \( 1 \hspace{5px} 2
+          \hspace{5px} - \hspace{5px} 3 + \hspace{5px} \). Here is my crude
+          animation to demonstrate this concept
+        </p>
+
+        <div class="image-container">
+          <img
+            src="/media/video/rpn-animation.gif"
+            width="256px"
+            height="256px"
+            alt="Gif demonstrating how Reverse Polish Notation is evaluated"
+          />
+        </div>
+
+        <p class="paragraph">
+          On a quick note, you may be wondering why we are using this esoteric
+          notation instead of just a tree, and the answer is I think trees are
+          boring, and RPN is tree-like in the sense that subexpressions nest in
+          the same way that nodes of a tree nest. In fact, recursive descent is
+          a very common method to turn infix expressions into trees instead of
+          Reverse Polish Notation like we have.
+        </p>
+
+        <p class="paragraph">
+          Now we have to finally deal with the job of actually programming it.
+          We could come up for a whole new representation of the numbers and
+          operators, but since we already have a perfectly usable method of
+          representation via our tokens, so all our evaluator will do is process
+          an array of tokens arranged in Reverse Polish Notation. Let's start by
+          creating a method to turn an array of tokens to a single numerical
+          answer
+        </p>
+
+        <pre><code class="language-python">
+def evaluate(tokens):
+  stack = []
+
+  for token in tokens:
+    if token[0] == TokenType.NUMBER:
+      # Appending is pushing to python lists
+      stack.append(token[1])
+    elif token[0] == TokenType.PLUS:
+      # The left operand is the first one pushed so is the last one popped
+      b = stack.pop()
+      a = stack.pop()
+      stack.append(a + b)
+    elif token[0] == TokenType.HYPHEN:
+      b = stack.pop()
+      a = stack.pop()
+      stack.append(a - b)
+    elif token[0] == TokenType.STAR:
+      b = stack.pop()
+      a = stack.pop()
+      stack.append(a * b)
+    elif token[0] == TokenType.SLASH:
+      b = stack.pop()
+      a = stack.pop()
+      stack.append(a / b)
+  
+  return stack.pop()
+        </code></pre>
+
+        <p class="paragraph">
+          With this out of the way we only have one task to complete: our
+          parser. Since the evaluator uses the same kind of tokens that our
+          tokenizer spits out, all the parser has to do is rearrange the tokens
+          from infix to Reverse Polish Notation without changing the
+          representation of the numbers and operators. Isolating the problem and
+          solving it in its simplest form is a good problem solving technique in
+          general, so reusing and keeping the scope of the parser small will
+          adhere to this principle thus allowing us to solving the problem in
+          its essence.
+        </p>
+
+        <h2 class="section-header">Parsing (finally)</h2>
+
+        <p class="paragraph">
+          We have finally arrived at the true point of this article: parsing.
+          With all the scaffolding complete, all we need is a parser to bridge
+          the gap from the raw tokens to something legible to the evaluator, and
+          to do this we get to learn a new algorithm: recursive descent! For
+          those of you not too familiar with recursion, I recommend taking a
+          peek at
+          <a
+            href="https://developer.mozilla.org/en-US/docs/Glossary/Recursion"
+            class="hyperlink"
+            aria-label="A link to a Mozilla article on recursion"
+            >this article</a
+          >
+          from Mozilla (it is in javascript, but the concept is universal).
+        </p>
+
+        <p class="paragraph">
+          The idea of recursive descent is remarkably similar to how we humans
+          solve these infix expressions. The algorithm traverses the expression,
+          dealing with the highest precedence operations before moving onto
+          process lower-precedence operations. For example, let's take a peek at
+          the expression \( 1 - 2 * 3 \). If we simply kept every operation left
+          associative, we would end up with \((1 - 2) * 3\) which is not what we
+          want. Instead, we want our algorithm to handle \( 2 * 3 \) as its own
+          subexpression before moving on to the \( - \) operator. To do this, we
+          exploit the call stack (in fact, most algorithms solving this problem
+          use stacks, whether implicitly through calling functions or explicitly
+          using a stack with an iterative algorithm like the shunting yard
+          algorithm). Let's just imagine 3 levels of the call stack to solve
+          this expression. The first layer is going to handle the lowest
+          precedence operators \(+\) and \(-\), the second layer is going to
+          handle the higher precedence operators \(*\) and \(/\), and the very
+          highest level of precedence are the numbers themselves as there isn't
+          anything to process within a number. In our expression we first hit
+          \(1\) which doesn't match the operators in the first two precedence
+          levels. Once \(1\) is pushed to the stack, our index is incremented so
+          the current character is \(-\), the function exits, and we return to
+          the second level of precedence which processes \(*\) and \(/\). Of
+          course, \(-\) doesn't match either \(*\) or \(/\), so we exit and
+          return to the lowest level of precedence involving the operators \(+\)
+          and \(-\) which finally <em>can</em> be processed by the current level
+          of precedence. When dealing with reverse polish notation, we have to
+          process both operands before pushing the operator to the stack, so we
+          store \(-\) and move on to the right operand. The first character
+          encountered is \(2\), which the lowest precedence can't match, so once
+          again it calls up to the second highest precedence function which also
+          cannot handle it, so we call up at the very highest
+          precedence-handling function which handles \(2\) by pushing it to the
+          stack. Once again, the index is incremented and we encounter \(*\).
+          Here is where the magic comes in. The function of second highest
+          precedence is able to handle \(*\), so it goes and processes \(3\)
+          just by calling up the precedence chain once again (which is only one
+          call deep at this point) and pushes \(3\) to the stack. Now that both
+          of the operands to the \(*\) operation have been pushed to the stack,
+          we can finally push \(*\) to the stack. The function exits and returns
+          to the lowest precedence which is now done processing the right
+          operand, and so can push the stored \(-\) to the RPN expression. Isn't
+          this absolutely gorgeous? By exploiting layers the call stack provides
+          us, we can process higher precedence operands entirely before moving
+          onto those of lower precedence. Even if there are no low precedence
+          operations, by first treating the entire expression as the left
+          operand to a low precedence operator, and then never process an
+          operator or right operand, we are able to process an expression made
+          up entirely of low precedence operations. It even be an individual
+          number!
+        </p>
+
+        <div class="image-container">
+          <img
+            src="/media/video/recurive-descent.gif"
+            alt="A gif demonstrating recursive descent with a stack pointer"
+            width="300px"
+          />
+        </div>
+
+        <p class="paragraph">
+          The little "SP" is short for stack pointer. We won't go into the
+          details of the stack pointer and the underlying mechanics of the call
+          stack, but just know the stack pointer indicates which method we are
+          currently inside of. Our little explanation here has remained fairly
+          decoupled from implementation. There remain several details excluded
+          from the overview, so let's finally get to implementing our parser.
+        </p>
+
+        <p class="paragraph">
+          There are a couple of ways we can go about implementing this. One way
+          is to have a single method with a couple of cases carved out for
+          numbers and grouped expressions. This is a really effective technique
+          since we can simply reuse the code for all left-associative binary
+          operators (a binary operator is an operator with two operands).
+          Another way is to keep all the operators of each precedence in their
+          own function. This does force us to write a function for each level of
+          precedence, but it can be easier to read and understand. Since we are
+          not implementing more complex operators (like logical operators
+          evaluating to true or false), we will simply write different functions
+          for each level of precedence. Since we are only rewriting code twice
+          for each pair of binary operators of different precedence, we adhere
+          to the
+          <em>rule of three</em> which states one should only refactor code if
+          duplicated three times. It's worth noting that since each call has to
+          have a reference to the same list and index, they must be defined
+          externally (making this mutable external state, a great sin in
+          functional programming) unless we wanna be some real haskell
+          programmers.
+        </p>
+
+        <pre><code class="language-python">
+def parse_add_sub(index, rpn, src):
+  parse_mult_div(index, rpn, src)
+  
+  while index[0] &lt; len(src) and (src[index[0]][0] == TokenType.PLUS or src[index[0]][0] == TokenType.HYPHEN):
+    op = src[index[0]]
+    index[0] += 1
+
+    # Parsing the right operand
+    parse_mult_div(index, rpn, src)
+
+    rpn.append(op)
+
+def parse_mult_div(index, rpn, src):
+  parse_primary(index, rpn, src)
+  
+  while index[0] &lt; len(src) and (src[index[0]][0] == TokenType.STAR or src[index[0]][0] == TokenType.SLASH):
+    op = src[index[0]]
+    index[0] += 1
+
+    # Parsing the right operand
+    parse_primary(index, rpn, src)
+
+    rpn.append(op)
+
+def parse_primary(index, rpn, src):
+    if src[index[0]][0] == TokenType.NUMBER:
+      rpn.append(src[index[0]])
+      index[0] += 1
+    else:
+      raise Exception(f"Unexpected token '{src[index[0]][0]}'")
+  
+def parse(tokens):
+  rpn = []
+  # Python doesn't allow numbers to be passed by reference, but the index 
+  # must be modified by each call. This is a little workaround to pass a 
+  # list which is essentially passed by reference
+  index = [0]
+
+  parse_add_sub(index, rpn, tokens)
+
+  return rpn
+        </code></pre>
+
+        <p class="paragraph">
+          You may have also noticed the little <code>while</code> statement
+          within the parsing methods. This is to ensure that each operator can
+          occur an indefinite amount of times. For example, let's look at the
+          expression \( 2 * 3 + 3 * 7 + 2 * 8 \). This expression includes two
+          \(+\) operations. Once our code processes the right operand of the
+          first \(+\), we continue processing further right operands and consume
+          the operator likewise. If we didn't include <code>while</code>, the
+          program would only parse \( 2 * 3 + 3 * 7 \) and ignore the rest of
+          the expression.
+        </p>
+
+        <p class="paragraph">
+          There is one element we have neglected to consider however: grouped
+          expressions. Sometimes we want to use operands of lower precedence as
+          operands for higher precedence, and this is where grouped expressions
+          come in which simply use parenthesis to ensure the expression within
+          the parenthesis is evaluated first. We don't have to worry about the
+          RPN representation of parenthesis since RPN has no concept of operator
+          precedence, but we do have to worry about this inside of the parser.
+          Luckily, it's a very easy task. We want the grouped expressions to
+          have the utmost precedence, so we can lump in their processing along
+          with the digits in the <code>parse_primary()</code> function. These
+          can be pushed as their own entirely independent expressions as RPN
+          doesn't care as long as it can pop two numbers when it encounters an
+          operator. This means the operation using the group as an operand will
+          only be evaluated once the entire group has already been evaluated. In
+          practice, this means if we encounter an open parenthesis we can simply
+          call the lowest precedence function like we do in the initial parsing
+          function.
+        </p>
+
+        <pre><code class="language-python">
+def parse_primary(index, rpn, src):
+  if src[index[0]][0] == TokenType.NUMBER:
+    rpn.append(src[index[0]])
+    index[0] += 1
+  elif src[index[0]][0] == TokenType.OPEN_PAREN:
+    index[0] += 1
+    parse_add_sub(index, rpn, src)
+
+    if src[index[0]][0] != TokenType.CLOSED_PAREN:
+      raise Exception("Expected closing parenthesis after group.")
+
+    index[0] += 1
+  else:
+    raise Exception(f"Unexpected token '{src[index[0]][0]}'")
+        </code></pre>
+
+        <p class="paragraph">
+          All we must do at this point is assemble the various parts of our
+          program (which feels very satisfying). We will start by tokenizing a
+          string, then will will parse those tokens, and finally we will send
+          the parsed tokens to the evaluator to get our final answer.
+        </p>
+
+        <pre><code class="language-python">
+expression = "6 * (7 - 4) + 3"
+tokens = tokenize(expression)
+parsed_tokens = parse(tokens)
+value = evaluate(parsed_tokens)
+print(f"The value of {expression} is {value}.")
+        </code></pre>
+
+        <p class="paragraph">
+          And there we have it! A simple program to evaluate expressions
+          involving integers. There are however a couple of things I didn't
+          implement: negative numbers and decimals. However, I leave it as a
+          exercise to the reader to implement those in this program. Armed with
+          the knowledge provided and a bit of creativity, it shouldn't be an
+          extremely difficult task. I hope you have learned something new from
+          this article and feel free to provide suggestions to any mistakes in
+          this articles. Toodles!
+        </p>
+      </div>
+    </div>
+
+    <div class="bottom"></div>
+  </body>
+</html>
