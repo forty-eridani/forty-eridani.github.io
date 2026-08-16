@@ -52,5 +52,97 @@
       <p>Posted TBD</p>
       <hr class="line" />
     </div>
+
+    <div class="section"></div>
+
+    <div class="article-container">
+      <div class="simple-article-text">
+        <h2 class="section-header">Introduction</h2>
+        <p class="paragraph">
+          Welcome to my new little project after being taking a small hiatus
+          from doing anything on my site. Here, over the course of a few
+          articles (and several months), I will attempt to create an 8 bit CPU
+          and document my experience. This series should <em>not</em> be taken
+          as a proper lesson on how to create a functional CPU. Instead, treat
+          this more as a way to understand the basics and let this hopefully
+          inspire you to learn how to properly design your own CPU. This is just
+          a little project I want to work on since, well, I like computers and
+          would really like to understand them at the most fundamental level.
+          Anywho, enough blabbering, let's get started!
+        </p>
+        <h2 class="section-header">ISA?</h2>
+        <p class="paragraph">
+          <em>"What the hell is an ISA?"</em> I hear you asking. ISA stands for
+          Instruction Set Architecture, and is essentially a description of the
+          interface (the 1s and 0s) you as a programmer use to tell the computer
+          what you want it to do. For most of you, a high level programming
+          language like C provides you an interface to direct the computer, but
+          the processor has no idea to do with the source code, so a compiler
+          takes your source code and turns it into instructions the processor
+          can follow. This likely isn't news to you, but now our job is to write
+          the language for the processor to understand instead of some meager
+          assemblage of flesh. For us, we will be using something called a RISC
+          ISA, or Reduced Instruction Set Computer as opposed to a CISC or
+          Complex Instruction Set Computer. This simply means our ISA
+          description won't be 5,000 pages
+          <a
+            href="https://www.intel.com/content/www/us/en/content-details/782158/intel-64-and-ia-32-architectures-software-developer-s-manual-combined-volumes-1-2a-2b-2c-2d-3a-3b-3c-3d-and-4.html?wapkw=intel%2064%20and%20ia-32%20architectures%20software%20developer%27s%20manual&docid=782158"
+            >(I am not joking)
+          </a>
+          and will only contain the essential instructions for making a basic
+          program. We aren't gonna dive into the mathematics of turing
+          completeness or any of the complex math proofs to determine what is
+          able to compute stuff; instead, we will stick to just designing a
+          simple CPU. Our CPU's ISA is going to be quite close to the 6502 since
+          the 6502's ISA is quite simple and clever. To start, let's define our
+          instructions
+        </p>
+        <h2 class="section-header">Making Instructions</h2>
+        <p class="paragraph">
+          The first step to designing a CPU is deciding what we want it to do.
+          Luckily this won't be too complex as our instruction set isn't too
+          large. Because we only have 8 bit registers to play with along with
+          the fact that really don't want instructions to have to take up too
+          many clock cycles, our instruction type will only be 2 bits. That
+          means we can have 4 types of instructions total, which should be
+          plenty. Our first will be arithmetic operations, and we can designate
+          this the binary opcode of 00. The next instruction we need is moving
+          stuff between memory and registers, and, as you could have guessed we
+          can make this instruction 01. The next will be the jump instruction,
+          and this will be instruction 10. Finally, the last instruction is
+          reading and writing to stuff regarding the status registers, which
+          will be 11. Now that we have our basic instructions written down,
+          let's fully describe our first instruction
+        </p>
+        <h2 class="section-header">Arithmetic Operations</h2>
+        <p class="paragraph">
+          Because we used 2 bits for our instruction, we only have 6 bits left
+          for other data necessary, most important of which is what arithmetic
+          operation we want to use. Because we are using an accumulator
+          architecture, we only have to worry about performing operations to the
+          accumulator and a single register. The accumulator is simply a
+          register used to store the results of arithmetic operations. This
+          means our 6 bits will go a long way. First priority however is
+          deciding what operations we want to include.
+        </p>
+        <p class="paragraph">
+          Addition and subtraction are of course necessary, so those will be our
+          first instructions. Next up is shifting left and right, and because we
+          want to keep our ALU simple, each of those will only shift once, so
+          they won't require any operand to the accumulator. Next up we should
+          probably include some bitwise operators, so let's include an and, or,
+          xor, and not. That's 8 operations which conveniently fit into 3 bits,
+          which leaves us with 3 remaining bits to play with. Let's use the next
+          bit to indicate where the operand is coming from. If the bit is 0,
+          then the operand is coming from the next address in memory, but if
+          that bit is 1, then the next bit is coming from a register. This
+          leaves us two final bits, which we can use to index a register. This
+          only means we can have 4 registers, but that will be enough for a
+          basic CPU. With our ALU opcode definition completed, let's move to our
+          next instruction
+        </p>
+        <h2 class="section-header">Moving Operations</h2>
+      </div>
+    </div>
   </body>
 </html>

@@ -3,3 +3,4 @@ https://nolanthwaits.dev/about.html
 https://nolanthwaits.dev/contact.html
 https://nolanthwaits.dev/articles/how-do-machines-learn.html
 https://nolanthwaits.dev/articles/parsing-expressions.html
+https://nolanthwaits.dev/articles/cpu-pt-1.html
