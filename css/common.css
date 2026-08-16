@@ -10,6 +10,12 @@ body {
   font-family: "Montserrat";
 }
 
+li {
+  font-family: "Merriweather";
+  line-height: 45px;
+  z-index: 0;
+}
+
 p {
   font-family: "Merriweather";
   line-height: 45px;
