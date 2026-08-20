@@ -82,3 +82,14 @@
     justify-content: center;
     align-items: center;
 }
+
+.article-3 {
+    border-style: solid;
+    background-color: white;
+    height: 250px;
+    cursor: pointer
+}
+
+.article-3-image {
+    pointer-events: none;
+}

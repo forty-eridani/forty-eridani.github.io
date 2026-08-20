@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Making a CPU Part 1: The ISA</title>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="og:image"
+      content="https://nolanthwaits.dev/media/images/embed-image.png"
+    />
+    <meta name="description" content="Home page" />
+    <title>Home</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/index.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="nav-container-left">
+        <a href="/" class="navigation" aria-label="Visit the homepage"
+          >Nolan Thwaits</a
+        >
+      </div>
+      <div class="nav-container-right">
+        <a
+          href="/about.html"
+          class="navigation"
+          aria-label="Visit the about page"
+          >About</a
+        >
+        <a
+          href="/contact.html"
+          class="navigation"
+          aria-label="Visit the contact me page"
+          >Contact</a
+        >
+      </div>
+    </div>
+
+    <div class="page-title">
+      <h1 class="">Making a CPU Part 1: The ISA</h1>
+      <p>Posted TBD</p>
+      <hr class="line" />
+    </div>
+
+    <div class="section"></div>
+
+    <div class="article-container">
+      <div class="simple-article-text">
+        <h2 class="section-header">Introduction</h2>
+        <p class="paragraph">
+          Welcome to my new little project after being taking a small hiatus
+          from doing anything on my site. Here, over the course of a few
+          articles (and several months), I will attempt to create an 8 bit CPU
+          and document my experience. This series should <em>not</em> be taken
+          as a proper lesson on how to create a functional CPU. Instead, treat
+          this more as a way to understand the basics and let this hopefully
+          inspire you to learn how to properly design your own CPU. This is just
+          a little project I want to work on since, well, I like computers and
+          would really like to understand them at the most fundamental level.
+          Anywho, enough blabbering, let's get started!
+        </p>
+        <h2 class="section-header">ISA?</h2>
+        <p class="paragraph">
+          <em>"What the hell is an ISA?"</em> I hear you asking. ISA stands for
+          Instruction Set Architecture, and is essentially a description of the
+          interface (the 1s and 0s) you as a programmer use to tell the computer
+          what you want it to do. For most of you, a high level programming
+          language like C provides you an interface to direct the computer, but
+          the processor has no idea to do with the source code, so a compiler
+          takes your source code and turns it into instructions the processor
+          can follow. This likely isn't news to you, but now our job is to write
+          the language for the processor to understand instead of some meager
+          assemblage of flesh. For us, we will be using something called a RISC
+          ISA, or Reduced Instruction Set Computer as opposed to a CISC or
+          Complex Instruction Set Computer. This simply means our ISA
+          description won't be 5,000 pages
+          <a
+            href="https://www.intel.com/content/www/us/en/content-details/782158/intel-64-and-ia-32-architectures-software-developer-s-manual-combined-volumes-1-2a-2b-2c-2d-3a-3b-3c-3d-and-4.html?wapkw=intel%2064%20and%20ia-32%20architectures%20software%20developer%27s%20manual&docid=782158"
+            >(I am not joking)
+          </a>
+          and will only contain the essential instructions for making a basic
+          program. We aren't gonna dive into the mathematics of turing
+          completeness or any of the complex math proofs to determine what is
+          able to compute stuff; instead, we will stick to just designing a
+          simple CPU. Our CPU's ISA is going to be quite close to the 6502 since
+          the 6502's ISA is quite simple and clever. To start, let's define our
+          instructions
+        </p>
+        <h2 class="section-header">Making Instructions</h2>
+        <p class="paragraph">
+          The first step to designing a CPU is deciding what we want it to do.
+          Luckily this won't be too complex as our instruction set isn't too
+          large. Because we only have 8 bit registers to play with along with
+          the fact that really don't want instructions to have to take up too
+          many clock cycles, our instruction type will only be 3 bits. That
+          means we can have 8 types of instructions total, which should be
+          plenty. Below is a list of each instruction along with the 3-bit
+          instruction code
+        </p>
+        <ul>
+          <li>
+            000: Arithmetic operations. Stuff like adding, subtracting,
+            shifting, etc
+          </li>
+          <li>
+            001: Register to Register. This is for transferring data between
+            registers. This could be from general purpose to the stack pointer,
+            stack pointer to general purpose, anything to the accumulator, etc.
+          </li>
+          <li>
+            010: Register to Memory. This is for loading data from the
+            aforementioned registers to a location in memory.
+          </li>
+          <li>
+            011: Memory to Register. This instruction is for loading data from
+            memory into a register.
+          </li>
+          <li>
+            100: Interacting with the Status Register. The status register will
+            be important for storing statuses of stuff that goes on in the ALU,
+            like if the result of a mathematical operation is zero, or if the
+            arithmetic operation needs to carry a bit.
+          </li>
+          <li>
+            101: Jumping. This instruction is for simply jumping to memory
+            addresses.
+          </li>
+          <li>
+            110: Branching. This instruction is to change where the program is
+            going based on a status in the status register.
+          </li>
+          <li>
+            111: The stack. The stack is simply a register that holds memory
+            addresses of an instruction after calling the function, so when a
+            function returns, the memory address of the caller is read from the
+            stack and it can return back to completing stuff after the function
+            call. The stack will take up the first 256 bytes of memory, so our
+            maximum stack depth is 128 (each memory address is 2 bytes).
+          </li>
+        </ul>
+        <p class="paragraph">
+          There we have it. 8 instructions. Some of these will get a little
+          tricky since we only have 5 bits to control what each instruction does
+          specifically, but we can do it. For starters, let's begin designing
+          our first instruction
+        </p>
+        <h2 class="section-header">Arithmetic Operations</h2>
+        <p class="paragraph">
+          Because we used a whole 3 bits to describe the instruction, we are
+          only left with 5 bits to describe how we want to perform the
+          arithmetic operation. 8 arithmetic operations sounds like enough, and
+          that also only takes 3 bits, so let's start with designing that.
+        </p>
+        <p class="paragraph">
+          Addition and subtraction are of course necessary, so those will be our
+          first instructions. Next up is shifting left and right, and because we
+          want to keep our ALU simple, each of those will only shift once, so
+          they won't require any operand to the accumulator. Next up we should
+          probably include some bitwise operators, so let's include an and, or,
+          xor, and not. There's our 8 instructions, so now we only have 2 more
+          bits to play with. We will use these bit to describe the register.
+          This does mean we only have 2 general purpose registers (and the two
+          others are the accumulator and stack pointer), but this should be
+          plenty for a simple CPU. Not that we are done with our arithmetic
+          instruction, let's move on to our next instruction
+        </p>
+        <h2 class="section-header">Moving Operations</h2>
+        <p class="paragraph">
+          As with the rest of the instructions, we are left with only 5 bits to
+          decide how we want to move stuff around, but this should be fairly
+          simple given we only have 4 registers that we want to write between:
+          our 2 general purpose registers, the accumulator, and the stack
+          pointer. 4 registers also fit cleanly into 2 bits, so we can fit both
+          our source register and our destination register into this
+          instruction. This leaves us with only a single remaining bit, but we
+          can ignore this we have described everything we need. Next up:
+        </p>
+        <h2 class="section-header">Register to Memory</h2>
+        <p class="paragraph">
+          As always, we have 5 bits to decide what we want to do. Let's use the
+          first 2 bits to describe the register that we want to load to memory.
+          We can use our next bit to indicate whether we are zero-paging. This
+          is essentially telling whether the address located in the next
+          instruction is located in the first 256 bytes of memory. This means we
+          can exclude the most significant byte of addressing to reduce program
+          size. Now that this is complete, we can move on to our next
+          instruction
+        </p>
+        <h2 class="section-header">Memory to Register</h2>
+        <p class="paragraph">
+          Let's allocate our first 2 bits to determining what register we would
+          like to load from. Our next bit can determine the source of value,
+          whether it comes from the next address in memory if the bit is 0, or
+          from the an address stored in the next bytes of memory if the bit is
+          1. Like the last instruction, we should use our next bit to indicate
+          whether the address is within the first 256 bytes of memory. There we
+          have it, a solid load instruction that can direct data where it needs
+          to go. Let's, once again, move on to our next instruction
+        </p>
+        <h2 class="section-header">Status Register Controls</h2>
+        <p class="paragraph">
+          We should probably first figure out what our status register should
+          hold before we start designing the instruction. We want it to hold a
+          carry bit for 16 bit math. We also want it to hold a zero bit that
+          tells us if the last arithmetic operation resulted in a zero (this is
+          useful for branching as you will see later). We should carry a
+          negative bit that tells if the result of the last operation resulted
+          in a negative number. We should also carry an overflow bit that tells
+          if the result of a signed operation is beyond the representable range.
+          Our next bit can be for parity of the ALU. This makes it so that the
+          total amount of 1s in the ALU <em>and</em> the status register parity
+          bit is either even or odd. For example, if we were using even parity
+          and the value in our accumulator was 10110101, we count 5 ones, so to
+          make that amount of ones even, we simple make the parity bit in the
+          status register one. Another way of thinking about this is that in
+          even parity, the status bit is one if there are an odd number of ones
+          in the accumulator, otherwise that parity bit is zero. Let's use our
+          next bit for something a little more elaborate: the hardware
+          interrupt.
+        </p>
+        <p class="paragraph">
+          This bit is useful if you want to interrupt program execution based on
+          something external. Specifically, when the PC is incremented but the
+          instruction at that address has not been processed yet, the CPU stores
+          the address in the stack pointer and jumps to the hardware interrupt
+          handler. Now the interrupt handler address must be set by hardware,
+          meaning we should choose the address now. Because, when designing the
+          hardware, we want the first half of addressable memory dedicated to
+          ROM, and then second half to RAM or IO, we should make the hardware
+          interrupt part of the ROM since our ROM is typically going to be our
+          program storage (though the CPU doesn't differentiate between RAM and
+          ROM, so you could put program code in RAM). This all means that we
+          should place our interrupt handler somewhere between 0x0000 and
+          0x7FFF. To make something easy to hardware, let's reserve 0x7F80 to
+          0x7FFF for the hardware interrupt handler. This leaves us 128
+          instruction for our interrupt handler. If this isn't enough, a
+          programmer could simply use these instructions to jump to another
+          address with more than 128 instructions. If the programmer doesn't
+          want to use the bit either, they could just tie the hardware interrupt
+          low and that memory can be used like any other memory. For our final
+          two bits, let's just allow them to be tied externally, and they can be
+          used for branching/jumping. Here is a nice table so I don't have to
+          read a bunch of text when designing the logic for our CPU:
+        </p>
+        <table>
+          <tr>
+            <th scope="col">Flag Index</th>
+            <th scope="col">Flag Description</th>
+          </tr>
+          <tr>
+            <th scope="row">0</th>
+            <th scope="row">
+              Carry flag; active when the result of an ALU operation requires a
+              carry or borrow
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <th scope="row">
+              Zero flag; active when the result of an expression stored in the
+              accumulator is zero.
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">2</th>
+            <th scope="row">
+              Negative flag; active when the result of an expression is
+              negative.
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">3</th>
+            <th scope="row">
+              Overflow flag; active when the result of a signed expression isn't
+              representable.
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">4</th>
+            <th scope="row">
+              Even parity flag; active when there are an odd number of bits in
+              the accumulator.
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">5</th>
+            <th scope="row">
+              Hardware interrupt; tied externally and, when active, jumps to the
+              hardware interrupt handler address at 0x7F80
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">6</th>
+            <th scope="row">
+              External flag A; tied externally and can used for conditional
+              jumping and branching
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">7</th>
+            <th scope="row">
+              External flag B; tied externally and can used for conditional
+              jumping and branching
+            </th>
+          </tr>
+        </table>
+        <p class="paragraph">
+          Now let's actually get to the instruction. Let's use to first bit to
+          describe whether we want to clear a flag (0) or write the current
+          status register to the accumulator (1). Then, if we are clearing a
+          flag, we can use the next 3 bits to describe what flag we want to
+          clear. Now the last 3 flags are not clearable, but we still have 5
+          flags which needs to be represented via 3 bits. Our next bit is going
+          to just be unused. This is essentially all we need to do with the
+          status register instruction, so next we can move on to
+        </p>
+        <h2 class="section-header">Jumping</h2>
+        <p class="paragraph">
+          Jumping will be our simplest command here. All it does is set the
+          program counter to the memory address located after the instruction.
+          We just need one bit to indicate whether the address can be zero
+          paged.
+        </p>
+        <h2 class="section-header">Branching</h2>
+        <p class="section-header">
+          Branching is essentially the 'if' statement of electronics, and also
+          is the instruction that allows our computer to do interesting things.
+          Our branch instruction essentially dictates where the next program
+          instruction is located based on a flag in the status register. This
+          means our next 3 bits should be the index of the flag in the status
+          register. Our last two bits should be our zero page bits. This
+          indicates whether the addresses are within the first 256 bytes of
+          memory. The first zero page bit will be whether the first address can
+          be zero paged, and the second bit decides whether the second address
+          can be zero paged. The branching will simple read the state of one of
+          the flags, and if the flag is a 0, it moves the program counter to the
+          first address, and if 1, moves the program counter to the second
+          address. Now that we are done with branching, we can move on to our
+          final instruction
+        </p>
+        <h2 class="section-header">Call Stack Commands</h2>
+        <p class="paragraph">
+          Our final command here will be functions related to the call stack. I
+          have mentioned the call stack before, but let's be a bit more
+          specific. The call stack is for calling subroutines that return to
+          their caller. This occurs in a few steps, 1: The caller calls the
+          function, the address for the instruction after the call is pushed to
+          the call stack, and the stack pointer is incremented. 2: The called
+          function does whatever it does, and once it hits the return
+          instruction, the stack pointer decrements and the address of the
+          instruction on the call stack is pushed back to the program counter so
+          the caller can resume whatever it was doing. This means our call
+          instruction should mainly be able to do two things: call and return.
+          Before we implement our instructions, we should first decide where are
+          call stack is going to be. It should be in RAM, so the second half of
+          memory, but we don't want to interfere with our zero page ram from
+          0x8000 to 0x80FF. To make writing to memory not super confusing, let's
+          use the next 256 bytes for our call stack. This means our call stack
+          goes from 0x8100 to 0x81FF. Now for the instruction, we can make our
+          first bit choosing whether we want to call or return. Then, we can
+          simply make the next bit a zero page bit indicating that, if we are
+          calling, the next address is only a single byte. And that, my friends,
+          is our entire ISA. Below I will include some tables for each
+          instruction so you don't have to read this entire piece of writing to
+          figure out the ISA.
+        </p>
+        <h2 class="section-header">Arithmetic Operations</h2>
+        <table>
+          <tr>
+            <th scope="col">Bit(s)</th>
+            <th scope="col">Description</th>
+          </tr>
+          <tr>
+            <th scope="row">0-2</th>
+            <th scope="row">The instruction, 000</th>
+          </tr>
+          <tr>
+            <th scope="row">3-5</th>
+            <th scope="row">
+              The operation. From 000 to 111 in order: Add, subtract, shift
+              left, shift right, bitwise AND, bitwise OR, bitwise XOR, bitwise
+              NOT.
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">6-7</th>
+            <th scope="row">Register operand select</th>
+          </tr>
+        </table>
+        <h2 class="section-header">Moving Operations</h2>
+        <table>
+          <tr>
+            <th scope="col">Bit(s)</th>
+            <th scope="col">Description</th>
+          </tr>
+          <tr>
+            <th scope="row">0-2</th>
+            <th scope="row">001, the instruction bits</th>
+          </tr>
+          <tr>
+            <th scope="row">3-4</th>
+            <th scope="row">Source register</th>
+          </tr>
+          <tr>
+            <th scope="row">5-6</th>
+            <th scope="row">Destination register</th>
+          </tr>
+        </table>
+        <h2 class="section-header">Register to Memory</h2>
+        <table>
+          <tr>
+            <th scope="col">Bit(s)</th>
+            <th scope="col">Description</th>
+          </tr>
+          <tr>
+            <th scope="row">0-2</th>
+            <th scope="row">010, Instruction bits</th>
+          </tr>
+          <tr>
+            <th scope="row">3-4</th>
+            <th scope="row">Source register</th>
+          </tr>
+          <tr>
+            <th scope="row">5</th>
+            <th scope="row">Zero page address</th>
+          </tr>
+        </table>
+        <h2 class="section-header">Memory to Register</h2>
+        <table>
+          <tr>
+            <th scope="col">Bit(s)</th>
+            <th scope="col">Description</th>
+          </tr>
+          <tr>
+            <th scope="row">0-2</th>
+            <th scope="row">Instruction bits, 011</th>
+          </tr>
+          <tr>
+            <th scope="row">3-4</th>
+            <th scope="row">Source register</th>
+          </tr>
+          <tr>
+            <th scope="row">5</th>
+            <th scope="row">
+              Value source, next byte in memory 0, located at the address
+              located in the next 2 bytes in memory if 1
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">6</th>
+            <th scope="row">Zero page address</th>
+          </tr>
+        </table>
+        <h2 class="section-header">Status Register</h2>
+        <table>
+          <tr>
+            <th scope="col">Bit(s)</th>
+            <th scope="col">Description</th>
+          </tr>
+          <tr>
+            <th scope="row">0-2</th>
+            <th scope="row">Instruction bits, 100</th>
+          </tr>
+          <tr>
+            <th scope="row">3</th>
+            <th scope="row">Write status register to accumulator</th>
+          </tr>
+          <tr>
+            <th scope="row">4-6</th>
+            <th scope="row">Flag select</th>
+          </tr>
+        </table>
+        <h2 class="section-header">Jump</h2>
+        <table>
+          <tr>
+            <th scope="col">Bit(s)</th>
+            <th scope="col">Description</th>
+          </tr>
+          <tr>
+            <th scope="row">0-2</th>
+            <th scope="row">Instruction bits, 101</th>
+          </tr>
+          <tr>
+            <th scope="row">3</th>
+            <th scope="row">Zero page address</th>
+          </tr>
+        </table>
+        <h2 class="section-header">Branching</h2>
+        <table>
+          <tr>
+            <th scope="col">Bit(s)</th>
+            <th scope="col">Description</th>
+          </tr>
+          <tr>
+            <th scope="row">0-2</th>
+            <th scope="row">Instruction bits, 110</th>
+          </tr>
+          <tr>
+            <th scope="row">3-5</th>
+            <th scope="row">Flag Select</th>
+          </tr>
+          <tr>
+            <th scope="row">6</th>
+            <th scope="row">First address zero-page</th>
+          </tr>
+          <tr>
+            <th scope="row">7</th>
+            <th scope="row">Second address zero-page</th>
+          </tr>
+        </table>
+        <h2 class="section-header">Call Stack Commands</h2>
+        <table>
+          <tr>
+            <th scope="col">Bit(s)</th>
+            <th scope="col">Description</th>
+          </tr>
+          <tr>
+            <th scope="row">0-2</th>
+            <th scope="row">Instruction bits, 111</th>
+          </tr>
+          <tr>
+            <th scope="row">3</th>
+            <th scope="row">Call (0) or return (1)</th>
+          </tr>
+          <tr>
+            <th scope="row">4</th>
+            <th scope="row">Call address is a zero page address</th>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
